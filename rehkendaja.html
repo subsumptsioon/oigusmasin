@@ -119,7 +119,7 @@
         outline: none;
         caret-color: var(--amber);
         overflow: hidden;
-        pointer-events: none;
+        pointer-events: auto;
       }
       #input-text::placeholder {
         color: var(--dim);
@@ -429,9 +429,6 @@
         highlightEl.scrollLeft = inputEl.scrollLeft;
       });
 
-      // Allow clicks to reach highlight layer
-      inputEl.style.pointerEvents = "auto";
-
       inputEl.addEventListener("click", (e) => {
         const cp = document.caretPositionFromPoint?.(e.clientX, e.clientY)
           ?? document.caretRangeFromPoint?.(e.clientX, e.clientY);
@@ -474,14 +471,6 @@
 
         return html + (text.endsWith("\n") ? " " : "") + "<span></span>"; // prevents trailing-mark collapse
       }
-
-      // Improvement #3 — toggle via highlight click
-      highlightEl.addEventListener("click", (e) => {
-        const mark = e.target.closest("mark");
-        if (!mark) return;
-        const idx = Number(mark.dataset.idx);
-        if (!Number.isNaN(idx)) toggleExclude(idx);
-      });
 
       function toggleExclude(idx) {
         if (excluded.has(idx)) excluded.delete(idx);
