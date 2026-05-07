@@ -72,7 +72,7 @@ function extractAmounts(text) {
     if (!rawNum) continue;
 
     const amount = parseAmount(rawNum);
-    if (amount === null || amount < 0) continue;
+    if (amount === null) continue;
 
     results.push({
       raw: match[0], // full expression
