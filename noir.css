@@ -3,6 +3,8 @@
    Font: Hack (loaded separately via CDN in HTML)
    ============================================================ */
 
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
 /* ── TOKENS ── */
 :root {
   --void: #050507;
