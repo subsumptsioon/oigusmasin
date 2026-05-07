@@ -532,7 +532,7 @@
 
         valSum.textContent = active.length
           ? formatValue(total, maxDec)
-          : "0 " + unitShort();
+          : formatValue(0, 0);
 
         valCount.textContent =
           active.length + (excluded.size > 0 ? " / " + lastFound.length : "");
