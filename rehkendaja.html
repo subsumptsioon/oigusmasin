@@ -430,15 +430,16 @@
       });
 
       inputEl.addEventListener("click", (e) => {
-        const cp = document.caretPositionFromPoint?.(e.clientX, e.clientY)
-          ?? document.caretRangeFromPoint?.(e.clientX, e.clientY);
+        const cp =
+          document.caretPositionFromPoint?.(e.clientX, e.clientY) ??
+          document.caretRangeFromPoint?.(e.clientX, e.clientY);
         if (!cp) return;
         const offset = cp.offset ?? cp.startOffset;
         const hit = lastFound.findIndex(
-          (m) => offset >= m.index && offset < m.index + m.matchLen
-      );
-      if (hit !== -1) toggleExclude(hit);
-    });
+          (m) => offset >= m.index && offset < m.index + m.matchLen,
+        );
+        if (hit !== -1) toggleExclude(hit);
+      });
 
       function escHtml(s) {
         return s
@@ -488,8 +489,17 @@
 
       function update() {
         const text = inputEl.value;
+        const prevExcluded = [...excluded]
+          .map((i) => lastFound[i])
+          .filter(Boolean);
         lastFound = extractAmounts(text);
         excluded.clear();
+        lastFound.forEach((m, i) => {
+          const match = prevExcluded.find(
+            (p) => p.raw === m.raw && Math.abs(p.index - m.index) <= 10,
+          );
+          if (match) excluded.add(i);
+        });
         renderResults();
       }
 
