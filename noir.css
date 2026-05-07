@@ -1,6 +1,6 @@
 /* ============================================================
    noir.css — Design system
-   Font: Hack (loaded separately via CDN in HTML)
+   Font: JetBrains Mono (loaded via Google Fonts @import below)
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
@@ -18,8 +18,8 @@
   --text: #eef1ff;
   --muted: #9099b8;
   --dim: #7a84a8;
-  --mono: "Hack", "Courier New", monospace;
-  --display: "Hack", "Courier New", monospace;
+  --mono: "JetBrains Mono", monospace;
+  --display: "JetBrains Mono", monospace;
   --sidebar-w: 260px;
 
   --l1: #f25443;
