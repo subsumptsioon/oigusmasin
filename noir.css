@@ -455,7 +455,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 16px 20px;
   cursor: pointer;
   user-select: none;
   background: var(--surface);
@@ -514,7 +514,7 @@ main {
   color: var(--muted);
   background: var(--deep);
   border: 1px solid var(--border);
-  padding: 3px 10px;
+  padding: 4px 12px;
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
@@ -572,8 +572,7 @@ main {
 }
 
 .substances-table td {
-  padding: 10px 16px;
-  vertical-align: middle;
+  padding: 12px 20px;
   line-height: 1.45;
 }
 .substances-table td:nth-child(3) {
