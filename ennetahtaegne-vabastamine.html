@@ -14,7 +14,9 @@
         align-items: start;
       }
       @media (max-width: 900px) {
-        .tool-wrap { grid-template-columns: 1fr; }
+        .tool-wrap {
+          grid-template-columns: 1fr;
+        }
       }
 
       /* Input panel */
@@ -75,7 +77,9 @@
         padding: 10px 14px;
         outline: none;
         width: 100%;
-        transition: border-color 0.15s, box-shadow 0.15s;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
         -moz-appearance: textfield;
         appearance: textfield;
       }
@@ -124,8 +128,14 @@
         animation: appear 0.2s ease both;
       }
       @keyframes appear {
-        from { opacity: 0; transform: translateY(4px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .result-header {
@@ -192,7 +202,10 @@
         border: 1px solid var(--border);
         padding: 4px 12px;
         cursor: pointer;
-        transition: background 0.12s, color 0.12s, border-color 0.12s;
+        transition:
+          background 0.12s,
+          color 0.12s,
+          border-color 0.12s;
         letter-spacing: 0.06em;
         flex-shrink: 0;
       }
@@ -218,11 +231,19 @@
       <div class="page-content">
         <div class="topbar">
           <div class="header-main">
-            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Ava menüü">☰</button>
+            <button
+              class="sidebar-toggle"
+              id="sidebar-toggle"
+              aria-label="Ava menüü"
+            >
+              ☰
+            </button>
             <div class="title-block">
               <h1>Ennetähtaegne vabastamine</h1>
               <div class="subtitle">
-                <span class="subtitle-label">Arvutab ennetähtaegse vabastamise võimalikud kuupäevad</span>
+                <span class="subtitle-label"
+                  >Arvutab ennetähtaegse vabastamise võimalikud kuupäevad</span
+                >
               </div>
             </div>
           </div>
@@ -230,12 +251,10 @@
 
         <main>
           <div class="tool-wrap">
-
             <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">// Sisend</div>
               <div class="panel-body">
-
                 <div class="field-group">
                   <div class="field-label">Karistuse alguskuupäev</div>
                   <input type="date" id="start-date" />
@@ -258,16 +277,16 @@
                     </div>
                   </div>
                 </div>
-
               </div>
               <div class="panel-note">
-                Kuudes arvutamise korral lõpeb tähtaeg viimase kuu vastaval kuupäeval. Kui tähtaja lõpp langeb kalendrikuule, millel vastav kuupäev puudub, lõpeb tähtaeg selle kuu viimasel päeval.
+                Kuudes arvutamise korral lõpeb tähtaeg viimase kuu vastaval
+                kuupäeval. Kui tähtaja lõpp langeb kalendrikuule, millel vastav
+                kuupäev puudub, lõpeb tähtaeg selle kuu viimasel päeval.
               </div>
             </div>
 
             <!-- ── RESULTS PANEL ── -->
             <div class="results-panel" id="results-panel"></div>
-
           </div>
         </main>
       </div>
@@ -280,17 +299,20 @@
         {
           fraction: [1, 3],
           glyph: "¹⁄₃",
-          label: "teise astme kuritegu või ettevaatamatu esimese astme kuritegu, kui on nõus elektroonilise valvega",
+          label:
+            "teise astme kuritegu või ettevaatamatu esimese astme kuritegu, kui on nõus elektroonilise valvega",
         },
         {
           fraction: [1, 2],
           glyph: "½",
-          label: "teise astme kuritegu või ettevaatamatu esimese astme kuritegu",
+          label:
+            "teise astme kuritegu või ettevaatamatu esimese astme kuritegu",
         },
         {
           fraction: [1, 2],
           glyph: "½",
-          label: "tahtlik esimese astme kuritegu, kui on nõus elektroonilise valvega",
+          label:
+            "tahtlik esimese astme kuritegu, kui on nõus elektroonilise valvega",
         },
         {
           fraction: [2, 3],
@@ -337,9 +359,9 @@
         const minDate = addCalendarDuration(startDate, 0, 4, 0);
         const minDays = daysBetween(startDate, minDate);
 
-        const fractionDays = Math.floor(totalDays * num / den);
-        const appliedDays  = Math.max(fractionDays, minDays);
-        const minApplied   = appliedDays > fractionDays;
+        const fractionDays = Math.floor((totalDays * num) / den);
+        const appliedDays = Math.max(fractionDays, minDays);
+        const minApplied = appliedDays > fractionDays;
 
         const resultDate = new Date(startDate);
         resultDate.setDate(resultDate.getDate() + appliedDays);
@@ -348,18 +370,18 @@
       }
 
       // ── Formatting ────────────────────────────────────────────────────────────
-      const pad = n => String(n).padStart(2, "0");
+      const pad = (n) => String(n).padStart(2, "0");
 
       function formatDate(d) {
         return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
       }
 
       // ── Elements ──────────────────────────────────────────────────────────────
-      const startInput  = document.getElementById("start-date");
-      const yearsInput  = document.getElementById("inp-years");
+      const startInput = document.getElementById("start-date");
+      const yearsInput = document.getElementById("inp-years");
       const monthsInput = document.getElementById("inp-months");
-      const daysInput   = document.getElementById("inp-days");
-      const panel       = document.getElementById("results-panel");
+      const daysInput = document.getElementById("inp-days");
+      const panel = document.getElementById("results-panel");
 
       // Default to today (local date, avoids UTC offset shifting the day)
       const today = new Date();
@@ -368,9 +390,9 @@
       // ── Render ────────────────────────────────────────────────────────────────
       function render() {
         const startStr = startInput.value;
-        const years  = Math.max(0, parseInt(yearsInput.value)  || 0);
+        const years = Math.max(0, parseInt(yearsInput.value) || 0);
         const months = Math.max(0, parseInt(monthsInput.value) || 0);
-        const days   = Math.max(0, parseInt(daysInput.value)   || 0);
+        const days = Math.max(0, parseInt(daysInput.value) || 0);
 
         const hasInput = (years > 0 || months > 0 || days > 0) && startStr;
 
@@ -385,7 +407,9 @@
 
         DEFS.forEach((def, idx) => {
           const [num, den] = def.fraction;
-          let dateHtml, metaHtml = "", minHtml = "";
+          let dateHtml,
+            metaHtml = "",
+            minHtml = "";
           let copyDateStr = "";
 
           if (hasInput) {
@@ -422,7 +446,7 @@
         });
 
         // Wire copy buttons
-        panel.querySelectorAll(".copy-btn").forEach(btn => {
+        panel.querySelectorAll(".copy-btn").forEach((btn) => {
           btn.addEventListener("click", () => {
             if (btn.classList.contains("copied")) return;
             navigator.clipboard.writeText(btn.dataset.date).then(() => {
@@ -438,8 +462,8 @@
         });
       }
 
-      [startInput, yearsInput, monthsInput, daysInput].forEach(el => {
-        el.addEventListener("input",  render);
+      [startInput, yearsInput, monthsInput, daysInput].forEach((el) => {
+        el.addEventListener("input", render);
         el.addEventListener("change", render);
       });
 
