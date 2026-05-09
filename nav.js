@@ -11,6 +11,11 @@
 const NAV_ITEMS = [
   { sigil: "01", label: "Narkonimekirjad I–VI", href: "index.html" },
   { sigil: "02", label: "Rehkendaja", href: "rehkendaja.html" },
+  {
+    sigil: "03",
+    label: "Ennetähtaegne vabastamine",
+    href: "ennetahtaegne-vabastamine.html",
+  },
   // { sigil: "03", label: "Isikukood ja vanus", href: "isikukood.html" },
   // { sigil: "04", label: "Lausepank", href: "lausepank.html" },
 ];
