@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ennetähtaegne vabastamine | Õigusmasin</title>
+    <title>Ennetähtaegne vabastamine — Tööriistad</title>
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
@@ -182,11 +182,6 @@
       .result-date.empty {
         color: var(--border);
       }
-      .result-meta {
-        font-size: 12px;
-        color: var(--muted);
-        letter-spacing: 0.04em;
-      }
       .result-min-note {
         font-size: 11px;
         color: var(--amber);
@@ -361,7 +356,7 @@
         const resultDate = new Date(startDate);
         resultDate.setDate(resultDate.getDate() + appliedDays);
 
-        return { resultDate, appliedDays, minApplied, totalDays };
+        return { resultDate, minApplied };
       }
 
       // ── Formatting ────────────────────────────────────────────────────────────
@@ -403,7 +398,6 @@
         DEFS.forEach((def, idx) => {
           const [num, den] = def.fraction;
           let dateHtml,
-            metaHtml = "",
             minHtml = "";
           let copyDateStr = "";
 
@@ -412,7 +406,6 @@
             copyDateStr = formatDate(r.resultDate);
 
             dateHtml = `<div class="result-date">${copyDateStr}</div>`;
-            metaHtml = `<div class="result-meta">${r.appliedDays} päeva karistusest</div>`;
             if (r.minApplied) {
               minHtml = `<div class="result-min-note">▲ miinimum 4 kuud rakendatud</div>`;
             }
@@ -433,7 +426,6 @@
             </div>
             <div class="result-body">
               ${dateHtml}
-              ${metaHtml}
               ${minHtml}
             </div>`;
 
