@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karistuste liitmine — Tööriistad</title>
+    <link rel="stylesheet" href="noir.css" />
+    <style>
+      /* ── Page-specific styles ── */
+      .tool-wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .tool-wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Input panel */
+      .panel {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+      }
+      .panel-header {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+        background: var(--deep);
+      }
+      .panel-body {
+        padding: 20px;
+      }
+
+      .duration-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .duration-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .duration-sublabel {
+        font-size: 10px;
+        color: var(--dim);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      input[type="number"] {
+        background: var(--deep);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 15px;
+        padding: 10px 14px;
+        outline: none;
+        width: 100%;
+        -moz-appearance: textfield;
+        appearance: textfield;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input:focus {
+        border-color: var(--amber);
+        box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.12);
+      }
+
+      /* Operator divider */
+      .operator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dim);
+        padding-top: 28px; /* align with input panels */
+        user-select: none;
+      }
+      @media (max-width: 900px) {
+        .operator {
+          padding-top: 0;
+          font-size: 22px;
+        }
+      }
+
+      /* Result block */
+      .result-block {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        overflow: hidden;
+        grid-column: 1 / -1;
+        animation: appear 0.2s ease both;
+      }
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-header {
+        padding: 10px 20px;
+        background: var(--deep);
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .copy-btn {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        background: none;
+        border: 1px solid var(--border);
+        padding: 4px 12px;
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          color 0.12s,
+          border-color 0.12s;
+        letter-spacing: 0.06em;
+        flex-shrink: 0;
+      }
+      .copy-btn:hover {
+        background: var(--lift);
+        color: var(--text);
+        border-color: var(--line);
+      }
+      .copy-btn.copied {
+        color: var(--amber);
+        border-color: var(--amber);
+      }
+      .result-body {
+        padding: 20px 24px;
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .result-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+      }
+      .result-value.empty {
+        color: var(--border);
+      }
+      .result-unit {
+        font-size: 14px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+        margin-right: 14px;
+      }
+
+      /* Equation recap shown below the result */
+      .result-equation {
+        padding: 10px 24px 14px;
+        font-size: 12px;
+        color: var(--dim);
+        letter-spacing: 0.04em;
+        border-top: 1px solid var(--border);
+      }
+      .result-equation span {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="app-shell">
+      <!-- ── SIDEBAR ── -->
+      <nav class="sidebar" id="sidebar"></nav>
+
+      <!-- ── PAGE CONTENT ── -->
+      <div class="page-content">
+        <div class="topbar">
+          <div class="header-main">
+            <button
+              class="sidebar-toggle"
+              id="sidebar-toggle"
+              aria-label="Ava menüü"
+            >
+              ☰
+            </button>
+            <div class="title-block">
+              <h1>Karistuste liitmine</h1>
+              <div class="subtitle">
+                <span class="subtitle-label"
+                  >Liidab kaks karistuse kestust</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main>
+          <div class="tool-wrap">
+            <!-- ── INPUT A ── -->
+            <div class="panel">
+              <div class="panel-header">// Esimene karistus</div>
+              <div class="panel-body">
+                <div class="duration-row">
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Aastad</div>
+                    <input type="number" id="a-years" value="0" min="0" />
+                  </div>
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Kuud</div>
+                    <input type="number" id="a-months" value="0" min="0" />
+                  </div>
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Päevad</div>
+                    <input type="number" id="a-days" value="0" min="0" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── INPUT B ── -->
+            <div class="panel">
+              <div class="panel-header">// Teine karistus</div>
+              <div class="panel-body">
+                <div class="duration-row">
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Aastad</div>
+                    <input type="number" id="b-years" value="0" min="0" />
+                  </div>
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Kuud</div>
+                    <input type="number" id="b-months" value="0" min="0" />
+                  </div>
+                  <div class="duration-field">
+                    <div class="duration-sublabel">Päevad</div>
+                    <input type="number" id="b-days" value="0" min="0" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── RESULT ── -->
+            <div class="result-block" id="result-block">
+              <div class="result-header">
+                <span>// Kokku</span>
+                <button class="copy-btn" id="copy-btn" style="display: none">
+                  Kopeeri
+                </button>
+              </div>
+              <div class="result-body" id="result-body">
+                <span class="result-value empty">—</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+      function val(id) {
+        return Math.max(0, parseInt(document.getElementById(id).value) || 0);
+      }
+
+      function compute() {
+        const ay = val("a-years"),
+          am = val("a-months"),
+          ad = val("a-days");
+        const by = val("b-years"),
+          bm = val("b-months"),
+          bd = val("b-days");
+
+        const totalDays = ad + bd;
+        const carryMonths = Math.floor(totalDays / 30);
+        const rDays = totalDays % 30;
+
+        const totalMonths = am + bm + carryMonths;
+        const carryYears = Math.floor(totalMonths / 12);
+        const rMonths = totalMonths % 12;
+
+        const rYears = ay + by + carryYears;
+
+        return { rYears, rMonths, rDays, ay, am, ad, by, bm, bd };
+      }
+
+      function render() {
+        const { rYears, rMonths, rDays } = compute();
+        const body = document.getElementById("result-body");
+        const copyBtn = document.getElementById("copy-btn");
+
+        const parts = [];
+        if (rYears > 0) parts.push([rYears, rYears === 1 ? "aasta" : "aastat"]);
+        if (rMonths > 0) parts.push([rMonths, rMonths === 1 ? "kuu" : "kuud"]);
+        if (rDays > 0) parts.push([rDays, rDays === 1 ? "päev" : "päeva"]);
+
+        if (parts.length === 0) {
+          body.innerHTML = `<span class="result-value empty">—</span>`;
+          copyBtn.style.display = "none";
+        } else {
+          body.innerHTML = parts
+            .map(
+              ([n, u]) =>
+                `<span class="result-value">${n}</span><span class="result-unit">${u}</span>`,
+            )
+            .join("");
+          copyBtn.style.display = "";
+          copyBtn._clipText = parts.map(([n, u]) => `${n}\u00A0${u}`).join(" ");
+        }
+      }
+
+      document
+        .getElementById("copy-btn")
+        .addEventListener("click", function () {
+          if (this.classList.contains("copied")) return;
+          navigator.clipboard.writeText(this._clipText).then(() => {
+            this.classList.add("copied");
+            const orig = this.textContent;
+            this.textContent = "✓";
+            setTimeout(() => {
+              this.textContent = orig;
+              this.classList.remove("copied");
+            }, 1800);
+          });
+        });
+
+      const inputs = [
+        "a-years",
+        "a-months",
+        "a-days",
+        "b-years",
+        "b-months",
+        "b-days",
+      ];
+      inputs.forEach((id) => {
+        const el = document.getElementById(id);
+        el.addEventListener("input", render);
+        el.addEventListener("change", render);
+      });
+
+      render();
+    </script>
+  </body>
+</html>

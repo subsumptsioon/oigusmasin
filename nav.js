@@ -16,6 +16,7 @@ const NAV_ITEMS = [
     label: "Ennetähtaegne vabastamine",
     href: "ennetahtaegne-vabastamine.html",
   },
+  { sigil: "04", label: "Karistuste liitmine", href: "liitmine.html" },
   // { sigil: "03", label: "Isikukood ja vanus", href: "isikukood.html" },
   // { sigil: "04", label: "Lausepank", href: "lausepank.html" },
 ];
