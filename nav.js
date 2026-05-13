@@ -9,13 +9,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { sigil: "01", label: "Rehkendaja", href: "rehkendaja.html" },
+  { sigil: "01", label: "Rehkendaja", href: "index.html" },
   {
     sigil: "02",
     label: "Karistuste liitmine",
     href: "karistuste-liitmine.html",
   },
-  { sigil: "03", label: "Narkonimekirjad I–VI", href: "index.html" },
+  { sigil: "03", label: "Narkonimekirjad I–VI", href: "narkonimekirjad.html" },
   {
     sigil: "04",
     label: "Ennetähtaegne vabastamine",

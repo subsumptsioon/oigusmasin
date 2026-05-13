@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Narkootiliste ja psühhotroopsete ainete ja ainerühmade nimekirjad I–VI
+    </title>
+    <link rel="stylesheet" href="noir.css" />
+  </head>
+  <body>
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="app-shell">
+      <!-- ── SIDEBAR ── -->
+      <nav class="sidebar" id="sidebar"></nav>
+
+      <!-- ── PAGE CONTENT ── -->
+      <div class="page-content">
+        <div class="topbar">
+          <!-- Chrome bar: kept for top spacing -->
+
+          <div class="header-main">
+            <!-- Mobile sidebar toggle -->
+            <button
+              class="sidebar-toggle"
+              id="sidebar-toggle"
+              aria-label="Ava menüü"
+            >
+              ☰
+            </button>
+
+            <div class="title-block">
+              <h1>
+                Narkootiliste ja psühhotroopsete ainete ja ainerühmade
+                nimekirjad I–VI
+              </h1>
+              <div class="subtitle">
+                <span class="subtitle-label">Redaktsiooni jõustumise kp:</span>
+                <span class="subtitle-date" id="eff-display">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats band -->
+          <div class="stats-band">
+            <a class="stat-pill" href="#section1" onclick="expandSection(1)"
+              ><div class="pill-bar" style="background: var(--l1)"></div>
+              <span class="pill-label">I nimekiri&nbsp;</span
+              ><span class="pill-n" id="c1">—</span></a
+            >
+            <a class="stat-pill" href="#section2" onclick="expandSection(2)"
+              ><div class="pill-bar" style="background: var(--l2)"></div>
+              <span class="pill-label">II nimekiri&nbsp;</span
+              ><span class="pill-n" id="c2">—</span></a
+            >
+            <a class="stat-pill" href="#section3" onclick="expandSection(3)"
+              ><div class="pill-bar" style="background: var(--l3)"></div>
+              <span class="pill-label">III nimekiri&nbsp;</span
+              ><span class="pill-n" id="c3">—</span></a
+            >
+            <a class="stat-pill" href="#section4" onclick="expandSection(4)"
+              ><div class="pill-bar" style="background: var(--l4)"></div>
+              <span class="pill-label">IV nimekiri&nbsp;</span
+              ><span class="pill-n" id="c4">—</span></a
+            >
+            <a class="stat-pill" href="#section5" onclick="expandSection(5)"
+              ><div class="pill-bar" style="background: var(--l5)"></div>
+              <span class="pill-label">V nimekiri&nbsp;</span
+              ><span class="pill-n" id="c5">—</span></a
+            >
+            <a class="stat-pill" href="#section6" onclick="expandSection(6)"
+              ><div class="pill-bar" style="background: var(--l6)"></div>
+              <span class="pill-label">VI nimekiri&nbsp;</span
+              ><span class="pill-n" id="c6">—</span></a
+            >
+          </div>
+
+          <!-- Search -->
+          <div class="search-zone">
+            <div class="search-inner">
+              <span class="prompt">›_</span>
+              <input
+                type="text"
+                id="search"
+                placeholder="Otsi ainet…"
+                autocomplete="off"
+                spellcheck="false"
+                tabindex="1"
+              />
+              <button
+                class="search-clear"
+                id="search-clear"
+                title="Tühjenda otsing"
+                aria-label="Tühjenda otsing"
+              >
+                ×
+              </button>
+            </div>
+            <div id="result-count"></div>
+          </div>
+        </div>
+        <!-- /topbar -->
+
+        <main>
+          <div id="loading">// laen andmeid…</div>
+          <div id="main-content" style="display: none">
+            <!-- I nimekiri -->
+            <div class="list-section" id="section1">
+              <div class="list-header" onclick="toggleSection(1)">
+                <div class="list-title">
+                  <div class="list-sigil" style="color: var(--l1)">I</div>
+                  <div class="list-info">
+                    <div class="n">I nimekiri</div>
+                    <div class="d">
+                      Kõige rangemalt piiritletud ained, meditsiiniline kasutus
+                      puudub
+                    </div>
+                  </div>
+                </div>
+                <div class="list-meta">
+                  <span class="count-badge" id="badge1"></span
+                  ><span class="chevron">▾</span>
+                </div>
+              </div>
+              <div class="list-body">
+                <table class="substances-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Eestikeelne nimetus</th>
+                      <th>Ingliskeelne nimetus</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody1"></tbody>
+                </table>
+                <div class="no-results" id="no1">
+                  // otsingutulemusi ei leitud
+                </div>
+              </div>
+            </div>
+
+            <!-- II nimekiri -->
+            <div class="list-section" id="section2">
+              <div class="list-header" onclick="toggleSection(2)">
+                <div class="list-title">
+                  <div class="list-sigil" style="color: var(--l2)">II</div>
+                  <div class="list-info">
+                    <div class="n">II nimekiri</div>
+                    <div class="d">Opioidid ja kõrge riskiga narkootikumid</div>
+                  </div>
+                </div>
+                <div class="list-meta">
+                  <span class="count-badge" id="badge2"></span
+                  ><span class="chevron">▾</span>
+                </div>
+              </div>
+              <div class="list-body">
+                <table class="substances-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Eestikeelne nimetus</th>
+                      <th>Ingliskeelne nimetus</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody2"></tbody>
+                </table>
+                <div class="no-results" id="no2">
+                  // otsingutulemusi ei leitud
+                </div>
+              </div>
+            </div>
+
+            <!-- III nimekiri -->
+            <div class="list-section" id="section3">
+              <div class="list-header" onclick="toggleSection(3)">
+                <div class="list-title">
+                  <div class="list-sigil" style="color: var(--l3)">III</div>
+                  <div class="list-info">
+                    <div class="n">III nimekiri</div>
+                    <div class="d">
+                      Kontrollitud ained piiratud meditsiinilise kasutusega
+                    </div>
+                  </div>
+                </div>
+                <div class="list-meta">
+                  <span class="count-badge" id="badge3"></span
+                  ><span class="chevron">▾</span>
+                </div>
+              </div>
+              <div class="list-body">
+                <table class="substances-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Eestikeelne nimetus</th>
+                      <th>Ingliskeelne nimetus</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody3"></tbody>
+                </table>
+                <div class="no-results" id="no3">
+                  // otsingutulemusi ei leitud
+                </div>
+              </div>
+            </div>
+
+            <!-- IV nimekiri -->
+            <div class="list-section" id="section4">
+              <div class="list-header" onclick="toggleSection(4)">
+                <div class="list-title">
+                  <div class="list-sigil" style="color: var(--l4)">IV</div>
+                  <div class="list-info">
+                    <div class="n">IV nimekiri</div>
+                    <div class="d">
+                      Psühhotroopsed ained meditsiinilise kasutusega
+                    </div>
+                  </div>
+                </div>
+                <div class="list-meta">
+                  <span class="count-badge" id="badge4"></span
+                  ><span class="chevron">▾</span>
+                </div>
+              </div>
+              <div class="list-body">
+                <table class="substances-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Eestikeelne nimetus</th>
+                      <th>Ingliskeelne nimetus</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody4"></tbody>
+                </table>
+                <div class="no-results" id="no4">
+                  // otsingutulemusi ei leitud
+                </div>
+              </div>
+            </div>
+
+            <!-- V nimekiri -->
+            <div class="list-section" id="section5">
+              <div class="list-header" onclick="toggleSection(5)">
+                <div class="list-title">
+                  <div class="list-sigil" style="color: var(--l5)">V</div>
+                  <div class="list-info">
+                    <div class="n">V nimekiri</div>
+                    <div class="d">Lähteained ja muud kontrollitud ained</div>
+                  </div>
+                </div>
+                <div class="list-meta">
+                  <span class="count-badge" id="badge5"></span
+                  ><span class="chevron">▾</span>
+                </div>
+              </div>
+              <div class="list-body">
+                <table class="substances-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Eestikeelne nimetus</th>
+                      <th>Ingliskeelne nimetus</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody5"></tbody>
+                </table>
+                <div class="no-results" id="no5">
+                  // otsingutulemusi ei leitud
+                </div>
+              </div>
+            </div>
+
+            <!-- VI nimekiri -->
+            <div class="list-vi-wrap" id="list-vi-wrap">
+              <div class="list-section" id="section6" style="margin-bottom: 0">
+                <div class="list-header" onclick="toggleSection(6)">
+                  <div class="list-title">
+                    <div class="list-sigil" style="color: var(--l6)">VI</div>
+                    <div class="list-info">
+                      <div class="n">VI nimekiri</div>
+                      <div class="d">
+                        Kontrollitud ainerühmad — iga ainerühma kõik esindajad
+                        on keelatud
+                      </div>
+                    </div>
+                  </div>
+                  <div class="list-meta">
+                    <span class="count-badge" id="badge6"></span
+                    ><span class="chevron">▾</span>
+                  </div>
+                </div>
+                <div class="list-body">
+                  <table class="substances-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Ainerühma eestikeelne nimetus</th>
+                        <th>Ingliskeelne nimetus</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody6"></tbody>
+                  </table>
+                  <div class="no-results" id="no6">
+                    // otsingutulemusi ei leitud
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /main-content -->
+        </main>
+
+        <footer>
+          <span
+            >Allikas:
+            <a
+              href="https://www.riigiteataja.ee/akt/120022026006?leiaKehtiv"
+              style="color: var(--amber); text-decoration: none"
+              onmouseover="this.style.textDecoration = 'underline'"
+              onmouseout="this.style.textDecoration = 'none'"
+              target="_blank"
+              >narkootiliste ja psühhotroopsete ainete nimekirjad ning nende
+              ainete meditsiinilisel ja teaduslikul eesmärgil käitlemine</a
+            ></span
+          >
+        </footer>
+      </div>
+      <!-- /page-content -->
+    </div>
+    <!-- /app-shell -->
+
+    <script src="nav.js"></script>
+    <script>
+      // ── Utilities ────────────────────────────────────────────────────────────────
+      function esc(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      function highlight(t, q) {
+        if (!q) return esc(t);
+        const re = new RegExp(
+          "(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
+          "gi",
+        );
+        return esc(t).replace(re, "<mark>$1</mark>");
+      }
+
+      function toggleSection(n) {
+        document.getElementById("section" + n).classList.toggle("collapsed");
+      }
+      function expandSection(n) {
+        document.getElementById("section" + n).classList.remove("collapsed");
+      }
+
+      // ── Render ───────────────────────────────────────────────────────────────────
+      function renderData(d) {
+        const meta = d.meta || {};
+        if (meta.effective_date) {
+          document.getElementById("eff-display").textContent =
+            meta.effective_date;
+        }
+
+        const DATA = {};
+        for (const l of d.lists) {
+          DATA[l.id] = l.substances;
+        }
+
+        for (let n = 1; n <= 6; n++) {
+          const subs = DATA[n] || [];
+          const tbody = document.getElementById("tbody" + n);
+          tbody.innerHTML = "";
+          subs.forEach((s, i) => {
+            const tr = document.createElement("tr");
+            tr.dataset.et = s.et.toLowerCase();
+            tr.dataset.en = (s.en || "").toLowerCase();
+            tr.innerHTML = `<td class="row-num">${String(i + 1).padStart(3, "0")}</td><td class="et-name">${esc(s.et)}</td><td class="en-name">${esc(s.en || "")}</td>`;
+            tbody.appendChild(tr);
+          });
+          const u = n === 6 ? " rühma" : " ainet";
+          document.getElementById("badge" + n).textContent = subs.length + u;
+          document.getElementById("c" + n).textContent = subs.length;
+        }
+
+        initSearch(DATA);
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("main-content").style.display = "";
+      }
+
+      // ── Search ───────────────────────────────────────────────────────────────────
+      function initSearch(DATA) {
+        const inp = document.getElementById("search");
+        const rc = document.getElementById("result-count");
+        const clearBtn = document.getElementById("search-clear");
+
+        function runSearch() {
+          const q = inp.value.trim().toLowerCase();
+          clearBtn.classList.toggle("visible", q.length > 0);
+          let total = 0;
+
+          for (let list = 1; list <= 6; list++) {
+            const subs = DATA[list] || [];
+            const tbody = document.getElementById("tbody" + list);
+            const rows = tbody.querySelectorAll("tr");
+            const section = document.getElementById("section" + list);
+            const noRes = document.getElementById("no" + list);
+            let vis = 0;
+
+            rows.forEach((tr, idx) => {
+              const match =
+                !q || tr.dataset.et.includes(q) || tr.dataset.en.includes(q);
+              tr.classList.toggle("hidden", !match);
+              if (match) {
+                vis++;
+                total++;
+                tr.cells[1].innerHTML = highlight(subs[idx].et, q);
+                tr.cells[2].innerHTML = highlight(subs[idx].en || "", q);
+              }
+            });
+
+            if (q) {
+              if (vis === 0) section.classList.add("hidden");
+              else section.classList.remove("hidden", "collapsed");
+            } else {
+              section.classList.remove("hidden");
+            }
+
+            noRes.classList.toggle("visible", vis === 0 && !!q);
+            const u = list === 6 ? " rühma" : " ainet";
+            document.getElementById("badge" + list).textContent = q
+              ? `${vis}/${subs.length}`
+              : subs.length + u;
+            if (list === 6) {
+              document.getElementById("list-vi-wrap").style.display =
+                q && vis === 0 ? "none" : "";
+            }
+          }
+          rc.textContent = q ? `${total} tulemust` : "";
+        }
+
+        inp.addEventListener("input", runSearch);
+        clearBtn.addEventListener("click", () => {
+          inp.value = "";
+          inp.focus();
+          runSearch();
+        });
+      }
+
+      // ── Scroll margin ─────────────────────────────────────────────────────────────
+      function updateScrollMargins() {
+        const topbarH = document
+          .querySelector(".topbar")
+          .getBoundingClientRect().height;
+        const offset = topbarH + 28;
+        document.querySelectorAll(".list-section").forEach((el) => {
+          el.style.scrollMarginTop = offset + "px";
+        });
+      }
+      updateScrollMargins();
+      window.addEventListener("resize", updateScrollMargins);
+
+      // ── Keyboard shortcut: / focuses search ──────────────────────────────────────
+      document.addEventListener("keydown", (e) => {
+        const tag = document.activeElement.tagName;
+        if (
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          document.activeElement.isContentEditable
+        )
+          return;
+        if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const inp = document.getElementById("search");
+          inp.focus();
+          inp.select();
+        }
+      });
+
+      // ── Bootstrap ─────────────────────────────────────────────────────────────────
+      const yr = new Date().getFullYear();
+      document
+        .querySelectorAll(".footer-year")
+        .forEach((el) => (el.textContent = yr));
+
+      fetch("data.json")
+        .then((r) => {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(renderData)
+        .catch((err) => {
+          document.getElementById("loading").innerHTML =
+            `<p style="color:var(--red)">// viga andmete laadimisel: ${esc(err.message)}</p>` +
+            `<p style="margin-top:8px;font-size:12px;color:var(--muted)">Veendu, et <code>data.json</code> asub samas kaustas.</p>`;
+        });
+    </script>
+  </body>
+</html>
