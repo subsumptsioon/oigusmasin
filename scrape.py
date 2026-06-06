@@ -36,7 +36,7 @@ LIST_DESCRIPTIONS = {
 
 # ── PDF laadimine ─────────────────────────────────────────────────────────────
 
-def _fetch_text(url, timeout=30):
+def _fetch_text(url, timeout=1000):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", errors="replace")
@@ -72,7 +72,7 @@ def find_lisa1_url():
     try:
         html = _fetch_text(ACT_URL)
     except Exception as e:
-        raise RuntimeError("Akti lehe laadimine ebaonnestus: " + str(e))
+        raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
     finder = Lisa1Finder()
     finder.feed(html)
@@ -158,7 +158,7 @@ def load_pdf_bytes(url=None, local_path=None):
             print("  Sõnastuse jõustumise kp: " + effective_date)
         else:
             raise RuntimeError(
-                "Sõnastuse jõustumise kuupaeva ei leitud lehelt " + ACT_URL + "\n"
+                "Sõnastuse jõustumise kuupäeva ei leitud lehelt " + ACT_URL + "\n"
                 "Kontrolli, kas lehe struktuur on muutunud."
             )
     print("Laadin alla: " + url)
