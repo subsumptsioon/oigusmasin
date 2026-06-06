@@ -16,10 +16,10 @@ from pathlib import Path
 try:
     import pdfplumber
 except ImportError:
-    sys.exit("Viga: pdfplumber pole paigaldatud. Kaivita: pip install pdfplumber")
+    sys.exit("Viga: pdfplumber pole paigaldatud. Käivita: pip install pdfplumber")
 
 # ── URL-id ────────────────────────────────────────────────────────────────────
-ACT_URL = "https://www.riigiteataja.ee/et/akt/120022026006?leiaKehtiv"
+ACT_URL = "https://www.riigiteataja.ee/public-api/api/v1/akt/120022026006/blob-xml"
 BASE_URL = "https://www.riigiteataja.ee"
 # Ei ole vaikimisi URL-i -- kui automaatne leidmine ebaonnestub, skript katkestab.
 
