@@ -19,7 +19,7 @@ except ImportError:
     sys.exit("Viga: pdfplumber pole paigaldatud. Kaivita: pip install pdfplumber")
 
 # ── URL-id ────────────────────────────────────────────────────────────────────
-ACT_URL = "https://www.riigiteataja.ee/et/akt/128022023013?leiaKehtiv"
+ACT_URL = "https://www.riigiteataja.ee/et/akt/120022026006?leiaKehtiv"
 BASE_URL = "https://www.riigiteataja.ee"
 # Ei ole vaikimisi URL-i -- kui automaatne leidmine ebaonnestub, skript katkestab.
 
