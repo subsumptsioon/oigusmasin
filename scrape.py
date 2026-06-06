@@ -86,18 +86,25 @@ def find_lisa1_url():
         raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
     finder = Lisa1Finder()
+    print("  [TRACE] Parsing HTML with Lisa1Finder...")
     finder.feed(html)
+    print(f"  [TRACE] Parser result: found_url = {finder.found_url}")
 
     if not finder.found_url:
+        print("  [TRACE] Entering debug block...")
         print("  [DEBUG] Lisa1Finder ei leidnud, otsing tekstis 'lisa' ja 'pdf'...")
 
         # Debug: print raw HTML snippets containing 'lisa' or 'pdf'
         import re
-        lisa_matches = list(re.finditer(r'.{0,100}(lisa|pdf).{0,100}', html, re.IGNORECASE))
-        print(f"  Leiti {len(lisa_matches)} viite tekstis 'lisa' või 'pdf':")
-        for i, match in enumerate(lisa_matches[:5]):
-            snippet = match.group(0).replace('\n', ' ')
-            print(f"    [{i+1}] ...{snippet}...")
+        print(f"  [TRACE] HTML length: {len(html)}")
+        try:
+            lisa_matches = list(re.finditer(r'.{0,100}(lisa|pdf).{0,100}', html, re.IGNORECASE))
+            print(f"  Leiti {len(lisa_matches)} viite tekstis 'lisa' või 'pdf':")
+            for i, match in enumerate(lisa_matches[:5]):
+                snippet = match.group(0).replace('\n', ' ')
+                print(f"    [{i+1}] ...{snippet}...")
+        except Exception as e:
+            print(f"  [ERROR in regex]: {e}")
 
         # Debug: leia koik <a> tagid, mille tekst sisaldab "lisa"
         class AllLinks(HTMLParser):
