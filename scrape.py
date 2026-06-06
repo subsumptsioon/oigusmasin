@@ -78,10 +78,13 @@ def find_lisa1_url():
 
     print("Otsin Lisa 1 URL-i: " + ACT_URL)
     try:
+        print("  Laadisin HTML...")
         html = _fetch_text(ACT_URL)
+        print(f"  HTML pikkus: {len(html)} baiti")
         Path("_debug_html.html").write_text(html, encoding="utf-8")
         print("  [DEBUG] HTML saved to _debug_html.html")
     except Exception as e:
+        print(f"  [ERROR] {type(e).__name__}: {e}")
         raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
     finder = Lisa1Finder()
