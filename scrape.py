@@ -79,6 +79,8 @@ def find_lisa1_url():
     print("Otsin Lisa 1 URL-i: " + ACT_URL)
     try:
         html = _fetch_text(ACT_URL)
+        Path("_debug_html.html").write_text(html, encoding="utf-8")
+        print("  [DEBUG] HTML saved to _debug_html.html")
     except Exception as e:
         raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
