@@ -44,119 +44,88 @@ def _fetch_text(url, timeout=1000):
 
 def find_lisa1_url():
     """
-    Leiab Lisa 1 PDF URL-i Riigi Teataja akti lehelt.
-    Kasutab HTML parserit (mitte regexpit) -- vastupidav HTML struktuuri muutustele.
-    Annab erindi kui URL-i ei leita -- ei ole tagavaraplaani.
+    Leiab Lisa 1 PDF URL-i Riigi Teataja akti XML-ist.
+    Otsib <tavatekst> elementi tekstiga "Lisa 1" ja seostatud <fail> elementi.
     """
-    from html.parser import HTMLParser
+    from xml.etree import ElementTree as ET
     from urllib.parse import urljoin
-
-    class Lisa1Finder(HTMLParser):
-        def __init__(self):
-            super().__init__()
-            self.found_url = None
-            self._current_href = None
-            self._current_text = []
-
-        def handle_starttag(self, tag, attrs):
-            if tag == "a":
-                self._current_href = dict(attrs).get("href", "")
-                self._current_text = []
-
-        def handle_data(self, data):
-            if self._current_href:
-                self._current_text.append(data)
-
-        def handle_endtag(self, tag):
-            if tag == "a" and self._current_href:
-                text = "".join(self._current_text).strip()
-                if "Lisa 1" in text:
-                    url = self._current_href.split("#")[0]
-                    self.found_url = urljoin(BASE_URL, url)
-                self._current_href = None
-                self._current_text = []
 
     print("Otsin Lisa 1 URL-i: " + ACT_URL)
     try:
-        html = _fetch_text(ACT_URL)
+        xml_text = _fetch_text(ACT_URL)
     except Exception as e:
         raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
-    finder = Lisa1Finder()
-    finder.feed(html)
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError as e:
+        raise RuntimeError(f"XML parsimine ebaõnnestus: {e}")
 
-    if not finder.found_url:
-        # Debug: leia koik <a> tagid, mille tekst sisaldab "lisa"
-        class AllLinks(HTMLParser):
-            def __init__(self):
-                super().__init__()
-                self.links = []
-                self._href = None
-                self._text = []
-            def handle_starttag(self, tag, attrs):
-                if tag == "a":
-                    self._href = dict(attrs).get("href", "")
-                    self._text = []
-            def handle_data(self, data):
-                if self._href:
-                    self._text.append(data)
-            def handle_endtag(self, tag):
-                if tag == "a" and self._href:
-                    text = "".join(self._text).strip()
-                    if "lisa" in text.lower():
-                        self.links.append((self._href, text))
-                    self._href = None
-                    self._text = []
+    # Otsib <tavatekst> elementi tekstiga "Lisa 1"
+    # Namespace võib olla nimekirjas, seega kasutame wildcard
+    namespaces = {
+        '': 'default',  # Võib olla, et namespace on defineeritud
+    }
 
-        all_links = AllLinks()
-        all_links.feed(html)
-        print("  <a> tagid tekstiga 'lisa':")
-        for href, text in all_links.links[:10]:
-            print("    " + repr(text) + " -> " + href)
+    found_url = None
 
+    # Otsi kõik tavatekst elemendid
+    for tavatekst in root.iter():
+        if tavatekst.tag.endswith('tavatekst') or 'tavatekst' in tavatekst.tag:
+            if tavatekst.text and "Lisa 1" in tavatekst.text:
+                # Leiti "Lisa 1", nüüd leia vanem sisuTekst ja sealt fail element
+                parent = root
+                # Otsime fail elementi samas sisuTekst kontekstis
+                # XML struktuuri järgi: lisaViide > lisaViit > sisuTekst > [fail, tavatekst]
+
+                # Leia kõik fail elemendid
+                for fail in root.iter():
+                    if fail.tag.endswith('fail') or 'fail' in fail.tag:
+                        fail_nimi = fail.get('failNimi')
+                        if fail_nimi and 'lisa' in fail_nimi.lower():
+                            # Konstrueeri URL
+                            # Baasiks on akti number ja path
+                            url = f"/aktilisa/1200/2202/6006/{fail_nimi}"
+                            found_url = urljoin(BASE_URL, url)
+                            break
+                if found_url:
+                    break
+
+    if not found_url:
         raise RuntimeError(
             "Lisa 1 linki ei leitud lehelt " + ACT_URL + "\n"
             "Vaata GitHub Actions logi täpsema info jaoks."
         )
 
-    print("  Leitud Lisa 1 URL: " + finder.found_url)
-    return finder.found_url, html
+    print("  Leitud Lisa 1 URL: " + found_url)
+    return found_url, xml_text
 
-def find_effective_date(html):
+def find_effective_date(xml_text):
     """
-    Leiab sõnastuse jõustumise kuupäeva akti HTML-ist.
-    Otsib mustrit: <th>Sõnastuse jõustumise kp:</th><td>KP</td>
+    Leiab sõnastuse jõustumise kuupäeva akti XML-ist.
+    Otsib <joustumine> elemendi.
     Tagastab kuupäeva stringina (nt "23.02.2026") voi None.
     """
-    from html.parser import HTMLParser
+    from xml.etree import ElementTree as ET
 
-    class DateFinder(HTMLParser):
-        def __init__(self):
-            super().__init__()
-            self.found_date = None
-            self._next_td = False
-            self._in_td = False
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return None
 
-        def handle_starttag(self, tag, attrs):
-            if tag == 'td' and self._next_td:
-                self._in_td = True
-
-        def handle_data(self, data):
-            stripped = data.strip()
-            if stripped == 'Sõnastuse jõustumise kp:':
-                self._next_td = True
-            elif self._in_td and stripped:
-                self.found_date = stripped
-                self._in_td = False
-                self._next_td = False
-
-        def handle_endtag(self, tag):
-            if tag == 'td':
-                self._in_td = False
-
-    finder = DateFinder()
-    finder.feed(html)
-    return finder.found_date
+    # Otsi <joustumine> elementi
+    for elem in root.iter():
+        if elem.tag.endswith('joustumine') or 'joustumine' in elem.tag:
+            if elem.text:
+                # Konverteeri ISO 8601 format (2026-02-23) tavaliseks formaadiks (23.02.2026)
+                date_str = elem.text.strip()
+                try:
+                    from datetime import datetime
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    return date_obj.strftime("%d.%m.%Y")
+                except (ValueError, ImportError):
+                    return date_str
+    return None
 
 
 def load_pdf_bytes(url=None, local_path=None):
@@ -166,8 +135,8 @@ def load_pdf_bytes(url=None, local_path=None):
         return local_path, Path(local_path).read_bytes(), None
     effective_date = None
     if url is None:
-        url, act_html = find_lisa1_url()
-        effective_date = find_effective_date(act_html)
+        url, act_xml = find_lisa1_url()
+        effective_date = find_effective_date(act_xml)
         if effective_date:
             print("  Sõnastuse jõustumise kp: " + effective_date)
         else:
