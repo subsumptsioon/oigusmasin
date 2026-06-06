@@ -102,7 +102,7 @@ def find_lisa1_url():
 
         raise RuntimeError(
             "Lisa 1 linki ei leitud lehelt " + ACT_URL + "\n"
-            "Vaata GitHub Actions logi tapsema info jaoks."
+            "Vaata GitHub Actions logi täpsema info jaoks."
         )
 
     print("  Leitud Lisa 1 URL: " + finder.found_url)
@@ -110,8 +110,8 @@ def find_lisa1_url():
 
 def find_effective_date(html):
     """
-    Leiab redaktsiooni joustumise kuupäeva akti HTML-ist.
-    Otsib mustrit: <th>Redaktsiooni joustumise kp:</th><td>KP</td>
+    Leiab sõnastuse jõustumise kuupäeva akti HTML-ist.
+    Otsib mustrit: <th>Sõnastuse jõustumise kp:</th><td>KP</td>
     Tagastab kuupäeva stringina (nt "23.02.2026") voi None.
     """
     from html.parser import HTMLParser
@@ -129,7 +129,7 @@ def find_effective_date(html):
 
         def handle_data(self, data):
             stripped = data.strip()
-            if stripped == 'Redaktsiooni jõustumise kp:':
+            if stripped == 'Sõnastuse jõustumise kp:':
                 self._next_td = True
             elif self._in_td and stripped:
                 self.found_date = stripped
@@ -155,10 +155,10 @@ def load_pdf_bytes(url=None, local_path=None):
         url, act_html = find_lisa1_url()
         effective_date = find_effective_date(act_html)
         if effective_date:
-            print("  Redaktsiooni joustumise kp: " + effective_date)
+            print("  Sõnastuse jõustumise kp: " + effective_date)
         else:
             raise RuntimeError(
-                "Redaktsiooni joustumise kuupaeva ei leitud lehelt " + ACT_URL + "\n"
+                "Sõnastuse jõustumise kuupaeva ei leitud lehelt " + ACT_URL + "\n"
                 "Kontrolli, kas lehe struktuur on muutunud."
             )
     print("Laadin alla: " + url)
