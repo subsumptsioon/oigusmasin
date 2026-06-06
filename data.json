@@ -1838,9 +1838,9 @@
     }
   ],
   "meta": {
-    "act": "https://www.riigiteataja.ee/akt/128022023013?leiaKehtiv",
-    "effective_date": "23.02.2026",
-    "generated": "2026-05-30T06:39:16",
+    "act": "https://www.riigiteataja.ee/public-api/api/v1/akt/120022026006/blob-xml",
+    "effective_date": "05.06.2005",
+    "generated": "2026-06-06T20:46:26",
     "source": "https://www.riigiteataja.ee/aktilisa/1200/2202/6006/SOM_m2_lisa1.pdf"
   }
 }
