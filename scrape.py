@@ -56,24 +56,30 @@ def find_lisa1_url():
             super().__init__()
             self.found_url = None
             self._current_href = None
+            self._current_text = []
 
         def handle_starttag(self, tag, attrs):
             if tag == "a":
                 self._current_href = dict(attrs).get("href", "")
+                self._current_text = []
 
         def handle_data(self, data):
-            if self._current_href and "Lisa 1" in data:
-                url = self._current_href.split("#")[0]
-                # Convert relative URL to absolute
-                self.found_url = urljoin(BASE_URL, url)
+            if self._current_href:
+                self._current_text.append(data)
 
         def handle_endtag(self, tag):
-            if tag == "a":
+            if tag == "a" and self._current_href:
+                text = "".join(self._current_text).strip()
+                if "Lisa 1" in text:
+                    url = self._current_href.split("#")[0]
+                    self.found_url = urljoin(BASE_URL, url)
                 self._current_href = None
+                self._current_text = []
 
     print("Otsin Lisa 1 URL-i: " + ACT_URL)
     try:
         html = _fetch_text(ACT_URL)
+        Path("_debug_html.html").write_text(html, encoding="utf-8")
     except Exception as e:
         raise RuntimeError("Akti lehe laadimine ebaõnnestus: " + str(e))
 
@@ -87,15 +93,21 @@ def find_lisa1_url():
                 super().__init__()
                 self.links = []
                 self._href = None
+                self._text = []
             def handle_starttag(self, tag, attrs):
                 if tag == "a":
                     self._href = dict(attrs).get("href", "")
+                    self._text = []
             def handle_data(self, data):
-                if self._href and "lisa" in data.lower():
-                    self.links.append((self._href, data.strip()))
+                if self._href:
+                    self._text.append(data)
             def handle_endtag(self, tag):
-                if tag == "a":
+                if tag == "a" and self._href:
+                    text = "".join(self._text).strip()
+                    if "lisa" in text.lower():
+                        self.links.append((self._href, text))
                     self._href = None
+                    self._text = []
 
         all_links = AllLinks()
         all_links.feed(html)
