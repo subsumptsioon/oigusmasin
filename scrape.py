@@ -49,6 +49,7 @@ def find_lisa1_url():
     Annab erindi kui URL-i ei leita -- ei ole tagavaraplaani.
     """
     from html.parser import HTMLParser
+    from urllib.parse import urljoin
 
     class Lisa1Finder(HTMLParser):
         def __init__(self):
@@ -61,8 +62,10 @@ def find_lisa1_url():
                 self._current_href = dict(attrs).get("href", "")
 
         def handle_data(self, data):
-            if self._current_href and data.strip() == "Lisa 1":
-                self.found_url = self._current_href.split("#")[0]
+            if self._current_href and "Lisa 1" in data:
+                url = self._current_href.split("#")[0]
+                # Convert relative URL to absolute
+                self.found_url = urljoin(BASE_URL, url)
 
         def handle_endtag(self, tag):
             if tag == "a":
