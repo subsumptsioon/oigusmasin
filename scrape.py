@@ -103,7 +103,7 @@ def find_lisa1_url():
 def find_effective_date(xml_text):
     """
     Leiab sõnastuse jõustumise kuupäeva akti XML-ist.
-    Otsib <joustumine> elemendi.
+    Otsib <kehtivuseAlgus> elemendi.
     Tagastab kuupäeva stringina (nt "23.02.2026") voi None.
     """
     from xml.etree import ElementTree as ET
@@ -113,9 +113,9 @@ def find_effective_date(xml_text):
     except ET.ParseError:
         return None
 
-    # Otsi <joustumine> elementi
+    # Otsi <kehtivuseAlgus> elementi
     for elem in root.iter():
-        if elem.tag.endswith('joustumine') or 'joustumine' in elem.tag:
+        if elem.tag.endswith('kehtivuseAlgus') or 'kehtivuseAlgus' in elem.tag:
             if elem.text:
                 # Konverteeri ISO 8601 format (2026-02-23) tavaliseks formaadiks (23.02.2026)
                 date_str = elem.text.strip()
