@@ -85,7 +85,7 @@ def find_lisa1_url():
                         if fail_nimi and 'lisa' in fail_nimi.lower():
                             # Konstrueeri URL
                             # Baasiks on akti number ja path
-                            url = f"/aktilisa/1200/2202/6006/{fail_nimi}"
+                            url = f"/aktilisa/1110/8202/6010/{fail_nimi}"
                             found_url = urljoin(BASE_URL, url)
                             break
                 if found_url:
