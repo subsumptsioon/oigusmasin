@@ -983,10 +983,6 @@
             return { date: { y: ny, m: born.m, d: born.d }, daysUntil };
           })();
 
-          // Estonian inflection: 1 aasta/kuu/päev, else aastat/kuud/päeva
-          function infl(n, one, many) {
-            return n + " " + (n === 1 ? one : many);
-          }
           const ageStr =
             infl(age.years, "aasta", "aastat") +
             "  " +
