@@ -21,7 +21,7 @@ jobs:
       - name: Encrypt and replace
         env:
           MALLID_PASSWORD: ${{ secrets.MALLID_PASSWORD }}
-        run: python3 .github/workflows/encrypt_lausepank.py
+        run: python3 encrypt_lausepank.py
 
       - name: Commit encrypted file
         run: |
