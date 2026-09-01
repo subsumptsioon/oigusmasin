@@ -1,0 +1,22 @@
+# ── Agent / local artifacts (not part of the app) ──
+sessions/
+data/stats.json
+
+# ── Defence-in-depth: never commit the plaintext lausepank source.
+#    Encrypt locally (lausepank-krypt.html) and push only lausepank-andmed.enc.
+lausepank-andmed.json
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ── Scraper workflow temp outputs ──
+diff.txt
+changelog.md
+*.tmp
+*_new.json
+
+# ── OS ──
+.DS_Store
