@@ -43,6 +43,12 @@
         position: relative;
         pointer-events: auto;
       }
+      /* A11y (WCAG 2.4.7): visible focus for the borderless textarea */
+      .input-wrap:focus-within {
+        outline: 1px solid var(--amber);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
 
       /* The mirror div — drives height; textarea overlaid on top */
       .input-highlight {

@@ -11,13 +11,13 @@
   --deep: #0d0e13;
   --surface: #121520;
   --lift: #191d28;
-  --border: #1c2030;
+  --border: #60678f; /* WCAG 1.4.11 non-text: >=3:1 on all bgs */
   --line: #252a3c;
   --amber: #f5b942;
   --red: #f25443;
   --text: #eef1ff;
   --muted: #9099b8;
-  --dim: #7a84a8;
+  --dim: #838dad;
   --mono: "JetBrains Mono", monospace;
   --display: "JetBrains Mono", monospace;
   --sidebar-w: 260px;
@@ -365,7 +365,7 @@ body::before {
     opacity: 1;
   }
   50% {
-    opacity: 0.25;
+    opacity: 0.45;
   }
 }
 
