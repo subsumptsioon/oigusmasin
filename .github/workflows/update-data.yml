@@ -44,7 +44,7 @@ jobs:
         id: diff
         run: |
           python - << 'EOF'
-          import json, subprocess, datetime
+          import json, subprocess, datetime, os
 
           def extract_names(data):
               result = set()
@@ -71,6 +71,25 @@ jobs:
                   return json.loads(content)
               except:
                   return []
+
+          def strip_generated(d):
+              # meta.generated (ajatempel) muutub igal käivitamisel ja tekitab
+              # tühje committe; ignoreerime seda muutuste tuvastamisel.
+              if isinstance(d, dict):
+                  meta = d.get("meta")
+                  if isinstance(meta, dict):
+                      meta = {k: v for k, v in meta.items() if k != "generated"}
+                  return dict(d, meta=meta)
+              return d
+
+          # Semantiline võrdlus: muutunud ainult siis, kui sisu (v.a ajatempel)
+          # on tegelikult erinev.
+          payload_changed = (
+              strip_generated(get_old())
+              != strip_generated(json.load(open("data.json")))
+          )
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"changed={str(payload_changed).lower()}\n")
 
           old = extract_names(get_old())
           new = extract_names(json.load(open("data.json")))
@@ -114,14 +133,13 @@ jobs:
       - name: Commit updated data.json (only if changed)
         id: commit
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          if git diff --quiet data.json; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+          if [ "${{ steps.diff.outputs.changed }}" = "false" ]; then
             echo "No changes"
             exit 0
           fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           SUMMARY=$(cat diff.txt)
 
@@ -129,10 +147,8 @@ jobs:
           git commit -m "chore: update data.json (${SUMMARY}) [skip ci]"
           git push
 
-          echo "changed=true" >> $GITHUB_OUTPUT
-
       - name: Show alert in UI
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.diff.outputs.changed == 'true'
         run: |
           echo "🚨 Drug list updated!"
           echo "Summary: $(cat diff.txt)"
@@ -141,7 +157,7 @@ jobs:
           cat changelog.md
 
       - name: Upload changelog artifact
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.diff.outputs.changed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: changelog

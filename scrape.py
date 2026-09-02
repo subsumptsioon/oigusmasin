@@ -302,6 +302,21 @@ def build_json(result, pdf_url, effective_date=None):
         ],
     }
 
+
+def _strip_generated(data):
+    """Tagastab andmete koopia ilma muutuva ``meta.generated`` väljata.
+
+    ``meta.generated`` kirjutatakse igal käivitamisel ajatempliga, mistõttu see
+    muutub alati. Võrdluses ignoreerime seda, et faili ei kirjutataks/committitaks
+    üle, kui nimekirja sisu ise pole muutunud.
+    """
+    if isinstance(data, dict):
+        meta = data.get("meta")
+        if isinstance(meta, dict):
+            meta = {k: v for k, v in meta.items() if k != "generated"}
+        return dict(data, meta=meta)
+    return data
+
 # ── Peaprogramm ───────────────────────────────────────────────────────────────
 
 def main():
@@ -335,6 +350,19 @@ def main():
 
     output = build_json(result, actual_url, effective_date)
     out_path = Path(args.out)
+
+    # Ära kirjuta faili üle, kui sisu pole tegelikult muutunud.
+    # meta.generated (ajatempel) muutub igal käivitamisel ja tekitaks tühje
+    # commitsid; ignoreerime seda võrdluses ja jätame faili puutumata.
+    if out_path.exists():
+        try:
+            existing = json.loads(out_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            existing = None
+        if existing is not None and _strip_generated(existing) == _strip_generated(output):
+            print("No changes; not overwriting " + str(out_path))
+            return 0
+
     tmp_path = out_path.with_suffix(".tmp")
     try:
         tmp_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
