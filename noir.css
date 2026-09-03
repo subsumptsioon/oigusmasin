@@ -19,10 +19,9 @@
   --muted: #9099b8;
   --dim: #838dad;
   --mono: "JetBrains Mono", monospace;
-  --display: "JetBrains Mono", monospace;
+  --display: var(--mono);
   --sidebar-w: 260px;
 
-  --l1: #f25443;
   --l2: #f0893d;
   --l3: #f5c842;
   --l4: #f0ae3d;
