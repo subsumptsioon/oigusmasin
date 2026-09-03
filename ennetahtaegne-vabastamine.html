@@ -7,36 +7,8 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
-      .tool-wrap {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 36px;
-        align-items: start;
-      }
-      @media (max-width: 900px) {
-        .tool-wrap {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* Input panel */
-      .panel {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        display: flex;
-        flex-direction: column;
-      }
-      .panel-header {
-        padding: 12px 20px;
-        border-bottom: 1px solid var(--border);
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--dim);
-        background: var(--deep);
-      }
+      /* Panel body — column layout on top of noir.css's .panel-body padding */
       .panel-body {
-        padding: 20px;
         display: flex;
         flex-direction: column;
         gap: 24px;
@@ -121,12 +93,6 @@
         gap: 14px;
       }
 
-      .result-block {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        overflow: hidden;
-        animation: appear-sm 0.2s ease both;
-      }
       .result-header {
         padding: 10px 16px;
         background: var(--deep);
@@ -178,30 +144,6 @@
         margin-top: 1px;
       }
 
-      .copy-btn {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--muted);
-        background: none;
-        border: 1px solid var(--border);
-        padding: 4px 12px;
-        cursor: pointer;
-        transition:
-          background 0.12s,
-          color 0.12s,
-          border-color 0.12s;
-        letter-spacing: 0.06em;
-        flex-shrink: 0;
-      }
-      .copy-btn:hover {
-        background: var(--lift);
-        color: var(--text);
-        border-color: var(--line);
-      }
-      .copy-btn.copied {
-        color: var(--amber);
-        border-color: var(--amber);
-      }
     </style>
   </head>
   <body>
@@ -403,7 +345,7 @@
           }
 
           const block = document.createElement("div");
-          block.className = "result-block";
+          block.className = "result-block animate";
           block.style.animationDelay = `${idx * 0.06}s`;
           block.innerHTML = `
             <div class="result-header">
