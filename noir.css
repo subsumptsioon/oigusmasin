@@ -450,6 +450,18 @@ main {
   }
 }
 
+/* Small entrance for page-tool result cards (distinct from .list-section's appear above) */
+@keyframes appear-sm {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .list-header {
   display: flex;
   align-items: center;
