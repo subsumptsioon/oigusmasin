@@ -19,10 +19,9 @@
   --muted: #9099b8;
   --dim: #838dad;
   --mono: "JetBrains Mono", monospace;
-  --display: "JetBrains Mono", monospace;
+  --display: var(--mono);
   --sidebar-w: 260px;
 
-  --l1: #f25443;
   --l2: #f0893d;
   --l3: #f5c842;
   --l4: #f0ae3d;
@@ -449,6 +448,93 @@ main {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Small entrance for page-tool result cards (distinct from .list-section's appear above) */
+@keyframes appear-sm {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── SHARED PAGE-TOOL COMPONENTS (hoisted from page <style> blocks) ── */
+
+/* Two-column tool layout (reflows to one column on narrow screens) */
+.tool-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .tool-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card panel (input pane, results pane) */
+.panel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Panel title bar — shared 7-property label rule */
+.panel-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: var(--deep);
+}
+
+/* Panel body base padding (page may layer flex/gap on top) */
+.panel-body {
+  padding: 20px;
+}
+
+/* Result card — base chrome; add .animate for the entrance fade */
+.result-block {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+.result-block.animate {
+  animation: appear-sm 0.2s ease both;
+}
+
+/* Small ghost copy button (base + hover + copied states) */
+.copy-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+  flex-shrink: 0;
+}
+.copy-btn:hover {
+  background: var(--lift);
+  color: var(--text);
+  border-color: var(--line);
+}
+.copy-btn.copied {
+  color: var(--amber);
+  border-color: var(--amber);
 }
 
 .list-header {

@@ -7,38 +7,6 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
-      .tool-wrap {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 36px;
-        align-items: start;
-      }
-      @media (max-width: 900px) {
-        .tool-wrap {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* Input panel */
-      .panel {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        display: flex;
-        flex-direction: column;
-      }
-      .panel-header {
-        padding: 12px 20px;
-        border-bottom: 1px solid var(--border);
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--dim);
-        background: var(--deep);
-      }
-      .panel-body {
-        padding: 20px;
-      }
-
       .duration-row {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -99,25 +67,10 @@
         }
       }
 
-      /* Result block */
+      /* Result block — spans both columns (chrome & fade come from noir.css) */
       .result-block {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        overflow: hidden;
         grid-column: 1 / -1;
-        animation: appear 0.2s ease both;
       }
-      @keyframes appear {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
       .result-header {
         padding: 10px 20px;
         background: var(--deep);
@@ -131,30 +84,6 @@
         justify-content: space-between;
       }
 
-      .copy-btn {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--muted);
-        background: none;
-        border: 1px solid var(--border);
-        padding: 4px 12px;
-        cursor: pointer;
-        transition:
-          background 0.12s,
-          color 0.12s,
-          border-color 0.12s;
-        letter-spacing: 0.06em;
-        flex-shrink: 0;
-      }
-      .copy-btn:hover {
-        background: var(--lift);
-        color: var(--text);
-        border-color: var(--line);
-      }
-      .copy-btn.copied {
-        color: var(--amber);
-        border-color: var(--amber);
-      }
       .result-body {
         padding: 20px 24px;
         display: flex;
@@ -267,7 +196,7 @@
             </div>
 
             <!-- ── RESULT ── -->
-            <div class="result-block" id="result-block">
+            <div class="result-block animate" id="result-block">
               <div class="result-header">
                 <span>// Kokku</span>
                 <button class="copy-btn" id="copy-btn" style="display: none">

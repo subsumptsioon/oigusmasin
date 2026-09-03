@@ -7,36 +7,6 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
-      .tool-wrap {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 36px;
-        align-items: start;
-      }
-
-      @media (max-width: 900px) {
-        .tool-wrap {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* Input panel */
-      .panel {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .panel-header {
-        padding: 12px 20px;
-        border-bottom: 1px solid var(--border);
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--dim);
-        background: var(--deep);
-      }
 
       /* Highlight overlay container — mirror div sizes it, textarea overlays */
       .input-wrap {
@@ -134,24 +104,6 @@
         gap: 16px;
       }
 
-      .result-block {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        overflow: hidden;
-        animation: appear 0.2s ease both;
-      }
-
-      @keyframes appear {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
       .result-header {
         display: flex;
         align-items: center;
@@ -167,30 +119,6 @@
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--dim);
-      }
-
-      .copy-btn {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--muted);
-        background: none;
-        border: 1px solid var(--border);
-        padding: 4px 12px;
-        cursor: pointer;
-        transition:
-          background 0.12s,
-          color 0.12s,
-          border-color 0.12s;
-        letter-spacing: 0.06em;
-      }
-      .copy-btn:hover {
-        background: var(--lift);
-        color: var(--text);
-        border-color: var(--line);
-      }
-      .copy-btn.copied {
-        color: var(--amber);
-        border-color: var(--amber);
       }
 
       .result-value {
@@ -360,7 +288,7 @@
             <!-- Results -->
             <div class="results-panel" id="results-panel">
               <!-- Sum -->
-              <div class="result-block" id="block-sum">
+              <div class="result-block animate" id="block-sum">
                 <div class="result-header">
                   <span class="result-label">// Hulga summa</span>
                   <div style="display: flex; align-items: center; gap: 12px">
@@ -374,7 +302,7 @@
               </div>
 
               <!-- Count -->
-              <div class="result-block" id="block-count">
+              <div class="result-block animate" id="block-count">
                 <div class="result-header">
                   <span class="result-label">// Hulga elementide arv</span>
                 </div>
@@ -382,7 +310,7 @@
               </div>
 
               <!-- List -->
-              <div class="result-block" id="block-list">
+              <div class="result-block animate" id="block-list">
                 <div class="result-header">
                   <span class="result-label">// Hulga elemendid</span>
                   <button class="copy-btn" id="copy-list">
