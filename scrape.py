@@ -19,9 +19,17 @@ except ImportError:
     sys.exit("Viga: pdfplumber pole paigaldatud. Käivita: pip install pdfplumber")
 
 # ── URL-id ────────────────────────────────────────────────────────────────────
-ACT_URL = "https://www.riigiteataja.ee/public-api/api/v1/akt/111082026010/blob-xml"
 BASE_URL = "https://www.riigiteataja.ee"
-# Ei ole vaikimisi URL-i -- kui automaatne leidmine ebaonnestub, skript katkestab.
+BASE_API = "https://www.riigiteataja.ee/public-api/api/v1"
+
+# Stabiilne grupi-ID -- SAMA kõigi redaktsioonide kohta (ANALYSIS #3).
+# Uue redaktsiooni ilmumisel annab riigiteataja.ee aktile UUE ID, aga grupi-ID
+# ei muutu. Selle alusel lahendatakse IGA käivituse juures hetkel kehtiv
+# redaktsioon (_resolve_current_blob_url), nii et hardcoded URL-i aegumine kaob.
+GRUPP_ID = "158713"
+
+# Laaditakse dünaamiliselt (_resolve_current_blob_url) automaatrežiimis.
+ACT_URL = None
 
 LIST_TITLES = {1: "I nimekiri", 2: "II nimekiri", 3: "III nimekiri",
                4: "IV nimekiri", 5: "V nimekiri", 6: "VI nimekiri"}
@@ -42,14 +50,44 @@ def _fetch_text(url, timeout=1000):
         return r.read().decode("utf-8", errors="replace")
 
 
+_CURRENT_BLOB_KEY = [None]
+
+
+def _resolve_current_blob_url():
+    """Tagastab hetkel kehtiva redaktsiooni blob-xml URL-i (salvestab vahemällu).
+
+    Stabiilne grupi-ID (GRUPP_ID) ei muutu; ``/redaktsioonid`` vastus sisaldab
+    ``kehtivRedaktsioon`` -- hetkel jõus oleva redaktsiooni ID. Selle kaudu ehitatakse
+    uus ``.../akt/{kehtiv}/blob-xml`` URL, vältides hardcoded redaktsiooni aegumist.
+    """
+    if _CURRENT_BLOB_KEY[0]:
+        return _CURRENT_BLOB_KEY[0]
+    url = f"{BASE_API}/akt/{GRUPP_ID}/redaktsioonid"
+    print("Otsin kehtivat redaktsiooni: " + url)
+    try:
+        data = json.loads(_fetch_text(url))
+    except Exception as e:
+        raise RuntimeError("Kehtiva redaktsiooni leidmine ebaõnnestus: " + str(e))
+    kehtiv = data.get("kehtivRedaktsioon")
+    if not kehtiv:
+        raise RuntimeError("kehtivRedaktsioon puudub vastuses: " + url)
+    print("  -> kehtiv redaktsioon: " + str(kehtiv))
+    blob_url = f"{BASE_API}/akt/{kehtiv}/blob-xml"
+    _CURRENT_BLOB_KEY[0] = blob_url
+    return blob_url
+
+
 def find_lisa1_url():
     """
     Leiab Lisa 1 PDF URL-i Riigi Teataja akti XML-ist.
     Otsib <tavatekst> elementi tekstiga "Lisa 1" ja seostatud <fail> elementi.
+    Hetkel kehtiv redaktsioon lahendatakse automaatselt stabiilse grupi-ID kaudu.
     """
+    global ACT_URL
     from xml.etree import ElementTree as ET
     from urllib.parse import urljoin
 
+    ACT_URL = _resolve_current_blob_url()
     print("Otsin Lisa 1 URL-i: " + ACT_URL)
     try:
         xml_text = _fetch_text(ACT_URL)
@@ -286,7 +324,7 @@ def build_json(result, pdf_url, effective_date=None):
     return {
         "meta": {
             "source": pdf_url,
-            "act": ACT_URL,
+            "act": ACT_URL if ACT_URL else f"{BASE_API}/akt/{GRUPP_ID}",
             "effective_date": effective_date,
             "generated": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
         },
