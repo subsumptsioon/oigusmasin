@@ -87,18 +87,29 @@ function extractAmounts(text) {
 }
 
 // ── Formatting ────────────────────────────────────────────────────────────────
-function _formatNumber(n, decimals) {
-  if (mode === "eur") {
-    return n.toLocaleString("et-EE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+// Cached Intl.NumberFormat instances — n.toLocaleString(locale, opts) builds a
+// formatter on every call; reusing one (or one per variable-decimal bucket) is
+// much cheaper and produces byte-identical output.
+const _fmtEur = new Intl.NumberFormat("et-EE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const _fmtVarCache = {};
+function _fmtVarFor(d) {
+  let f = _fmtVarCache[d];
+  if (!f) {
+    f = _fmtVarCache[d] = new Intl.NumberFormat("et-EE", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: d,
     });
   }
+  return f;
+}
+
+function _formatNumber(n, decimals) {
+  if (mode === "eur") return _fmtEur.format(n);
   const d = decimals !== undefined ? Math.min(decimals, 10) : 10;
-  return n.toLocaleString("et-EE", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: d,
-  });
+  return _fmtVarFor(d).format(n);
 }
 
 function formatValue(n, decimals) {
