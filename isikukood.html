@@ -19,12 +19,8 @@
       .input-section {
         padding: 24px 24px 0 24px;
       }
+      /* .field-label text styling lives in noir.css; page adds spacing */
       .field-label {
-        font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: var(--dim);
         margin-bottom: 8px;
       }
       .code-input-wrap {
@@ -253,27 +249,7 @@
         margin: 0;
       }
 
-      /* ── Results panel ── */
-      .results-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-
-      .result-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 20px;
-        gap: 12px;
-      }
-      .result-label {
-        font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--dim);
-      }
+      /* ── Results panel (shared chrome lives in noir.css) ── */
 
       /* Age display */
       .age-main {

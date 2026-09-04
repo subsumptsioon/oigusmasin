@@ -10,24 +10,7 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
-      .duration-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 12px;
-      }
-      .duration-field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .duration-sublabel {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--dim);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
+      /* duration-row/field/sublabel live in noir.css */
       input[type="number"] {
         background: var(--deep);
         border: 1px solid var(--border);
@@ -43,15 +26,7 @@
           border-color 0.15s,
           box-shadow 0.15s;
       }
-      input[type="number"]::-webkit-inner-spin-button,
-      input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      input:focus {
-        border-color: var(--amber);
-        box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.12);
-      }
+      /* spin-button + input:focus live in noir.css */
 
       /* Operator divider */
       .operator {
@@ -76,23 +51,8 @@
       .result-block {
         grid-column: 1 / -1;
       }
-      .result-header {
-        font-family: var(--mono);
-        padding: 10px 20px;
-        background: var(--deep);
-        border-bottom: 1px solid var(--border);
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--dim);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
+      /* .result-header chrome lives in noir.css; body overrides direction */
       .result-body {
-        padding: 20px 24px;
-        display: flex;
         align-items: baseline;
         gap: 6px;
         flex-wrap: wrap;
@@ -207,7 +167,7 @@
             <!-- ── RESULT ── -->
             <div class="result-block animate" id="result-block">
               <div class="result-header">
-                <span>// Kokku</span>
+                <span class="result-label">// Kokku</span>
                 <button class="copy-btn" id="copy-btn" style="display: none">
                   Kopeeri
                 </button>

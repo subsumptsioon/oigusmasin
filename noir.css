@@ -555,6 +555,82 @@ main {
   border-color: var(--amber);
 }
 
+/* -- SHARED PAGE-TOOL COMPONENTS #2 (hoisted + unified near-duplicates) -- */
+
+/* Result card header row (default). Enneht overrides to a stacked column. */
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Uppercase mono label used inside result headers */
+.result-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* Vertical stack of result cards */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Field label (uppercase mono); pages may add spacing on their layout */
+.field-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* Result body base; direction/alignment live on the page */
+.result-body {
+  display: flex;
+  padding: 16px 20px;
+}
+
+/* Duration inputs: 3-column row grid + stacked field columns */
+.duration-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.duration-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.duration-sublabel {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Hide browser number-input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Consistent keyboard-focus ring for text inputs */
+input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.12);
+}
+
 .list-header {
   display: flex;
   align-items: center;
