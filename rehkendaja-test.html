@@ -367,10 +367,10 @@
             maximumFractionDigits: d,
           });
         expect(formatValue(1234.56, 2), "1234.56 formatted").toEqual(
-          loc(1234.56, 2) + " €",
+          loc(1234.56, 2) + "\u00A0€",
         );
-        expect(formatValue(500, 0), "500 gets 2dp").toEqual(loc(500, 2) + " €");
-        expect(formatValue(0, 0), "zero").toEqual(loc(0, 2) + " €");
+        expect(formatValue(500, 0), "500 gets 2dp").toEqual(loc(500, 2) + "\u00A0€");
+        expect(formatValue(0, 0), "zero").toEqual(loc(0, 2) + "\u00A0€");
         expect(formatValue(1234.56, 2).endsWith("€"), "ends with €").toEqual(
           true,
         );
