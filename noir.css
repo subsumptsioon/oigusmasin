@@ -514,6 +514,14 @@ main {
   background: var(--deep);
 }
 
+/* Panel title bar that also holds a control on the right (e.g. unit switcher) */
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 /* Panel body base padding (page may layer flex/gap on top) */
 .panel-body {
   padding: 20px;

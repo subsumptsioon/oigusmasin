@@ -241,15 +241,7 @@
           <div class="tool-wrap">
             <!-- Input -->
             <div class="panel">
-              <div
-                class="panel-header"
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  gap: 12px;
-                "
-              >
+              <div class="panel-header panel-header-row">
                 <span>// Sisesta tekst</span>
                 <div class="unit-switcher">
                   <button class="unit-btn active" id="btn-eur">€ euro</button>
@@ -355,36 +347,41 @@
         if (hit !== -1) toggleExclude(hit);
       });
 
+      const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+      // Single-pass escape (one regex scan instead of three sequential replaces)
       function escHtml(s) {
-        return s
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+        return s.replace(/[&<>]/g, (c) => ESC_MAP[c]);
       }
 
-      // Improvement #1 — clean highlight builder
+      // Improvement #1 — clean highlight builder (array push + join)
       function buildHighlightHtml(text, matches) {
         if (!matches.length) return escHtml(text);
 
-        let html = "";
+        const parts = [];
         let cursor = 0;
 
         matches.forEach((m, i) => {
           if (m.index > cursor) {
-            html += escHtml(text.slice(cursor, m.index));
+            parts.push(escHtml(text.slice(cursor, m.index)));
           }
           const cls = excluded.has(i) ? ' class="excluded"' : "";
-          html += `<mark${cls} data-idx="${i}">${escHtml(
-            text.slice(m.index, m.index + m.matchLen),
-          )}</mark>`;
+          parts.push(
+            `<mark${cls} data-idx="${i}">${escHtml(
+              text.slice(m.index, m.index + m.matchLen),
+            )}</mark>`,
+          );
           cursor = m.index + m.matchLen;
         });
 
         if (cursor < text.length) {
-          html += escHtml(text.slice(cursor));
+          parts.push(escHtml(text.slice(cursor)));
         }
 
-        return html + (text.endsWith("\n") ? " " : "") + "<span></span>"; // prevents trailing-mark collapse
+        return (
+          parts.join("") +
+          (text.endsWith("\n") ? " " : "") +
+          "<span></span>"
+        ); // prevents trailing-mark collapse
       }
 
       function toggleExclude(idx) {
@@ -397,22 +394,36 @@
       const valSum = document.getElementById("val-sum");
       const valCount = document.getElementById("val-count");
       const valList = document.getElementById("val-list");
+      const resetBtn = document.getElementById("reset-btn");
+      const copySumBtn = document.getElementById("copy-sum");
+      const copyListBtn = document.getElementById("copy-list");
+      // Delegated click — one listener for all <li data-idx> (not one per <li>)
+      valList.addEventListener("click", (e) => {
+        const li = e.target.closest("li[data-idx]");
+        if (li) toggleExclude(Number(li.dataset.idx));
+      });
 
       let lastFound = [];
       let excluded = new Set();
 
       function update() {
         const text = inputEl.value;
-        const prevExcluded = [...excluded]
-          .map((i) => lastFound[i])
-          .filter(Boolean);
+        // Index previous exclusions by raw text -> [original index, ...]
+        const prevByRaw = new Map();
+        for (const i of excluded) {
+          const p = lastFound[i];
+          if (!p) continue;
+          const arr = prevByRaw.get(p.raw);
+          if (arr) arr.push(p.index);
+          else prevByRaw.set(p.raw, [p.index]);
+        }
         lastFound = extractAmounts(text);
         excluded.clear();
         lastFound.forEach((m, i) => {
-          const match = prevExcluded.find(
-            (p) => p.raw === m.raw && Math.abs(p.index - m.index) <= 10,
-          );
-          if (match) excluded.add(i);
+          const idxs = prevByRaw.get(m.raw);
+          if (!idxs) return;
+          // a previously-excluded match at a small position shift re-excludes this one
+          if (idxs.some((pIdx) => Math.abs(pIdx - m.index) <= 10)) excluded.add(i);
         });
         renderResults();
       }
@@ -425,7 +436,6 @@
         highlightEl.innerHTML = buildHighlightHtml(text, lastFound);
         highlightEl.scrollTop = inputEl.scrollTop;
 
-        const resetBtn = document.getElementById("reset-btn");
         resetBtn.classList.toggle("visible", excluded.size > 0);
 
         if (!hasText) {
@@ -461,10 +471,10 @@
             li.title = isExcluded
               ? "Kliki, et lisada tagasi"
               : "Kliki, et eemaldada";
+            li.dataset.idx = i;
             li.innerHTML =
               `<span class="el-num">${String(i + 1).padStart(2, "0")}</span>` +
               formatValue(item.amount, item.decimals);
-            li.addEventListener("click", () => toggleExclude(i));
             valList.appendChild(li);
           });
         }
@@ -493,16 +503,16 @@
         });
       }
 
-      document.getElementById("copy-sum").addEventListener("click", () => {
-        copyText(document.getElementById("copy-sum"), valSum.textContent);
+      copySumBtn.addEventListener("click", () => {
+        copyText(copySumBtn, valSum.textContent);
       });
 
-      document.getElementById("copy-list").addEventListener("click", () => {
+      copyListBtn.addEventListener("click", () => {
         const text = lastFound
           .filter((_, i) => !excluded.has(i))
           .map((x) => formatNumeric(x.amount, x.decimals))
           .join("\n");
-        copyText(document.getElementById("copy-list"), text);
+        copyText(copyListBtn, text);
       });
 
       // ── Reset exclusions ────────────────────────────────────────────────────────
