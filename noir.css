@@ -1,12 +1,14 @@
 /* ============================================================
    noir.css — Design system
-   Font: JetBrains Mono (loaded via Google Fonts @import below)
-   ============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+   Font: JetBrains Mono is loaded via <link> in each page <head>
+   (preconnect + font link; IMPROVE-CSS #11) — not @import.
+   ============================================================
 
 /* ── TOKENS ── */
 :root {
+  /* Global dark color-scheme so native controls/scrollbars render dark
+     everywhere (IMPROVE-CSS #7) */
+  color-scheme: dark;
   --void: #08080c;
   --deep: #0d0e13;
   --surface: #121520;
@@ -64,7 +66,9 @@ body::before {
     rgba(0, 0, 0, 0.008) 4px
   );
   pointer-events: none;
-  z-index: 9999;
+  /* Cap below interactive chrome (topbar 100 / sidebar 200 / overlay 199)
+     so this decorative layer doesn't cap the z-index ceiling (#12) */
+  z-index: 1;
 }
 
 /* ══════════════════════════════════════════════
@@ -135,9 +139,12 @@ body::before {
   transition: color 0.12s;
 }
 
-/* Section label inside sidebar */
-.nav-section-label {
-  display: none;
+/* Consistent keyboard-focus ring (WCAG 2.4.7 / 2.4.11) for interactive
+   chrome. :where() keeps specificity = 0 so page rules can override. */
+:where(.nav-item, .stat-pill, .unit-btn, .copy-btn, .search-clear,
+  .sidebar-toggle, .reset-btn, .sidebar-brand):focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
 }
 
 /* Nav item */
@@ -443,7 +450,7 @@ main {
   scroll-margin-top: 28px;
 }
 .list-section:hover {
-  border-color: var(--line);
+  border-color: var(--amber);
 }
 .list-section.hidden {
   display: none;
@@ -832,5 +839,23 @@ footer {
   }
   footer {
     padding: 14px 20px;
+  }
+}
+
+/* ── REDUCED MOTION (WCAG 2.3.3) ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Drop the decorative full-viewport scanline for reduced-motion users
+     (also removes a large fixed repaint layer; IMPROVE-CSS #12) */
+  body::before {
+    display: none;
   }
 }

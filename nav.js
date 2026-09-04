@@ -47,7 +47,6 @@ const NAV_AUTHOR = "© Andraš Tšitškan";
       <div class="brand-mark"></div>
       <div class="brand-name">${NAV_BRAND}</div>
     </a>
-    <div class="nav-section-label"></div>
     ${items}
     <div class="sidebar-foot">
       ${NAV_AUTHOR}&nbsp;<span class="nav-year"></span>
