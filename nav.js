@@ -21,6 +21,7 @@ const NAV_ITEMS = [
     label: "Ennetähtaegne vabastamine",
     href: "ennetahtaegne-vabastamine.html",
   },
+  { sigil: "05", label: "Vanus", href: "isikukood.html" },
 ];
 
 const NAV_BRAND = "Tööriistad";
