@@ -117,7 +117,7 @@ function formatValue(n, decimals) {
   // Non-breaking space between the amount and the € so the pair stays on one
   // line when pasted into a word processor (e.g. Word).
   if (mode === "eur") return s + "\u00A0\u20ac";
-  if (mode === "g") return s + " g";
+  if (mode === "g") return s + "\u00A0g";
   return s;
 }
 

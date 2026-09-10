@@ -387,11 +387,11 @@
             minimumFractionDigits: 0,
             maximumFractionDigits: d,
           });
-        expect(formatValue(0.5, 1), "0.5g").toEqual(loc(0.5, 1) + " g");
+        expect(formatValue(0.5, 1), "0.5g").toEqual(loc(0.5, 1) + "\u00A0g");
         expect(formatValue(0.0002, 4), "0.0002g 4dp").toEqual(
-          loc(0.0002, 4) + " g",
+          loc(0.0002, 4) + "\u00A0g",
         );
-        expect(formatValue(12, 0), "integer grams").toEqual(loc(12, 0) + " g");
+        expect(formatValue(12, 0), "integer grams").toEqual(loc(12, 0) + "\u00A0g");
         expect(formatValue(0.5, 1).endsWith("g"), "ends with g").toEqual(true);
         expect(
           formatValue(1000.001, 3).includes(","),
@@ -425,7 +425,7 @@
           (1.0002).toLocaleString("et-EE", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 4,
-          }) + " g";
+          }) + "\u00A0g";
         expect(formatValue(total, maxDec), "sum formatted to 4dp").toEqual(
           expected,
         );
