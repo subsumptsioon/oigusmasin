@@ -504,8 +504,11 @@
       }
 
       copySumBtn.addEventListener("click", () => {
-        // Keep the amount glued to the € with a non-breaking space (Word-safe paste)
-        copyText(copySumBtn, valSum.textContent.replace(/ (?=\u20ac)/g, "\u00A0"));
+        // Keep the amount glued to the unit (€ / g) with a non-breaking space (Word-safe paste)
+        copyText(
+          copySumBtn,
+          valSum.textContent.replace(/ (?=[\u20acg])/g, "\u00A0"),
+        );
       });
 
       copyListBtn.addEventListener("click", () => {
