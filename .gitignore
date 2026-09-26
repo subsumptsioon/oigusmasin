@@ -1,6 +1,7 @@
 # ── Agent / local artifacts (not part of the app) ──
 sessions/
 data/stats.json
+.agent_todos.json*
 
 # ── Defence-in-depth: never commit the plaintext lausepank source.
 #    Encrypt locally (lausepank-krypt.html) and push only lausepank-andmed.enc.
