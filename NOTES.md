@@ -17,6 +17,11 @@ calculators.
 - `scrape.py` — fetches narcotics data → `data.json` (run by `update-data.yml` cron).
 - `data.json` — scraped narcotics data (committed; updated daily by CI).
 
+## Requirements
+Node **>= 23** to run the tests (the core regexes use duplicate named capture
+groups in one pattern — V8 feature from Node 23; CI pins Node 24). Browsers: any
+modern Chrome/Edge/Firefox/Safari that shipped the same feature.
+
 ## Verify before you ship (run both)
 ```bash
 npm test        # headless Rehkendaja suites (exit 1 on failure)

@@ -23,7 +23,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          # rehkendaja-core.js uses duplicate named capture groups in the same
+          # regex (valid in V8 >= Node 23 / modern browsers).
+          node-version: "24"
 
       - name: Run Rehkendaja headless test suites
         run: node tools/run-rehkendaja-tests.mjs
