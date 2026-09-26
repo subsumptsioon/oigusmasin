@@ -83,7 +83,6 @@ function checkConsistency(pages, navHrefs) {
   const navSet = new Set(navHrefs.map(stripRef));
   for (const page of pages) {
     const html = fs.readFileSync(path.join(ROOT, page), "utf8");
-    const isTest = page === "rehkendaja-test.html";
 
     if (!/src\s*=\s*["']nav\.js["']/.test(html)) {
       note(`${page}: does not include nav.js`);
