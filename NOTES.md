@@ -49,8 +49,11 @@ CI: `.github/workflows/test.yml` runs both on push/PR to `main`.
 ## Design / theming
 - All page colour lives in `noir.css` `:root` tokens (zero hardcoded hex in the
   HTML pages). Retheming = editing tokens.
-- `docs/retro82-theme-plan.md` — plan to reskin onto the Omarchy Retro 82
-  palette (deep navy / amber / teal, sharp corners, CRT scanline + glow).
+- Palette = **Omarchy Retro 82** (deep navy / amber / teal, cream text) —
+  applied in `noir.css`. Mono font = **JetBrainsMono Nerd Font** (with web
+  `JetBrains Mono` fallback). Style: sharp corners, CRT scanline, amber glow on
+  focus/hero, accent-chip active nav.
+- `docs/retro82-theme-plan.md` — the retrofit plan + rationale (phases marked).
 
 ## Conventions
 - Adding a page: create `<name>.html`, incl. `noir.css` + `nav.js` + `#sidebar`,

@@ -41,17 +41,17 @@
       }
 
       .input-highlight mark {
-        background: rgba(245, 185, 66, 0.28);
+        background: rgba(250, 169, 104, 0.28);
         color: transparent;
-        border-radius: 2px;
-        outline: 1px solid rgba(245, 185, 66, 0.5);
+        border-radius: 0;
+        outline: 1px solid rgba(250, 169, 104, 0.5);
         padding: 0;
         pointer-events: auto;
         cursor: pointer;
       }
       .input-highlight mark.excluded {
-        background: rgba(122, 132, 168, 0.12);
-        outline: 1px solid rgba(122, 132, 168, 0.25);
+        background: rgba(140, 191, 184, 0.12);
+        outline: 1px solid rgba(140, 191, 184, 0.25);
         text-decoration: line-through;
       }
       .reset-btn {
@@ -118,6 +118,8 @@
         color: var(--amber);
         letter-spacing: -0.02em;
         padding: 20px 20px;
+        /* Amber CRT bloom on the hero number (Retro 82) */
+        text-shadow: 0 0 18px rgba(250, 169, 104, 0.35);
       }
 
       /* Count */

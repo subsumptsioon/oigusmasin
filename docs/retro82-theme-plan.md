@@ -174,38 +174,43 @@ Palette alone looks like a re-skin; these 6 touches carry the identity.
 
 ---
 
-## 6. Typography
+## 6. Typography — **decided: JetBrains Mono Nerd Font**
 
-- **Keep JetBrains Mono** — it matches Omarchy's terminal stack and the theme's
-  mono-first look. No change needed.
-- **Optional CRT display font.** Add `VT323` (Google Fonts, like the existing
-  JetBrains Mono `<link>`) as `--display` for `h1`/brand only. Requires editing
-  the `<head>` of all 6 pages, so treat as a separate, clearly-scoped step.
-- Recommend: ship Phase 1–2 mono-only; evaluate VT323 after seeing it live.
+- **Applied.** `--mono` is now:
+  ```css
+  --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", "JetBrains Mono",
+    ui-monospace, monospace;
+  ```
+  The Nerd Font family (`JetBrainsMono Nerd Font`, alias `JetBrainsMono NF`) is
+  used where installed (e.g. Omarchy), with the Google-Fonts `JetBrains Mono`
+  loaded in each `<head>` as the web fallback, then generic `monospace`.
+- `--display` stays `var(--mono)` (no separate display face).
+- The optional VT323 CRT face is **dropped** — Nerd Font is the requested look.
 
 ---
 
 ## 7. Phased task breakdown
 
-**Phase 0 — safety net (done / this PR):**
+**Phase 0 — safety net (done):**
 - [x] `tools/contrast-audit.mjs` built + baseline passes.
-- [ ] Wire `node tools/contrast-audit.mjs` into `npm run verify` + CI.
+- [x] Wired `node tools/contrast-audit.mjs` into `npm run verify` + CI.
 
-**Phase 1 — palette swap (bulk of the change):**
-- [ ] Edit `:root` tokens per §3 (16 lines).
-- [ ] Fix the 8 hardcoded colours per §4.
-- [ ] Run `npm run verify` (tests + assets) and `npm run contrast`.
-- [ ] Visual check of all 6 pages.
+**Phase 1 — palette swap (done):**
+- [x] `:root` tokens remapped per §3.
+- [x] Hardcoded colours fixed per §4 (incl. `border-radius` on the highlight).
+- [x] `npm run verify` green (80 tests + assets) and contrast 28/28.
+- [x] Visual check (headless Chromium screenshots: index, isikukood, karistuste-liitmine).
 
-**Phase 2 — style language:**
-- [ ] Corners → 0 (2 lines).
-- [ ] Scanline retune (§5.2).
-- [ ] `::selection` + focus glow token (§5.4–5.5).
-- [ ] Active nav inverse chip (§5.6).
-- [ ] Optional grid (§5.3) — decide with a screenshot.
+**Phase 2 — style language (done):**
+- [x] Corners → 0 (`.pill-bar`, sidebar scrollbar thumb, highlight mark).
+- [x] Scanline retune (§5.2).
+- [x] `::selection` + `--glow` on focused inputs and the hero value (§5.4–5.5).
+- [x] Active nav inverse chip (§5.6).
+- [ ] Optional grid (§5.3) — **deferred**: palette + scanline already read as
+      Retro 82; a grid risked noise behind dense tables. Revisit if wanted.
 
-**Phase 3 — flourishes (optional, separate PR):**
-- [ ] VT323 display font (6 `<head>` edits).
+**Phase 3 — flourishes (optional, not started):**
+- [~] Font — **Nerd Font applied** (§6); VT323 dropped.
 - [ ] ASCII sigil in sidebar brand (`nav.js`).
 - [ ] Dual-theme toggle (§9) if desired.
 
