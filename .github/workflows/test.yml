@@ -1,0 +1,34 @@
+name: Tests & static checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  rehkendaja-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # rehkendaja-core.js uses duplicate named capture groups in the same
+          # regex (valid in V8 >= Node 23 / modern browsers).
+          node-version: "24"
+
+      - name: Run Rehkendaja headless test suites
+        run: node tools/run-rehkendaja-tests.mjs
+
+      - name: Static asset / nav integrity check
+        run: node tools/check-assets.mjs
