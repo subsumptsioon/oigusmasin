@@ -22,12 +22,17 @@ Node **>= 23** to run the tests (the core regexes use duplicate named capture
 groups in one pattern — V8 feature from Node 23; CI pins Node 24). Browsers: any
 modern Chrome/Edge/Firefox/Safari that shipped the same feature.
 
-## Verify before you ship (run both)
+## Verify before you ship
 ```bash
 npm test        # headless Rehkendaja suites (exit 1 on failure)
 npm run check   # local asset/nav integrity
-npm run verify  # both
+npm run contrast # WCAG token audit
+npm run verify  # all three of the above
+
+npm run dom     # DOM regression tests for the tool pages (needs `chromium`)
+npm run smoke   # load every page in Chromium, report JS/console errors (needs `chromium`)
 ```
+`dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
 CI: `.github/workflows/test.yml` runs both on push/PR to `main`.
 `.github/workflows/update-data.yml` refreshes `data.json` daily at 04:00 UTC.
 
@@ -45,6 +50,15 @@ CI: `.github/workflows/test.yml` runs both on push/PR to `main`.
   should be hoisted into `noir.css` (run: `python3 tools/css_audit.py --all`).
 - `contrast-audit.mjs` — WCAG 2.1 checker for the `noir.css` design tokens
   (4.5:1 text, 3:1 non-text). Run `npm run contrast`; wired into `verify`/CI.
+- `dom-tests.mjs` — regression checks for the *inline* logic of the tool pages
+  (isikukood, narkonimekirjad, index, karistuste-liitmine, ennetähtaegne) that
+  the pure-core runner can't reach. Loads each page in headless Chromium over the
+  DevTools Protocol (no npm deps; Node built-in `WebSocket`) and asserts page
+  globals. Add a check to `CHECKS`. Run `npm run dom`.
+- `smoke-test.mjs` — loads every page in headless Chromium and fails on any
+  uncaught exception / console error. `npm run smoke`.
+- `page-eval.mjs` — one-off probe: `node tools/page-eval.mjs <page> "<expr>"`
+  evaluates JS in a loaded page (handy while debugging).
 
 ## Design / theming
 - All page colour lives in `noir.css` `:root` tokens (zero hardcoded hex in the

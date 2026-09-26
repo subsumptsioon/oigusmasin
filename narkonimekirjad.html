@@ -351,7 +351,17 @@
           "(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
           "gi",
         );
-        return esc(t).replace(re, "<mark>$1</mark>");
+        // Match on the RAW text and escape each slice. Running the regex over
+        // already-escaped HTML corrupts entities whenever a match lands inside
+        // one (e.g. query "amp" turning "&amp;" into "&<mark>amp</mark>;").
+        let out = "";
+        let last = 0;
+        for (const m of t.matchAll(re)) {
+          out +=
+            esc(t.slice(last, m.index)) + "<mark>" + esc(m[0]) + "</mark>";
+          last = m.index + m[0].length;
+        }
+        return out + esc(t.slice(last));
       }
 
       function toggleSection(n) {
