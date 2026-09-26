@@ -132,14 +132,10 @@ Palette alone looks like a re-skin; these 6 touches carry the identity.
    Do **not** add a global `* { border-radius: 0 }`; the existing rule list is
    fine and keeps overrides local.
 
-2. **Scanline retune.** Replace the current overlay (L56–70, black @ 0.008) with
-   the Retro 82 recipe: cream @ ~4% + navy @ ~16% over 4 px, `180deg`.
-   ```css
-   background: repeating-linear-gradient(180deg,
-     rgba(246,220,172,0.04) 0, transparent 2px,
-     rgba(0,12,23,0.18) 4px);
-   ```
-   Keep it under `z-index: 1` (unchanged).
+2. **Scanline overlay — REMOVED.** The Retro 82 recipe (cream @ 4% + navy @
+   18% over 4 px) was trialled but read as **too much horizontal noise** across
+   the page, so the whole `body::before` overlay (and its reduced-motion rule)
+   was deleted. The palette + sharp borders carry the look without it.
 
 3. **Optional grid substrate.** A 1 px amber grid at ~6–10% alpha (Retro 82
    `--rt82-grid`) on `body`/`.panel` adds the arcade texture. Behind content
@@ -203,7 +199,7 @@ Palette alone looks like a re-skin; these 6 touches carry the identity.
 
 **Phase 2 — style language (done):**
 - [x] Corners → 0 (`.pill-bar`, sidebar scrollbar thumb, highlight mark).
-- [x] Scanline retune (§5.2).
+- [~] Scanline overlay — applied then **removed** (§5.2); too noisy.
 - [x] `::selection` + `--glow` on focused inputs and the hero value (§5.4–5.5).
 - [x] Active nav inverse chip (§5.6).
 - [ ] Optional grid (§5.3) — **deferred**: palette + scanline already read as

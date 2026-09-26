@@ -51,8 +51,9 @@ CI: `.github/workflows/test.yml` runs both on push/PR to `main`.
   HTML pages). Retheming = editing tokens.
 - Palette = **Omarchy Retro 82** (deep navy / amber / teal, cream text) —
   applied in `noir.css`. Mono font = **JetBrainsMono Nerd Font** (with web
-  `JetBrains Mono` fallback). Style: sharp corners, CRT scanline, amber glow on
-  focus/hero, accent-chip active nav.
+  `JetBrains Mono` fallback). Style: sharp corners, amber glow on focus/hero,
+  accent-chip active nav. (CRT scanline was trialled and **removed** — too
+  noisy.)
 - `docs/retro82-theme-plan.md` — the retrofit plan + rationale (phases marked).
 
 ## Conventions

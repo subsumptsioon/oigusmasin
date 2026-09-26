@@ -58,23 +58,6 @@ body {
   flex-direction: column;
 }
 
-/* Scanline overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    180deg,
-    rgba(246, 220, 172, 0.04) 0,
-    transparent 2px,
-    rgba(0, 12, 23, 0.18) 4px
-  );
-  pointer-events: none;
-  /* Cap below interactive chrome (topbar 100 / sidebar 200 / overlay 199)
-     so this decorative layer doesn't cap the z-index ceiling (#12) */
-  z-index: 1;
-}
-
 /* Text selection — Retro 82 (amber bg, navy text) */
 ::selection {
   background: var(--amber);
@@ -952,11 +935,5 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  /* Drop the decorative full-viewport scanline for reduced-motion users
-     (also removes a large fixed repaint layer; IMPROVE-CSS #12) */
-  body::before {
-    display: none;
   }
 }
