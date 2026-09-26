@@ -452,28 +452,45 @@
         return pad2(d) + "." + pad2(m) + "." + y;
       }
 
-      // Calculate full age between two {y,m,d} objects
-      function calcAge(born, ref) {
-        let years = ref.y - born.y;
-        let months = ref.m - born.m;
-        let days = ref.d - born.d;
-        if (days < 0) {
-          months--;
-          const prevMonth = new Date(ref.y, ref.m - 1, 0); // last day of prev month
-          days += prevMonth.getDate();
-        }
-        if (months < 0) {
-          years--;
-          months += 12;
-        }
-        return { years, months, days };
+      // Date `n` months after `born`, clamping the day to the target month's
+      // length (e.g. 31 Jan + 1 month -> 28/29 Feb). Mirrors the rule used by
+      // addCalendarDuration in ennetähtaegne-vabastamine.html.
+      function addMonthsClamped(born, n) {
+        const total = born.m - 1 + n; // 0-based month index
+        const y = born.y + Math.floor(total / 12);
+        const m = ((total % 12) + 12) % 12;
+        const d = Math.min(born.d, new Date(y, m + 1, 0).getDate());
+        return new Date(y, m, d);
       }
 
-      // Total days between two dates (ref - born)
+      // Calculate full age between two {y,m,d} objects.
+      // Anchors on the (day-clamped) anniversary and counts the remaining days,
+      // so the day component is always non-negative. The previous
+      // borrow-from-previous-month arithmetic returned -1 day for e.g.
+      // 31.01 -> 01.03 (Feb is shorter than the birthday's 31st).
+      function calcAge(born, ref) {
+        let months = (ref.y - born.y) * 12 + (ref.m - born.m);
+        const refDate = new Date(ref.y, ref.m - 1, ref.d);
+        let anchor = addMonthsClamped(born, months);
+        if (anchor > refDate) {
+          months--;
+          anchor = addMonthsClamped(born, months);
+        }
+        const days = Math.round((refDate - anchor) / 86400000);
+        return {
+          years: Math.floor(months / 12),
+          months: months % 12,
+          days,
+        };
+      }
+
+      // Total days between two dates (ref - born).
+      // Math.round, not floor: the local-midnight difference is off by ±1h across
+      // a DST switch, and floor would drop a whole day there.
       function totalDays(born, ref) {
         const a = new Date(born.y, born.m - 1, born.d);
         const b = new Date(ref.y, ref.m - 1, ref.d);
-        return Math.floor((b - a) / 86400000);
+        return Math.round((b - a) / 86400000);
       }
 
       // ── ID code logic ─────────────────────────────────────────────────────────────
@@ -701,8 +718,14 @@
             .getContext("2d");
         }
         const ctx = updateCodeDisplay._ctx;
-        ctx.font = '22px Hack, "Courier New", monospace';
-        const charW = ctx.measureText("0").width + 22 * 0.12; // width + letter-spacing
+        // Measure with the font the input actually renders in (the site font is
+        // --mono; the old hardcoded "Hack" is no longer loaded, so measurement
+        // silently fell back to Courier New).
+        const cs = getComputedStyle(codeInput);
+        ctx.font =
+          `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily || "monospace"}`.trim();
+        const letterSpacing = parseFloat(cs.letterSpacing) || 0;
+        const charW = ctx.measureText("0").width + letterSpacing;
         codeSuffix.style.left = 14 + raw.length * charW + "px";
         codeSuffix.textContent = "_".repeat(remaining);
       }
