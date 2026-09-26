@@ -43,6 +43,14 @@ CI: `.github/workflows/test.yml` runs both on push/PR to `main`.
   `#sidebar`, and every non-test page is listed in `nav.js`.
 - `css_audit.py` — compares inline CSS across pages to spot duplicates that
   should be hoisted into `noir.css` (run: `python3 tools/css_audit.py --all`).
+- `contrast-audit.mjs` — WCAG 2.1 checker for the `noir.css` design tokens
+  (4.5:1 text, 3:1 non-text). Run `npm run contrast`; wired into `verify`/CI.
+
+## Design / theming
+- All page colour lives in `noir.css` `:root` tokens (zero hardcoded hex in the
+  HTML pages). Retheming = editing tokens.
+- `docs/retro82-theme-plan.md` — plan to reskin onto the Omarchy Retro 82
+  palette (deep navy / amber / teal, sharp corners, CRT scanline + glow).
 
 ## Conventions
 - Adding a page: create `<name>.html`, incl. `noir.css` + `nav.js` + `#sidebar`,

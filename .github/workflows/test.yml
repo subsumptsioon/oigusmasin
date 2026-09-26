@@ -32,3 +32,6 @@ jobs:
 
       - name: Static asset / nav integrity check
         run: node tools/check-assets.mjs
+
+      - name: Design-token WCAG contrast audit
+        run: node tools/contrast-audit.mjs
