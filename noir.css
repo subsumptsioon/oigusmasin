@@ -9,27 +9,32 @@
   /* Global dark color-scheme so native controls/scrollbars render dark
      everywhere (IMPROVE-CSS #7) */
   color-scheme: dark;
-  --void: #08080c;
-  --deep: #0d0e13;
-  --surface: #121520;
-  --lift: #191d28;
-  --border: #60678f; /* WCAG 1.4.11 non-text: >=3:1 on all bgs */
-  --line: #252a3c;
-  --amber: #f5b942;
-  --red: #f25443;
-  --text: #eef1ff;
-  --muted: #9099b8;
-  --dim: #838dad;
-  --mono: "JetBrains Mono", monospace;
+  /* ── Retro 82 palette (Omarchy Retro 82: navy surfaces, amber accent,
+     teal support, cream text) ────────────────────────────────────────── */
+  --void: #000c17; /* darker_bg — page backdrop */
+  --deep: #001123; /* dark_bg — sidebar / topbar */
+  --surface: #00172e; /* bg — cards / panels */
+  --lift: #021f37; /* derived raised surface (hover) */
+  --border: #57898a; /* muted — WCAG 1.4.11 non-text: >=3:1 on all bgs */
+  --line: #0e2c47; /* derived hairline */
+  --amber: #faa968; /* accent */
+  --red: #f85525; /* red */
+  --text: #f6dcac; /* fg */
+  --muted: #8cbfb8; /* cyan */
+  --dim: #65a5a1; /* bright_magenta */
+  /* Amber CRT bloom — focused inputs + the hero value (Retro 82) */
+  --glow: 0 0 24px rgba(250, 169, 104, 0.22);
+  --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", "JetBrains Mono",
+    ui-monospace, monospace;
   --display: var(--mono);
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --sidebar-w: 260px;
 
-  --l2: #f0893d;
-  --l3: #f5c842;
-  --l4: #f0ae3d;
-  --l5: #5aade8;
-  --l6: #a87fd4;
+  --l2: #ed9563;
+  --l3: #faa968;
+  --l4: #e97b3c;
+  --l5: #8cbfb8;
+  --l6: #a3ccc6;
 }
 
 /* ── RESET ── */
@@ -53,22 +58,10 @@ body {
   flex-direction: column;
 }
 
-/* Scanline overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.008) 2px,
-    rgba(0, 0, 0, 0.008) 4px
-  );
-  pointer-events: none;
-  /* Cap below interactive chrome (topbar 100 / sidebar 200 / overlay 199)
-     so this decorative layer doesn't cap the z-index ceiling (#12) */
-  z-index: 1;
+/* Text selection — Retro 82 (amber bg, navy text) */
+::selection {
+  background: var(--amber);
+  color: var(--void);
 }
 
 /* ══════════════════════════════════════════════
@@ -104,7 +97,7 @@ body::before {
 }
 .sidebar::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 /* Sidebar logo / brand block */
@@ -168,8 +161,9 @@ body::before {
   color: var(--text);
 }
 .nav-item.active {
-  color: var(--text);
-  background: var(--lift);
+  /* Retro 82 "status chip": accent background + inverse text */
+  color: var(--void);
+  background: var(--amber);
 }
 
 .nav-sigil {
@@ -181,8 +175,10 @@ body::before {
   flex-shrink: 0;
   color: var(--dim);
 }
-.nav-item.active .nav-sigil,
-.nav-item:hover .nav-sigil {
+.nav-item.active .nav-sigil {
+  color: var(--void);
+}
+.nav-item:hover:not(.active) .nav-sigil {
   color: var(--amber);
 }
 
@@ -266,7 +262,7 @@ body::before {
   font-family: var(--display);
   font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -323,7 +319,7 @@ body::before {
 .pill-bar {
   width: 3px;
   height: 22px;
-  border-radius: 2px;
+  border-radius: 0;
   flex-shrink: 0;
 }
 .pill-label {
@@ -361,7 +357,9 @@ body::before {
 }
 .search-inner:focus-within {
   border-color: var(--amber);
-  box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.12);
+  box-shadow:
+    0 0 0 2px rgba(250, 169, 104, 0.15),
+    var(--glow);
 }
 
 .prompt {
@@ -636,7 +634,9 @@ input[type="number"]::-webkit-outer-spin-button {
 /* Consistent keyboard-focus ring for text inputs */
 input:focus {
   border-color: var(--amber);
-  box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.12);
+  box-shadow:
+    0 0 0 2px rgba(250, 169, 104, 0.15),
+    var(--glow);
 }
 
 .list-header {
@@ -793,7 +793,7 @@ input:focus {
 }
 
 mark {
-  background: rgba(245, 185, 66, 0.22);
+  background: rgba(250, 169, 104, 0.22);
   color: var(--amber);
   padding: 0 2px;
 }
@@ -935,11 +935,5 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  /* Drop the decorative full-viewport scanline for reduced-motion users
-     (also removes a large fixed repaint layer; IMPROVE-CSS #12) */
-  body::before {
-    display: none;
   }
 }
