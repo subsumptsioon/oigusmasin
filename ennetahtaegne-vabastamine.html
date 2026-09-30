@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ennetähtaegne vabastamine — Tööriistad</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
@@ -14,14 +11,14 @@
       .panel-body {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: var(--sp-6);
       }
       .panel-note {
-        padding: 12px 20px;
+        padding: var(--sp-3) var(--sp-5);
         border-top: 1px solid var(--border);
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--dim);
-        letter-spacing: 0.03em;
+        letter-spacing: var(--track-wide);
         line-height: 1.65;
         background: var(--deep);
       }
@@ -33,78 +30,40 @@
       .field-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--sp-2);
       }
       /* .field-label text styling lives in noir.css */
-      input[type="date"],
-      input[type="number"] {
-        background: var(--deep);
-        border: 1px solid var(--border);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 15px;
-        padding: 10px 14px;
-        outline: none;
-        width: 100%;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(0.5);
-        cursor: pointer;
-      }
-      /* input:focus + duration-* + results-panel live in noir.css */
 
       /* Stacked variant of the shared .result-header (row by default) */
       .result-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 7px;
+        gap: var(--sp-2);
       }
       .result-header-top {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: var(--sp-3);
       }
       .result-fraction {
-        font-family: var(--mono);
-        font-size: 15px;
+        font-size: var(--fs-lg);
         font-weight: 700;
         color: var(--amber);
         line-height: 1;
-        letter-spacing: 0.02em;
+        letter-spacing: var(--track-wide);
       }
       .result-legal-label {
-        font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--muted);
-        letter-spacing: 0.02em;
+        letter-spacing: var(--track-wide);
         line-height: 1.55;
       }
 
-      .result-body {
-        flex-direction: column;
-        gap: 5px;
-      }
-      .result-date {
-        font-family: var(--mono);
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.01em;
-        line-height: 1.1;
-      }
-      .result-date.empty {
-        color: var(--border);
-      }
       .result-min-note {
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--amber);
-        letter-spacing: 0.04em;
+        letter-spacing: var(--track-wide);
         margin-top: 1px;
       }
 
@@ -147,7 +106,7 @@
               <div class="panel-body">
                 <div class="field-group">
                   <div class="field-label">Karistuse alguskuupäev</div>
-                  <input type="date" id="start-date" />
+                  <input class="field" type="date" id="start-date" />
                 </div>
 
                 <div class="field-group">
@@ -155,15 +114,15 @@
                   <div class="duration-row">
                     <div class="duration-field">
                       <div class="duration-sublabel">Aastad</div>
-                      <input type="number" id="inp-years" value="0" min="0" />
+                      <input class="field" type="number" id="inp-years" value="0" min="0" />
                     </div>
                     <div class="duration-field">
                       <div class="duration-sublabel">Kuud</div>
-                      <input type="number" id="inp-months" value="0" min="0" />
+                      <input class="field" type="number" id="inp-months" value="0" min="0" />
                     </div>
                     <div class="duration-field">
                       <div class="duration-sublabel">Päevad</div>
-                      <input type="number" id="inp-days" value="0" min="0" />
+                      <input class="field" type="number" id="inp-days" value="0" min="0" />
                     </div>
                   </div>
                 </div>
@@ -300,12 +259,12 @@
             const r = compute(startDate, years, months, days, num, den);
             copyDateStr = formatDate(r.resultDate);
 
-            dateHtml = `<div class="result-date">${copyDateStr}</div>`;
+            dateHtml = `<div class="result-figure result-figure--md">${copyDateStr}</div>`;
             if (r.minApplied) {
               minHtml = `<div class="result-min-note">▲ miinimum 4 kuud rakendatud</div>`;
             }
           } else {
-            dateHtml = `<div class="result-date empty">––.––.––––</div>`;
+            dateHtml = `<div class="result-figure result-figure--md empty">––.––.––––</div>`;
           }
 
           const block = document.createElement("div");
@@ -319,7 +278,7 @@
               </div>
               <div class="result-legal-label">${def.label}</div>
             </div>
-            <div class="result-body">
+            <div class="result-body result-body--stack">
               ${dateHtml}
               ${minHtml}
             </div>`;

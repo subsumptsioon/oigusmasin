@@ -7,9 +7,6 @@
       Narkootiliste ja psühhotroopsete ainete ja ainerühmade nimekirjad I–VI |
       Õigusmasin
     </title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
   </head>
   <body>
@@ -50,32 +47,32 @@
           <!-- Stats band -->
           <div class="stats-band">
             <a class="stat-pill" href="#section1" onclick="expandSection(1)"
-              ><div class="pill-bar" style="background: var(--red)"></div>
+              ><div class="pill-bar" data-list="1"></div>
               <span class="pill-label">I nimekiri&nbsp;</span
               ><span class="pill-n" id="c1">—</span></a
             >
             <a class="stat-pill" href="#section2" onclick="expandSection(2)"
-              ><div class="pill-bar" style="background: var(--l2)"></div>
+              ><div class="pill-bar" data-list="2"></div>
               <span class="pill-label">II nimekiri&nbsp;</span
               ><span class="pill-n" id="c2">—</span></a
             >
             <a class="stat-pill" href="#section3" onclick="expandSection(3)"
-              ><div class="pill-bar" style="background: var(--l3)"></div>
+              ><div class="pill-bar" data-list="3"></div>
               <span class="pill-label">III nimekiri&nbsp;</span
               ><span class="pill-n" id="c3">—</span></a
             >
             <a class="stat-pill" href="#section4" onclick="expandSection(4)"
-              ><div class="pill-bar" style="background: var(--l4)"></div>
+              ><div class="pill-bar" data-list="4"></div>
               <span class="pill-label">IV nimekiri&nbsp;</span
               ><span class="pill-n" id="c4">—</span></a
             >
             <a class="stat-pill" href="#section5" onclick="expandSection(5)"
-              ><div class="pill-bar" style="background: var(--l5)"></div>
+              ><div class="pill-bar" data-list="5"></div>
               <span class="pill-label">V nimekiri&nbsp;</span
               ><span class="pill-n" id="c5">—</span></a
             >
             <a class="stat-pill" href="#section6" onclick="expandSection(6)"
-              ><div class="pill-bar" style="background: var(--l6)"></div>
+              ><div class="pill-bar" data-list="6"></div>
               <span class="pill-label">VI nimekiri&nbsp;</span
               ><span class="pill-n" id="c6">—</span></a
             >
@@ -112,9 +109,14 @@
           <div id="main-content" style="display: none">
             <!-- I nimekiri -->
             <div class="list-section" id="section1">
-              <div class="list-header" onclick="toggleSection(1)">
+              <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-1"
+                onclick="toggleSection(1)">
                 <div class="list-title">
-                  <div class="list-sigil" style="color: var(--red)">I</div>
+                  <div class="list-sigil" data-list="1">I</div>
                   <div class="list-info">
                     <div class="n">I nimekiri</div>
                     <div class="d">
@@ -127,8 +129,8 @@
                   <span class="count-badge" id="badge1"></span
                   ><span class="chevron">▾</span>
                 </div>
-              </div>
-              <div class="list-body">
+              </button>
+              <div class="list-body" id="list-body-1">
                 <table class="substances-table">
                   <thead>
                     <tr>
@@ -147,9 +149,14 @@
 
             <!-- II nimekiri -->
             <div class="list-section" id="section2">
-              <div class="list-header" onclick="toggleSection(2)">
+              <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-2"
+                onclick="toggleSection(2)">
                 <div class="list-title">
-                  <div class="list-sigil" style="color: var(--l2)">II</div>
+                  <div class="list-sigil" data-list="2">II</div>
                   <div class="list-info">
                     <div class="n">II nimekiri</div>
                     <div class="d">Opioidid ja kõrge riskiga narkootikumid</div>
@@ -159,8 +166,8 @@
                   <span class="count-badge" id="badge2"></span
                   ><span class="chevron">▾</span>
                 </div>
-              </div>
-              <div class="list-body">
+              </button>
+              <div class="list-body" id="list-body-2">
                 <table class="substances-table">
                   <thead>
                     <tr>
@@ -179,9 +186,14 @@
 
             <!-- III nimekiri -->
             <div class="list-section" id="section3">
-              <div class="list-header" onclick="toggleSection(3)">
+              <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-3"
+                onclick="toggleSection(3)">
                 <div class="list-title">
-                  <div class="list-sigil" style="color: var(--l3)">III</div>
+                  <div class="list-sigil" data-list="3">III</div>
                   <div class="list-info">
                     <div class="n">III nimekiri</div>
                     <div class="d">
@@ -193,8 +205,8 @@
                   <span class="count-badge" id="badge3"></span
                   ><span class="chevron">▾</span>
                 </div>
-              </div>
-              <div class="list-body">
+              </button>
+              <div class="list-body" id="list-body-3">
                 <table class="substances-table">
                   <thead>
                     <tr>
@@ -213,9 +225,14 @@
 
             <!-- IV nimekiri -->
             <div class="list-section" id="section4">
-              <div class="list-header" onclick="toggleSection(4)">
+              <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-4"
+                onclick="toggleSection(4)">
                 <div class="list-title">
-                  <div class="list-sigil" style="color: var(--l4)">IV</div>
+                  <div class="list-sigil" data-list="4">IV</div>
                   <div class="list-info">
                     <div class="n">IV nimekiri</div>
                     <div class="d">
@@ -227,8 +244,8 @@
                   <span class="count-badge" id="badge4"></span
                   ><span class="chevron">▾</span>
                 </div>
-              </div>
-              <div class="list-body">
+              </button>
+              <div class="list-body" id="list-body-4">
                 <table class="substances-table">
                   <thead>
                     <tr>
@@ -247,9 +264,14 @@
 
             <!-- V nimekiri -->
             <div class="list-section" id="section5">
-              <div class="list-header" onclick="toggleSection(5)">
+              <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-5"
+                onclick="toggleSection(5)">
                 <div class="list-title">
-                  <div class="list-sigil" style="color: var(--l5)">V</div>
+                  <div class="list-sigil" data-list="5">V</div>
                   <div class="list-info">
                     <div class="n">V nimekiri</div>
                     <div class="d">Lähteained ja muud kontrollitud ained</div>
@@ -259,8 +281,8 @@
                   <span class="count-badge" id="badge5"></span
                   ><span class="chevron">▾</span>
                 </div>
-              </div>
-              <div class="list-body">
+              </button>
+              <div class="list-body" id="list-body-5">
                 <table class="substances-table">
                   <thead>
                     <tr>
@@ -280,9 +302,14 @@
             <!-- VI nimekiri -->
             <div class="list-vi-wrap" id="list-vi-wrap">
               <div class="list-section" id="section6" style="margin-bottom: 0">
-                <div class="list-header" onclick="toggleSection(6)">
+                <button
+                type="button"
+                class="list-header"
+                aria-expanded="true"
+                aria-controls="list-body-6"
+                onclick="toggleSection(6)">
                   <div class="list-title">
-                    <div class="list-sigil" style="color: var(--l6)">VI</div>
+                    <div class="list-sigil" data-list="6">VI</div>
                     <div class="list-info">
                       <div class="n">VI nimekiri</div>
                       <div class="d">
@@ -295,8 +322,8 @@
                     <span class="count-badge" id="badge6"></span
                     ><span class="chevron">▾</span>
                   </div>
-                </div>
-                <div class="list-body">
+                </button>
+                <div class="list-body" id="list-body-6">
                   <table class="substances-table">
                     <thead>
                       <tr>
@@ -365,10 +392,19 @@
       }
 
       function toggleSection(n) {
-        document.getElementById("section" + n).classList.toggle("collapsed");
+        const section = document.getElementById("section" + n);
+        const collapsed = section.classList.toggle("collapsed");
+        // Keep the button's state in sync for assistive tech.
+        section
+          .querySelector(".list-header")
+          ?.setAttribute("aria-expanded", String(!collapsed));
       }
       function expandSection(n) {
-        document.getElementById("section" + n).classList.remove("collapsed");
+        const section = document.getElementById("section" + n);
+        section.classList.remove("collapsed");
+        section
+          .querySelector(".list-header")
+          ?.setAttribute("aria-expanded", "true");
       }
 
       // ── Render ───────────────────────────────────────────────────────────────────
@@ -509,7 +545,7 @@
         .catch((err) => {
           document.getElementById("loading").innerHTML =
             `<p style="color:var(--red)">// viga andmete laadimisel: ${esc(err.message)}</p>` +
-            `<p style="margin-top:8px;font-size:12px;color:var(--muted)">Veendu, et <code>data.json</code> asub samas kaustas.</p>`;
+            `<p style="margin-top:var(--sp-2);font-size:var(--fs-xs);color:var(--muted)">Veendu, et <code>data.json</code> asub samas kaustas.</p>`;
         });
     </script>
   </body>

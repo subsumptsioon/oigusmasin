@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rehkendaja — testid</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
     <style>
       main {
@@ -14,26 +11,26 @@
       }
 
       .suite {
-        margin-bottom: 32px;
+        margin-bottom: var(--sp-7);
       }
       .suite-title {
-        font-size: 11px;
-        letter-spacing: 0.18em;
+        font-size: var(--fs-xs);
+        letter-spacing: var(--track-caps);
         text-transform: uppercase;
         color: var(--dim);
         border-bottom: 1px solid var(--border);
-        padding-bottom: 8px;
-        margin-bottom: 12px;
+        padding-bottom: var(--sp-2);
+        margin-bottom: var(--sp-3);
       }
 
       .test {
         display: grid;
         grid-template-columns: 18px 1fr auto;
         align-items: baseline;
-        gap: 10px;
-        padding: 6px 0;
+        gap: var(--sp-2);
+        padding: var(--sp-2) 0;
         border-bottom: 1px solid var(--border);
-        font-size: 13px;
+        font-size: var(--fs-sm);
         line-height: 1.5;
       }
       .test:last-child {
@@ -41,7 +38,7 @@
       }
 
       .test-icon {
-        font-size: 12px;
+        font-size: var(--fs-xs);
       }
       .pass .test-icon {
         color: var(--amber);
@@ -58,7 +55,7 @@
       }
 
       .test-detail {
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--dim);
         text-align: right;
         white-space: nowrap;
@@ -69,19 +66,19 @@
 
       .test-extra {
         grid-column: 2 / -1;
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--dim);
-        margin-top: 2px;
-        padding-bottom: 4px;
+        margin-top: var(--sp-1);
+        padding-bottom: var(--sp-1);
       }
 
       .summary {
         display: flex;
-        gap: 28px;
-        padding: 16px 0 8px 0;
-        font-size: 13px;
+        gap: var(--sp-6);
+        padding: var(--sp-4) 0 var(--sp-2) 0;
+        font-size: var(--fs-sm);
         border-top: 1px solid var(--border);
-        margin-top: 8px;
+        margin-top: var(--sp-2);
       }
       .summary-pass {
         color: var(--amber);
@@ -124,7 +121,7 @@
         </div>
 
         <main id="output">
-          <p style="color: var(--muted); font-size: 13px">
+          <p style="color: var(--muted); font-size: var(--fs-sm)">
             // testid käivituvad…
           </p>
         </main>

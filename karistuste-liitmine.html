@@ -4,86 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Karistuste liitmine | Õigusmasin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
       /* duration-row/field/sublabel live in noir.css */
-      input[type="number"] {
-        background: var(--deep);
-        border: 1px solid var(--border);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 15px;
-        padding: 10px 14px;
-        outline: none;
-        width: 100%;
-        -moz-appearance: textfield;
-        appearance: textfield;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
-      }
-      /* spin-button + input:focus live in noir.css */
-
-      /* Operator divider */
-      .operator {
-        font-family: var(--mono);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--dim);
-        padding-top: 28px; /* align with input panels */
-        user-select: none;
-      }
-      @media (max-width: 900px) {
-        .operator {
-          padding-top: 0;
-          font-size: 22px;
-        }
-      }
 
       /* Result block — spans both columns (chrome & fade come from noir.css) */
       .result-block {
         grid-column: 1 / -1;
       }
-      /* .result-header chrome lives in noir.css; body overrides direction */
-      .result-body {
-        align-items: baseline;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
 
-      .result-value {
-        font-family: var(--mono);
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.01em;
-        line-height: 1.1;
-      }
-      .result-value.empty {
-        color: var(--border);
-      }
       .result-unit {
-        font-family: var(--mono);
-        font-size: 14px;
+        font-size: var(--fs-md);
         color: var(--muted);
-        letter-spacing: 0.04em;
-        margin-right: 14px;
+        letter-spacing: var(--track-wide);
+        margin-right: var(--sp-3);
       }
 
       /* Equation recap shown below the result */
       .result-equation {
-        font-family: var(--mono);
-        padding: 10px 24px 14px;
-        font-size: 12px;
+        padding: var(--sp-2) var(--sp-6) var(--sp-3);
+        font-size: var(--fs-xs);
         color: var(--dim);
-        letter-spacing: 0.04em;
+        letter-spacing: var(--track-wide);
         border-top: 1px solid var(--border);
       }
       .result-equation span {
@@ -129,15 +72,15 @@
                 <div class="duration-row">
                   <div class="duration-field">
                     <div class="duration-sublabel">Aastad</div>
-                    <input type="number" id="a-years" value="0" min="0" />
+                    <input class="field" type="number" id="a-years" value="0" min="0" />
                   </div>
                   <div class="duration-field">
                     <div class="duration-sublabel">Kuud</div>
-                    <input type="number" id="a-months" value="0" min="0" />
+                    <input class="field" type="number" id="a-months" value="0" min="0" />
                   </div>
                   <div class="duration-field">
                     <div class="duration-sublabel">Päevad</div>
-                    <input type="number" id="a-days" value="0" min="0" />
+                    <input class="field" type="number" id="a-days" value="0" min="0" />
                   </div>
                 </div>
               </div>
@@ -150,15 +93,15 @@
                 <div class="duration-row">
                   <div class="duration-field">
                     <div class="duration-sublabel">Aastad</div>
-                    <input type="number" id="b-years" value="0" min="0" />
+                    <input class="field" type="number" id="b-years" value="0" min="0" />
                   </div>
                   <div class="duration-field">
                     <div class="duration-sublabel">Kuud</div>
-                    <input type="number" id="b-months" value="0" min="0" />
+                    <input class="field" type="number" id="b-months" value="0" min="0" />
                   </div>
                   <div class="duration-field">
                     <div class="duration-sublabel">Päevad</div>
-                    <input type="number" id="b-days" value="0" min="0" />
+                    <input class="field" type="number" id="b-days" value="0" min="0" />
                   </div>
                 </div>
               </div>
@@ -172,8 +115,8 @@
                   Kopeeri
                 </button>
               </div>
-              <div class="result-body" id="result-body">
-                <span class="result-value empty">—</span>
+              <div class="result-body result-body--inline" id="result-body">
+                <span class="result-figure empty">—</span>
               </div>
             </div>
           </div>
@@ -219,13 +162,13 @@
         if (rDays > 0) parts.push([rDays, rDays === 1 ? "päev" : "päeva"]);
 
         if (parts.length === 0) {
-          body.innerHTML = `<span class="result-value empty">—</span>`;
+          body.innerHTML = `<span class="result-figure empty">—</span>`;
           copyBtn.style.display = "none";
         } else {
           body.innerHTML = parts
             .map(
               ([n, u]) =>
-                `<span class="result-value">${n}</span><span class="result-unit">${u}</span>`,
+                `<span class="result-figure">${n}</span><span class="result-unit">${u}</span>`,
             )
             .join("");
           copyBtn.style.display = "";

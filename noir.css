@@ -1,14 +1,59 @@
 /* ============================================================
-   noir.css — Design system
-   Font: JetBrains Mono is loaded via <link> in each page <head>
-   (preconnect + font link; IMPROVE-CSS #11) — not @import.
-   ============================================================
+   noir.css — design system
+
+   Breakpoints. Plain CSS cannot read custom properties inside a media
+   query without a build step, so these stay a documented convention that
+   tools/check-css.mjs enforces:
+     900px  two-column tool layout -> one column
+     800px  sidebar collapses into a drawer
+   ============================================================ */
+
+/* ── WEBFONT ──
+   "JetBrainsMono Nerd Font" is a patched build (nerd-fonts) and exists on no
+   font CDN, so the two weights the design uses are self-hosted in fonts/.
+   The family name here matches the first entry of --mono, so the stack
+   resolves identically whether or not the visitor has the font installed.
+
+   local() is listed first on purpose: a visitor who already has the Nerd Font
+   gets their system copy and downloads nothing, and everyone else falls
+   through to the woff2 below.
+
+   unicode-range mirrors the subset (see fonts/README.md). It also makes
+   per-character fallback correct — U+2011 has no glyph upstream, so it now
+   falls back instead of rendering .notdef. */
+@font-face {
+  font-family: "JetBrainsMono Nerd Font";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local("JetBrainsMono Nerd Font"),
+    local("JetBrainsMono NF"),
+    url("fonts/JetBrainsMonoNerdFont-Regular.woff2") format("woff2");
+  unicode-range: U+0000-007F, U+0080-00FF, U+0100-017F, U+0180-024F, U+0300-036F,
+    U+0370-03FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF,
+    U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+2700-27BF, U+F000-F0FF;
+}
+@font-face {
+  font-family: "JetBrainsMono Nerd Font";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local("JetBrainsMono Nerd Font"),
+    local("JetBrainsMono NF"),
+    url("fonts/JetBrainsMonoNerdFont-Bold.woff2") format("woff2");
+  unicode-range: U+0000-007F, U+0080-00FF, U+0100-017F, U+0180-024F, U+0300-036F,
+    U+0370-03FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF,
+    U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+2700-27BF, U+F000-F0FF;
+}
 
 /* ── TOKENS ── */
 :root {
   /* Global dark color-scheme so native controls/scrollbars render dark
-     everywhere (IMPROVE-CSS #7) */
+     everywhere */
   color-scheme: dark;
+
   /* ── Retro 82 palette (Omarchy Retro 82: navy surfaces, amber accent,
      teal support, cream text) ────────────────────────────────────────── */
   --void: #000c17; /* darker_bg — page backdrop */
@@ -22,19 +67,91 @@
   --text: #f6dcac; /* fg */
   --muted: #8cbfb8; /* cyan */
   --dim: #65a5a1; /* bright_magenta */
-  /* Amber CRT bloom — focused inputs + the hero value (Retro 82) */
-  --glow: 0 0 24px rgba(250, 169, 104, 0.22);
-  --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", "JetBrains Mono",
-    ui-monospace, monospace;
-  --display: var(--mono);
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --sidebar-w: 260px;
 
+  /* Narkonimekirjad list I–VI accents */
   --l2: #ed9563;
   --l3: #faa968;
   --l4: #e97b3c;
   --l5: #8cbfb8;
   --l6: #a3ccc6;
+
+  /* Alpha ramps. Literal rgba() rather than color-mix() on purpose: the
+     values here have to stay statically resolvable for
+     tools/contrast-audit.mjs, which cannot follow a nested var(). */
+  --amber-08: rgba(250, 169, 104, 0.08);
+  --amber-15: rgba(250, 169, 104, 0.15);
+  --amber-22: rgba(250, 169, 104, 0.22);
+  --amber-28: rgba(250, 169, 104, 0.28);
+  --amber-35: rgba(250, 169, 104, 0.35);
+  --amber-50: rgba(250, 169, 104, 0.5);
+  --muted-12: rgba(140, 191, 184, 0.12);
+  --muted-25: rgba(140, 191, 184, 0.25);
+  --scrim: rgba(0, 0, 0, 0.65);
+
+  /* Amber CRT bloom — focused inputs + the hero value (Retro 82) */
+  --ring: 0 0 0 2px var(--amber-15);
+  --glow: 0 0 24px var(--amber-22);
+  --glow-hero: 0 0 18px var(--amber-35);
+
+  /* ── Type scale ──
+     13 ad-hoc sizes snapped onto 8 steps. The former 11px micro-label
+     folded up to 12px: same tier, a shade more legible. */
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px; /* body default */
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 28px;
+  --fs-hero: 32px;
+
+  /* ── Tracking scale ──
+     10 ad-hoc values snapped onto 3. The uppercase mono label was one of
+     0.1/0.12/0.14/0.16/0.18em depending on the page; they all share
+     --track-caps now. */
+  --track-tight: -0.02em;
+  --track-wide: 0.04em;
+  --track-caps: 0.18em;
+
+  /* ── Spacing scale ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 48px;
+
+  /* ── Shape ──
+     Sharp corners are the Retro 82 signature, so this stays 0. It exists
+     as a token only so no rule has to hardcode a radius. */
+  --radius: 0;
+
+  /* ── Stacking order ──
+     App chrome lives in the hundreds; in-control overlays stay low so they
+     can never punch through the drawer. */
+  --z-raised: 1; /* raised surfaces, list rows */
+  --z-overlay: 2; /* overlay inside a control (the input itself) */
+  --z-overlay-top: 3; /* overlay above another overlay (suffix, clear btn) */
+  --z-sticky: 100; /* topbar */
+  --z-scrim: 190; /* mobile sidebar backdrop */
+  --z-drawer: 200; /* mobile sidebar */
+
+  /* ── Typeface ──
+     Only the Nerd Font is requested; the @font-face block at the top of this
+     file serves it to anyone who does not already have it. It ships in
+     Regular/Bold only, so weights 500 and 800 resolve to the nearest real
+     weight rather than being synthesised. */
+  --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", ui-monospace,
+    monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+
+  /* ── Layout ── */
+  --sidebar-w: 260px;
+  --measure: 600px; /* search field max-width */
 }
 
 /* ── RESET ── */
@@ -47,15 +164,23 @@
 }
 
 /* ── BASE ── */
+/* The whole site is mono-forward (Retro 82), so the mono stack is the body
+   default and the 59 per-rule `font-family: var(--mono)` declarations that
+   used to repeat it are gone. Opt back into the UI sans with an explicit
+   `font-family: var(--sans)` — see .substances-table below. */
 body {
   background: var(--void);
   color: var(--text);
-  font-family: var(--sans);
-  font-size: 14px;
+  font-family: var(--mono);
+  font-size: var(--fs-md);
   line-height: 1.75;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  /* Subpixel antialiasing smears on dark navy; greyscale keeps the CRT
+     look crisp. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Text selection — Retro 82 (amber bg, navy text) */
@@ -67,6 +192,22 @@ body {
 /* ══════════════════════════════════════════════
    LAYOUT
    ══════════════════════════════════════════════ */
+
+/* ── LABEL ──
+   The uppercase mono micro-label, defined once. This exact 4-declaration
+   block used to be copy-pasted into ~10 rules spread over noir.css and
+   three page <style> blocks, with letter-spacing drifting between 0.1 and
+   0.18em depending on who wrote it. :where() keeps specificity at 0 so
+   each component below can still override, and each now carries only its
+   own chrome. */
+:where(.panel-header, .result-label, .field-label, .duration-sublabel,
+  .no-results, .note-label, .ref-label, .or-separator, .empty-state,
+  .idle-state, .substances-table thead th) {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--dim);
+}
 
 .app-shell {
   display: flex;
@@ -84,7 +225,7 @@ body {
   flex-direction: column;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -97,15 +238,15 @@ body {
 }
 .sidebar::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 0;
+  border-radius: var(--radius);
 }
 
 /* Sidebar logo / brand block */
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 24px 20px 20px;
+  gap: var(--sp-3);
+  padding: var(--sp-6) var(--sp-5) var(--sp-5);
   border-bottom: 1px solid var(--border);
   text-decoration: none;
   flex-shrink: 0;
@@ -122,32 +263,38 @@ body {
 }
 
 .brand-name {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--muted);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--track-caps);
   line-height: 1.3;
   text-transform: uppercase;
   transition: color 0.12s;
 }
 
-/* Consistent keyboard-focus ring (WCAG 2.4.7 / 2.4.11) for interactive
-   chrome. :where() keeps specificity = 0 so page rules can override. */
-:where(.nav-item, .stat-pill, .unit-btn, .copy-btn, .search-clear,
-  .sidebar-toggle, .reset-btn, .sidebar-brand):focus-visible {
+/* ── FOCUS (WCAG 2.4.7 / 2.4.11) ────────────────────────────────────────────
+   One base ring for every focusable element.
+
+   This used to be a hand-maintained list of 8 class names, which meant any
+   newly added button silently lost its focus ring. All 8 were real <a> or
+   <button> elements, so a universal selector covers them — and covers
+   anything added later, for free. :where() keeps specificity at 0 so
+   components can still override.
+
+   It deliberately does not fire for tabindex="-1" affordances (the inline
+   clear buttons), which are intentionally not keyboard-reachable. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
 
 /* Nav item */
 .nav-item {
-  font-family: var(--mono);
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 10px 20px;
-  font-size: 13px;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-5);
+  font-size: var(--fs-sm);
   color: var(--muted);
   text-decoration: none;
   transition:
@@ -167,8 +314,7 @@ body {
 }
 
 .nav-sigil {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   width: 16px;
   text-align: center;
@@ -184,13 +330,12 @@ body {
 
 /* Sidebar footer */
 .sidebar-foot {
-  font-family: var(--mono);
   margin-top: auto;
-  padding: 16px 16px;
+  padding: var(--sp-4) var(--sp-4);
   border-top: 1px solid var(--border);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--dim);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--track-wide);
   flex-shrink: 0;
   min-height: 52px;
   display: flex;
@@ -198,11 +343,14 @@ body {
 }
 
 /* ── PAGE CONTENT ── */
+/* Establishes the query container for .tool-wrap below. */
 .page-content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
+  container-name: page;
 }
 
 /* ── TOPBAR (sticky, inside .page-content) ── */
@@ -211,27 +359,43 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
 }
 
-/* Chrome bar */
+/* Chrome bar — a horizontally scrollable strip on narrow screens.
+   The scrollbar itself is hidden (it would break the sharp-corner look), so
+   a right-edge fade stands in as the "there is more" cue. The gradient is
+   drawn on a pseudo-element pinned to the strip rather than as a background
+   on .header-chrome, because a background on a scroll container scrolls with
+   the content instead of staying put. */
 .header-chrome {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
   scrollbar-width: none;
+  position: relative;
 }
 .header-chrome::-webkit-scrollbar {
   display: none;
+}
+.header-chrome::after {
+  content: "";
+  position: sticky;
+  right: 0;
+  flex: 0 0 0;
+  align-self: stretch;
+  width: var(--sp-7);
+  background: linear-gradient(to right, transparent, var(--deep));
+  pointer-events: none;
 }
 
 /* Header main row */
 .header-main {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 28px 40px;
+  gap: var(--sp-5);
+  padding: var(--sp-6) var(--sp-8);
   border-bottom: 1px solid var(--border);
 }
 
@@ -246,12 +410,11 @@ body {
   border: 1px solid var(--border);
   color: var(--muted);
   cursor: pointer;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   flex-shrink: 0;
   transition:
     background 0.12s,
     color 0.12s;
-  font-family: var(--mono);
 }
 .sidebar-toggle:hover {
   background: var(--surface);
@@ -259,22 +422,20 @@ body {
 }
 
 .title-block h1 {
-  font-family: var(--display);
-  font-size: 26px;
+  font-size: var(--fs-3xl);
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--track-tight);
   line-height: 1.2;
 }
 .title-block .subtitle {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--dim);
-  letter-spacing: 0.04em;
-  margin-top: 6px;
+  letter-spacing: var(--track-wide);
+  margin-top: var(--sp-2);
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 .subtitle-label {
@@ -282,7 +443,7 @@ body {
 }
 .subtitle-date {
   color: var(--amber);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* ── STATS BAND ── */
@@ -300,8 +461,8 @@ body {
 .stat-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 20px;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-5);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
   cursor: pointer;
@@ -317,27 +478,26 @@ body {
 }
 
 .pill-bar {
+  background: var(--list-accent, var(--border));
   width: 3px;
   height: 22px;
-  border-radius: 0;
+  border-radius: var(--radius);
   flex-shrink: 0;
 }
 .pill-label {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
   color: var(--muted);
 }
 .pill-n {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--text);
 }
 
 /* ── SEARCH ── */
 .search-zone {
-  padding: 16px 48px;
+  padding: var(--sp-4) var(--sp-9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,17 +515,16 @@ body {
     border-color 0.18s,
     box-shadow 0.18s;
 }
+/* The search input itself sets outline:none, so the wrapper owns the ring —
+   same treatment as .input-wrap on the Rehkendaja page. */
 .search-inner:focus-within {
   border-color: var(--amber);
-  box-shadow:
-    0 0 0 2px rgba(250, 169, 104, 0.15),
-    var(--glow);
+  box-shadow: var(--ring), var(--glow);
 }
 
 .prompt {
-  font-family: var(--mono);
-  padding: 0 14px;
-  font-size: 14px;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-md);
   color: var(--amber);
   flex-shrink: 0;
   animation: blink 1.2s step-end infinite;
@@ -387,9 +546,8 @@ body {
   background: transparent;
   border: none;
   color: var(--text);
-  font-family: var(--mono);
-  font-size: 15px;
-  padding: 11px 0;
+  font-size: var(--fs-lg);
+  padding: var(--sp-3) 0;
   outline: none;
   caret-color: var(--amber);
   min-width: 0;
@@ -399,8 +557,8 @@ body {
 }
 
 .search-clear {
-  padding: 0 14px;
-  font-size: 18px;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-xl);
   line-height: 1;
   color: var(--dim);
   cursor: pointer;
@@ -411,7 +569,6 @@ body {
   align-items: center;
   justify-content: center;
   transition: color 0.15s;
-  font-family: var(--mono);
 }
 .search-clear:hover {
   color: var(--text);
@@ -421,31 +578,30 @@ body {
 }
 
 #result-count {
-  font-family: var(--mono);
   min-width: 100px;
   text-align: right;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--muted);
-  padding-left: 16px;
-  letter-spacing: 0.04em;
+  padding-left: var(--sp-4);
+  letter-spacing: var(--track-wide);
   flex-shrink: 0;
 }
 
 /* ── MAIN ── */
 main {
   flex: 1;
-  padding: 40px 48px;
+  padding: var(--sp-8) var(--sp-9);
   width: 100%;
 }
 
 /* ── LIST SECTIONS ── */
 .list-section {
-  margin-bottom: 32px;
+  margin-bottom: var(--sp-7);
   border: 1px solid var(--border);
   overflow: hidden;
   transition: border-color 0.2s;
   animation: appear 0.25s ease both;
-  scroll-margin-top: 28px;
+  scroll-margin-top: var(--sp-6);
 }
 .list-section:hover {
   border-color: var(--amber);
@@ -479,14 +635,18 @@ main {
 
 /* ── SHARED PAGE-TOOL COMPONENTS (hoisted from page <style> blocks) ── */
 
-/* Two-column tool layout (reflows to one column on narrow screens) */
+/* Two-column tool layout.
+   This is a *container* query, not a viewport one: the sidebar eats 260px, so
+   a 900px viewport only leaves ~640px of content — two cramped columns. The
+   flip is keyed to the space the tool actually has, which also means it
+   behaves correctly if the sidebar is ever collapsible. */
 .tool-wrap {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 36px;
+  gap: var(--sp-7);
   align-items: start;
 }
-@media (max-width: 900px) {
+@container page (max-width: 860px) {
   .tool-wrap {
     grid-template-columns: 1fr;
   }
@@ -502,13 +662,8 @@ main {
 
 /* Panel title bar — shared 7-property label rule */
 .panel-header {
-  font-family: var(--mono);
-  padding: 12px 20px;
+  padding: var(--sp-3) var(--sp-5);
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dim);
   background: var(--deep);
 }
 
@@ -517,12 +672,12 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 
 /* Panel body base padding (page may layer flex/gap on top) */
 .panel-body {
-  padding: 20px;
+  padding: var(--sp-5);
 }
 
 /* Result card — base chrome; add .animate for the entrance fade */
@@ -537,14 +692,13 @@ main {
 
 /* Small ghost copy button (base + hover + copied states) */
 .copy-btn {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--muted);
   background: none;
   border: 1px solid var(--border);
-  padding: 4px 12px;
+  padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--track-wide);
   transition:
     background 0.12s,
     color 0.12s,
@@ -568,87 +722,194 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
   background: var(--deep);
   border-bottom: 1px solid var(--border);
 }
 
 /* Uppercase mono label used inside result headers */
 .result-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--dim);
 }
 
 /* Vertical stack of result cards */
 .results-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 /* Field label (uppercase mono); pages may add spacing on their layout */
 .field-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--dim);
 }
 
 /* Result body base; direction/alignment live on the page */
 .result-body {
   display: flex;
-  padding: 16px 20px;
+  padding: var(--sp-4) var(--sp-5);
+}
+/* Stacked variant (label above value) */
+.result-body--stack {
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+/* Inline variant (value and unit side by side) */
+.result-body--inline {
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* ── RESULT FIGURE ──
+   The prominent value inside a result card. This was copy-pasted twice with
+   byte-identical declarations under two names — .result-value (32px) and
+   .result-date (28px) — so it is one component with a size modifier. */
+.result-figure {
+  font-size: var(--fs-hero);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: var(--track-tight);
+  line-height: 1.1;
+}
+.result-figure--md {
+  font-size: var(--fs-3xl);
+}
+.result-figure.empty {
+  color: var(--border);
 }
 
 /* Duration inputs: 3-column row grid + stacked field columns */
 .duration-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 .duration-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .duration-sublabel {
-  font-family: var(--mono);
-  font-size: 11px;
+}
+
+/* ── FIELD ──
+   The canonical text input.
+
+   This component used to be copy-pasted into three page <style> blocks plus
+   four #id selectors on isikukood, and every one of those copies declared a
+   `border` shorthand. Because a page <style> block is parsed after noir.css,
+   each of those shorthands silently outranked noir.css's own `input:focus`
+   rule — so *no* input on the site showed a focus border, and the four
+   isikukood ones additionally set `outline: none`, which also killed the
+   focus ring. One owner means a base style can no longer outrank focus.
+
+   Pages style size and tracking through the .field--* modifiers below; they
+   must not re-declare `border` or `outline`. */
+.field {
+  appearance: none;
+  -moz-appearance: textfield;
+  width: 100%;
+  padding: var(--sp-3);
+  background: var(--deep);
+  border: 1px solid var(--border);
+  color: var(--text);
+  caret-color: var(--amber);
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.field::placeholder {
   color: var(--dim);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Focus. The 2px outline is left to the universal :focus-visible rule above
+   so keyboard users get it layered on top of the border + glow; :focus (not
+   :focus-visible) carries the border and glow so pointer users see them too. */
+.field:focus {
+  border-color: var(--amber);
+  box-shadow: var(--ring), var(--glow);
+}
+.field:hover:not(:focus) {
+  border-color: var(--line);
+}
+.field.is-valid {
+  border-color: var(--amber);
+}
+.field.is-error {
+  border-color: var(--red);
+}
+
+/* Date picker icon needs inverting against the dark surface. */
+.field[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 /* Hide browser number-input spinners */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+.field[type="number"]::-webkit-inner-spin-button,
+.field[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Consistent keyboard-focus ring for text inputs */
-input:focus {
-  border-color: var(--amber);
-  box-shadow:
-    0 0 0 2px rgba(250, 169, 104, 0.15),
-    var(--glow);
+/* Size modifiers — the only thing a page should need. Values mirror what
+   each page used to declare, so this is a pure de-duplication. */
+.field--raised {
+  background: var(--lift);
+}
+.field--code {
+  font-size: var(--fs-2xl);
+  letter-spacing: var(--track-caps);
+  padding: var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-3);
+  position: relative;
+  z-index: var(--z-overlay);
+}
+.field--md {
+  font-size: var(--fs-lg);
+  letter-spacing: var(--track-wide);
+  padding: var(--sp-2) var(--sp-3);
+}
+.field--sm {
+  font-size: var(--fs-md);
+  letter-spacing: var(--track-wide);
+  padding: var(--sp-2) var(--sp-3);
+  flex: 1;
+}
+.field--cal {
+  font-size: var(--fs-md);
+  padding: var(--sp-2) var(--sp-2);
+  width: auto;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.field--cal::-webkit-calendar-picker-indicator {
+  filter: invert(0.55) sepia(1) saturate(3) hue-rotate(5deg) brightness(1.1);
 }
 
+/* Collapse toggle. This is a real <button> (it was a div[onclick], so it was
+   unreachable by keyboard) — hence the UA reset below. */
 .list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
   cursor: pointer;
   user-select: none;
   background: var(--surface);
-  gap: 14px;
+  gap: var(--sp-3);
   transition: background 0.12s;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 .list-header:hover {
   background: var(--lift);
@@ -657,35 +918,42 @@ input:focus {
 .list-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-3);
   min-width: 0;
 }
 
+/* Narkonimekirjad list I–VI accents. The colour used to be an inline
+   style="color: var(--l2)" on every sigil and pill bar; a data attribute
+   keeps it in the stylesheet where a re-theme can reach it. */
+[data-list="1"] { --list-accent: var(--red); }
+[data-list="2"] { --list-accent: var(--l2); }
+[data-list="3"] { --list-accent: var(--l3); }
+[data-list="4"] { --list-accent: var(--l4); }
+[data-list="5"] { --list-accent: var(--l5); }
+[data-list="6"] { --list-accent: var(--l6); }
+
 .list-sigil {
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: 28px;
+  color: var(--list-accent, var(--dim));
+  font-weight: 700;
+  font-size: var(--fs-3xl);
   width: 44px;
   text-align: center;
   flex-shrink: 0;
   line-height: 1;
-  letter-spacing: -0.02em;
-  filter: brightness(1.15);
+  letter-spacing: var(--track-tight);
 }
 
 .list-info {
   min-width: 0;
 }
 .list-info .n {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--fs-sm);
+  font-weight: 400;
   color: var(--text);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--track-wide);
 }
 .list-info .d {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -695,25 +963,23 @@ input:focus {
 .list-meta {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-3);
   flex-shrink: 0;
 }
 
 .count-badge {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--muted);
   background: var(--deep);
   border: 1px solid var(--border);
-  padding: 4px 12px;
-  letter-spacing: 0.04em;
+  padding: var(--sp-1) var(--sp-3);
+  letter-spacing: var(--track-wide);
   white-space: nowrap;
 }
 
 .chevron {
-  font-family: var(--mono);
   color: var(--dim);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -737,14 +1003,9 @@ input:focus {
 }
 
 .substances-table thead th {
-  padding: 9px 16px;
+  padding: var(--sp-2) var(--sp-4);
   text-align: left;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--dim);
+  font-weight: 400;
 }
 .substances-table thead th:nth-child(3) {
   border-left: 1px solid var(--border);
@@ -764,48 +1025,46 @@ input:focus {
   display: none;
 }
 
+/* Substance names are the one place that opts back into the UI sans: they
+   are long chemical names and mono measurably hurts their scanability.
+   Everything else on the page stays mono. */
 .substances-table td {
-  padding: 12px 20px;
+  padding: var(--sp-3) var(--sp-5);
   line-height: 1.45;
+  font-family: var(--sans);
 }
 .substances-table td:nth-child(3) {
   border-left: 1px solid var(--border);
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 
 .row-num {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--dim);
   width: 50px;
   text-align: right;
-  padding-right: 4px;
+  padding-right: var(--sp-1);
 }
 
 .et-name {
-  font-size: 15px;
+  font-size: var(--fs-lg);
   color: var(--text);
 }
 .en-name {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--muted);
 }
 
 mark {
-  background: rgba(250, 169, 104, 0.22);
+  background: var(--amber-22);
   color: var(--amber);
-  padding: 0 2px;
+  padding: 0 var(--sp-1);
 }
 
 .no-results {
-  font-family: var(--mono);
-  padding: 32px;
+  padding: var(--sp-7);
   text-align: center;
-  color: var(--dim);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
 }
 .no-results:not(.visible) {
   display: none;
@@ -816,52 +1075,47 @@ mark {
 
 /* ── VI WRAPPER ── */
 .list-vi-wrap {
-  margin-bottom: 28px;
+  margin-bottom: var(--sp-6);
 }
 .groups-note {
   background: var(--deep);
   border: 1px solid var(--border);
   border-bottom: none;
-  padding: 10px 18px;
+  padding: var(--sp-2) var(--sp-4);
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  font-size: 13px;
+  gap: var(--sp-3);
+  font-size: var(--fs-sm);
   color: var(--muted);
 }
 .note-label {
-  font-family: var(--mono);
-  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
   color: var(--l6);
   white-space: nowrap;
 }
 
 /* ── FOOTER ── */
 footer {
-  font-family: var(--mono);
-  padding: 0 36px;
+  padding: 0 var(--sp-7);
   border-top: 1px solid var(--border);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--muted);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--track-wide);
   background: var(--deep);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: var(--sp-4);
   min-height: 52px;
 }
 
 /* ── LOADING ── */
 #loading {
-  font-family: var(--mono);
-  padding: 60px;
+  padding: var(--sp-9);
   text-align: center;
   color: var(--muted);
-  letter-spacing: 0.1em;
-  font-size: 14px;
+  letter-spacing: var(--track-caps);
+  font-size: var(--fs-md);
 }
 
 /* Mobile overlay */
@@ -869,8 +1123,8 @@ footer {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  z-index: 199;
+  background: var(--scrim);
+  z-index: var(--z-scrim);
   cursor: pointer;
 }
 .sidebar-overlay.visible {
@@ -883,8 +1137,8 @@ footer {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
-    z-index: 200;
+    height: 100dvh;
+    z-index: var(--z-drawer);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
   }
@@ -897,17 +1151,17 @@ footer {
   }
 
   .header-main {
-    padding: 18px 20px;
-    gap: 12px;
+    padding: var(--sp-4) var(--sp-5);
+    gap: var(--sp-3);
   }
   .search-zone {
-    padding: 12px 16px;
+    padding: var(--sp-3) var(--sp-4);
   }
   body {
-    font-size: 14px;
+    font-size: var(--fs-md);
   }
   main {
-    padding: 20px 16px;
+    padding: var(--sp-5) var(--sp-4);
   }
   #result-count {
     display: none;
@@ -919,10 +1173,10 @@ footer {
     display: none;
   }
   .title-block h1 {
-    font-size: 20px;
+    font-size: var(--fs-xl);
   }
   footer {
-    padding: 14px 20px;
+    padding: var(--sp-3) var(--sp-5);
   }
 }
 
@@ -935,5 +1189,144 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   PRINT
+   ══════════════════════════════════════════════
+   These tools exist to produce a number someone then writes into a file, so
+   printing is a first-class path, not an afterthought. Without this the whole
+   navy page prints, which wastes ink and is hard to read on paper.
+
+   The palette is re-pointed at print-safe values rather than restyled rule by
+   rule, so every component follows automatically. */
+@media print {
+  :root {
+    color-scheme: light;
+    --void: #ffffff;
+    --deep: #ffffff;
+    --surface: #ffffff;
+    --lift: #f2f2f2;
+    --border: #767676;
+    --line: #b4b4b4;
+    --amber: #8a4b00;
+    --red: #a32200;
+    --text: #000000;
+    --muted: #333333;
+    --dim: #4a4a4a;
+    /* Glows and the CRT bloom are pure screen effects. */
+    --ring: none;
+    --glow: none;
+    --glow-hero: none;
+    /* Print-only extras: rules that need to stay visible in greyscale, the
+       link-annotation colour, and the search-highlight ground. */
+    --print-rule: #767676;
+    --print-link: #555555;
+    --print-mark-bg: #f0e0d0;
+    --paper: #ffffff;
+    --ink: #000000;
+  }
+
+  html,
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 11pt;
+  }
+
+  /* Chrome that carries no information. */
+  .sidebar,
+  .sidebar-overlay,
+  .topbar,
+  .search-zone,
+  .stats-band,
+  .sidebar-toggle,
+  footer,
+  .copy-btn,
+  .unit-switcher,
+  .reset-btn,
+  .search-clear,
+  .ref-today-btn,
+  #loading {
+    display: none !important;
+  }
+
+  .page-content,
+  .app-shell {
+    display: block;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  /* Flatten every panel: no shadows, no glow, no rounded chrome. */
+  .panel,
+  .result-block,
+  .list-section,
+  .substances-table thead {
+    border-color: var(--print-rule);
+    background: var(--paper);
+    box-shadow: none;
+  }
+
+  /* A collapsed list would print as an empty box — force every one open. */
+  .list-section.collapsed .list-body {
+    display: block !important;
+  }
+  .chevron {
+    display: none;
+  }
+
+  /* Repeat table headers on every printed page. */
+  .substances-table {
+    page-break-inside: auto;
+  }
+  .substances-table thead {
+    display: table-header-group;
+  }
+  .substances-table tr {
+    page-break-inside: avoid;
+  }
+
+  /* Keep a result card and its heading together. */
+  .result-block,
+  .result-header,
+  .panel-header {
+    page-break-inside: avoid;
+  }
+
+  /* Entrance animations would freeze mid-fade on paper. */
+  .list-section,
+  .result-block.animate,
+  .prompt {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: var(--print-link);
+  }
+
+  /* The alpha ramps are literal screen ambers, so they do not follow the
+     re-pointed --amber. Override the highlight explicitly, otherwise a matched
+     search term prints as brown text on a pale orange wash. */
+  mark {
+    background: var(--print-mark-bg);
+    color: var(--ink);
+  }
+  .input-highlight,
+  #input-text {
+    display: none;
+  }
+
+  .field,
+  input {
+    border-color: var(--print-rule) !important;
+    box-shadow: none !important;
   }
 }

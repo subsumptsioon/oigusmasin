@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rehkendaja | Õigusmasin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
@@ -16,11 +13,13 @@
         position: relative;
         pointer-events: auto;
       }
-      /* A11y (WCAG 2.4.7): visible focus for the borderless textarea */
+      /* A11y (WCAG 2.4.7 / 2.4.11): the textarea inside is borderless and
+         sets outline:none, so the wrapper owns the focus ring. 2px to match
+         the universal ring everywhere else (it used to be 1px). */
       .input-wrap:focus-within {
-        outline: 1px solid var(--amber);
+        outline: 2px solid var(--amber);
         outline-offset: 2px;
-        border-radius: 2px;
+        border-radius: var(--radius);
       }
 
       /* The mirror div — drives height; textarea overlaid on top */
@@ -29,9 +28,8 @@
         box-sizing: border-box;
         width: 100%;
         min-height: 120px;
-        padding: 16px;
-        font-family: var(--mono);
-        font-size: 14px;
+        padding: var(--sp-4);
+        font-size: var(--fs-md);
         line-height: 1.7;
         color: transparent;
         white-space: pre-wrap;
@@ -41,28 +39,27 @@
       }
 
       .input-highlight mark {
-        background: rgba(250, 169, 104, 0.28);
+        background: var(--amber-28);
         color: transparent;
-        border-radius: 0;
-        outline: 1px solid rgba(250, 169, 104, 0.5);
+        border-radius: var(--radius);
+        outline: 1px solid var(--amber-50);
         padding: 0;
         pointer-events: auto;
         cursor: pointer;
       }
       .input-highlight mark.excluded {
-        background: rgba(140, 191, 184, 0.12);
-        outline: 1px solid rgba(140, 191, 184, 0.25);
+        background: var(--muted-12);
+        outline: 1px solid var(--muted-25);
         text-decoration: line-through;
       }
       .reset-btn {
-        font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--dim);
         background: none;
         border: none;
         padding: 0;
         cursor: pointer;
-        letter-spacing: 0.06em;
+        letter-spacing: var(--track-wide);
         transition: color 0.12s;
         display: none;
       }
@@ -86,10 +83,9 @@
         background: transparent;
         border: none;
         color: var(--text);
-        font-family: var(--mono);
-        font-size: 14px;
+        font-size: var(--fs-md);
         line-height: 1.7;
-        padding: 16px;
+        padding: var(--sp-4);
         resize: none;
         outline: none;
         caret-color: var(--amber);
@@ -101,54 +97,46 @@
       }
 
       /* Results panel */
-      /* results-panel / result-header / result-label live in noir.css */
-      .result-value {
-        font-family: var(--mono);
-        padding: 16px 20px;
-        font-size: 15px;
-        color: var(--text);
-        line-height: 1.6;
-      }
+      /* results-panel / result-header / result-label live in noir.css.
+         (.result-value used to live here but nothing referenced it — the
+         page renders .sum-value / .count-value / .elements-list instead.) */
 
       /* Sum value — larger */
       .sum-value {
-        font-family: var(--mono);
-        font-size: 32px;
+        font-size: var(--fs-hero);
         font-weight: 700;
         color: var(--amber);
-        letter-spacing: -0.02em;
-        padding: 20px 20px;
+        letter-spacing: var(--track-tight);
+        padding: var(--sp-5) var(--sp-5);
         /* Amber CRT bloom on the hero number (Retro 82) */
-        text-shadow: 0 0 18px rgba(250, 169, 104, 0.35);
+        text-shadow: 0 0 18px var(--amber-35);
       }
 
       /* Count */
       .count-value {
-        font-family: var(--mono);
-        font-size: 24px;
+        font-size: var(--fs-2xl);
         font-weight: 700;
         color: var(--text);
-        padding: 16px 20px;
+        padding: var(--sp-4) var(--sp-5);
       }
 
       /* Ordered list of elements */
       .elements-list {
-        padding: 14px 20px;
+        padding: var(--sp-3) var(--sp-5);
         margin: 0;
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: var(--sp-1);
       }
 
       .elements-list li {
-        font-family: var(--mono);
         display: flex;
         align-items: baseline;
-        gap: 10px;
-        font-size: 14px;
+        gap: var(--sp-2);
+        font-size: var(--fs-md);
         color: var(--text);
-        padding: 7px 0;
+        padding: var(--sp-2) 0;
         border-bottom: 1px solid var(--border);
       }
       .elements-list li:last-child {
@@ -156,8 +144,7 @@
       }
 
       .el-num {
-        font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: var(--dim);
         width: 28px;
         text-align: right;
@@ -166,13 +153,8 @@
 
       /* Empty state */
       .empty-state {
-        font-family: var(--mono);
-        padding: 40px 16px;
+        padding: var(--sp-8) var(--sp-4);
         text-align: center;
-        color: var(--dim);
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
       }
 
       /* Unit switcher */
@@ -183,10 +165,9 @@
         flex-shrink: 0;
       }
       .unit-btn {
-        font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        padding: 6px 16px;
+        font-size: var(--fs-xs);
+        letter-spacing: var(--track-caps);
+        padding: var(--sp-2) var(--sp-4);
         background: none;
         border: none;
         color: var(--dim);
@@ -272,7 +253,7 @@
               <div class="result-block animate" id="block-sum">
                 <div class="result-header">
                   <span class="result-label">// Hulga summa</span>
-                  <div style="display: flex; align-items: center; gap: 12px">
+                  <div style="display: flex; align-items: center; gap: var(--sp-3)">
                     <button class="reset-btn" id="reset-btn">lähtesta</button>
                     <button class="copy-btn" id="copy-sum">
                       Kopeeri summa

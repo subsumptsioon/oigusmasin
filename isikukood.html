@@ -4,24 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Isikukood ja vanus | Õigusmasin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific overrides ── */
       /* Tool layout is shared in noir.css; this page uses a tighter gutter */
       .tool-wrap {
-        gap: 28px;
+        gap: var(--sp-6);
       }
 
       /* ── Input field ── */
       .input-section {
-        padding: 24px 24px 0 24px;
+        padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
       }
       /* .field-label text styling lives in noir.css; page adds spacing */
       .field-label {
-        margin-bottom: 8px;
+        margin-bottom: var(--sp-2);
       }
       .code-input-wrap {
         position: relative;
@@ -32,62 +29,30 @@
       .code-suffix {
         position: absolute;
         pointer-events: none;
-        font-family: var(--mono);
-        font-size: 22px;
-        letter-spacing: 0.12em;
+        font-size: var(--fs-2xl);
+        letter-spacing: var(--track-caps);
         color: var(--dim);
         opacity: 0.35;
         white-space: pre;
         top: 50%;
         transform: translateY(-50%);
-        z-index: 3;
+        z-index: var(--z-overlay-top);
       }
 
-      #code-input {
-        width: 100%;
-        background: var(--lift);
-        border: 1px solid var(--border);
-        color: var(--text);
-        caret-color: var(--amber);
-        font-family: var(--mono);
-        font-size: 22px;
-        letter-spacing: 0.12em;
-        padding: 12px 44px 12px 14px;
-        outline: none;
-        transition: border-color 0.15s;
-        position: relative;
-        z-index: 2;
-      }
-      #code-input:focus {
-        border-color: var(--line);
-      }
-      #code-input.is-valid {
-        border-color: var(--amber);
-      }
-      #code-input.is-error {
-        border-color: var(--red);
-      }
-      #code-input::placeholder {
-        color: var(--dim);
-        opacity: 0.5;
-        letter-spacing: 0.06em;
-        font-size: 14px;
-      }
 
       .input-clear {
         position: absolute;
         right: 10px;
         top: 50%;
         transform: translateY(-50%);
-        font-family: var(--mono);
-        font-size: 16px;
+        font-size: var(--fs-lg);
         color: var(--dim);
         background: none;
         border: none;
         cursor: pointer;
-        padding: 4px 6px;
+        padding: var(--sp-1) var(--sp-2);
         line-height: 1;
-        z-index: 3;
+        z-index: var(--z-overlay-top);
         display: none;
         transition: color 0.12s;
       }
@@ -99,11 +64,10 @@
       }
 
       .input-hint {
-        font-family: var(--mono);
-        margin-top: 8px;
-        font-size: 11px;
+        margin-top: var(--sp-2);
+        font-size: var(--fs-xs);
         color: var(--dim);
-        letter-spacing: 0.04em;
+        letter-spacing: var(--track-wide);
         min-height: 18px;
       }
       .input-hint.err {
@@ -112,16 +76,11 @@
 
       /* ── Date separator ── */
       .or-separator {
-        font-family: var(--mono);
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin: 20px 0 0 0;
-        padding: 0 20px;
-        font-size: 11px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--dim);
+        gap: var(--sp-3);
+        margin: var(--sp-5) 0 0 0;
+        padding: 0 var(--sp-5);
       }
       .or-separator::before,
       .or-separator::after {
@@ -133,83 +92,30 @@
 
       /* ── DOB input ── */
       .dob-section {
-        padding: 16px 24px 0 24px;
-      }
-      #dob-input {
-        width: 100%;
-        background: var(--lift);
-        border: 1px solid var(--border);
-        color: var(--text);
-        caret-color: var(--amber);
-        font-family: var(--mono);
-        font-size: 16px;
-        letter-spacing: 0.08em;
-        padding: 10px 14px;
-        outline: none;
-        transition: border-color 0.15s;
-      }
-      #dob-input:focus {
-        border-color: var(--line);
-      }
-      #dob-input.is-valid {
-        border-color: var(--amber);
-      }
-      #dob-input.is-error {
-        border-color: var(--red);
-      }
-      #dob-input::placeholder {
-        color: var(--dim);
-        opacity: 0.5;
-        letter-spacing: 0.04em;
-        font-size: 13px;
+        padding: var(--sp-4) var(--sp-6) 0 var(--sp-6);
       }
 
       /* ── Reference date ── */
       .ref-section {
-        padding: 20px 24px;
+        padding: var(--sp-5) var(--sp-6);
         border-top: 1px solid var(--border);
-        margin-top: 20px;
+        margin-top: var(--sp-5);
       }
       .ref-row {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--sp-3);
       }
       .ref-label {
-        font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--dim);
         flex-shrink: 0;
       }
-      #ref-input {
-        flex: 1;
-        background: var(--lift);
-        border: 1px solid var(--border);
-        color: var(--text);
-        caret-color: var(--amber);
-        font-family: var(--mono);
-        font-size: 14px;
-        letter-spacing: 0.08em;
-        padding: 7px 12px;
-        outline: none;
-        transition: border-color 0.15s;
-      }
-      #ref-input:focus {
-        border-color: var(--line);
-      }
-      #ref-input.is-valid {
-        border-color: var(--line);
-      }
       .ref-today-btn {
-        font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.08em;
+        font-size: var(--fs-xs);
+        letter-spacing: var(--track-wide);
         color: var(--dim);
         background: none;
         border: 1px solid var(--border);
-        padding: 7px 12px;
+        padding: var(--sp-2) var(--sp-3);
         cursor: pointer;
         white-space: nowrap;
         transition:
@@ -225,58 +131,28 @@
         color: var(--amber);
         border-color: var(--line);
       }
-      #ref-calendar {
-        background: var(--lift);
-        border: 1px solid var(--border);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 14px;
-        padding: 7px 8px;
-        outline: none;
-        cursor: pointer;
-        transition: border-color 0.15s;
-        flex-shrink: 0;
-      }
-      #ref-calendar:focus,
-      #ref-calendar:hover {
-        border-color: var(--line);
-      }
-      #ref-calendar::-webkit-calendar-picker-indicator {
-        filter: invert(0.55) sepia(1) saturate(3) hue-rotate(5deg)
-          brightness(1.1);
-        cursor: pointer;
-        padding: 0;
-        margin: 0;
-      }
 
       /* ── Results panel (shared chrome lives in noir.css) ── */
 
       /* Age display */
       .age-main {
-        font-family: var(--mono);
-        padding: 20px 20px 16px 20px;
-        font-size: 22px;
+        padding: var(--sp-5) var(--sp-5) var(--sp-4) var(--sp-5);
+        font-size: var(--fs-2xl);
         font-weight: 700;
         color: var(--amber);
-        letter-spacing: -0.01em;
+        letter-spacing: var(--track-tight);
         line-height: 1.5;
       }
       .age-detail {
-        font-family: var(--mono);
-        padding: 0 18px 16px 18px;
-        font-size: 13px;
+        padding: 0 var(--sp-4) var(--sp-4) var(--sp-4);
+        font-size: var(--fs-sm);
         color: var(--muted);
-        letter-spacing: 0.04em;
+        letter-spacing: var(--track-wide);
       }
 
       /* Idle placeholder */
       .idle-state {
-        font-family: var(--mono);
-        padding: 28px 18px;
-        font-size: 12px;
-        color: var(--dim);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+        padding: var(--sp-6) var(--sp-4);
       }
     </style>
   </head>
@@ -328,6 +204,7 @@
                   ></span>
                   <input
                     type="text"
+                    class="field field--raised field--code"
                     id="code-input"
                     maxlength="11"
                     placeholder="37605030000"
@@ -357,6 +234,7 @@
                 <div class="field-label">// Sünniaeg</div>
                 <input
                   type="text"
+                  class="field field--raised field--md"
                   id="dob-input"
                   maxlength="10"
                   placeholder="PP.KK.AAAA"
@@ -371,12 +249,13 @@
 
               <!-- Reference date -->
               <div class="ref-section">
-                <div class="field-label" style="margin-bottom: 10px">
+                <div class="field-label" style="margin-bottom: var(--sp-2)">
                   // Arvutuskuupäev
                 </div>
                 <div class="ref-row">
                   <input
                     type="text"
+                    class="field field--raised field--sm"
                     id="ref-input"
                     maxlength="10"
                     placeholder="PP.KK.AAAA"
@@ -386,6 +265,7 @@
                   />
                   <input
                     type="date"
+                    class="field field--raised field--cal"
                     id="ref-calendar"
                     tabindex="4"
                     title="Vali kuupäev"
@@ -828,7 +708,7 @@
             infl(age.days, "päev", "päeva");
           const refNote = isToday
             ? ""
-            : ' <span style="color:var(--dim);font-size:14px;font-weight:400">(' +
+            : ' <span style="color:var(--dim);font-size:var(--fs-md);font-weight:400">(' +
               refLabel +
               ")</span>";
 
