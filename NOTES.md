@@ -55,8 +55,12 @@ npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
-`npm run snapshot` is the tool to reach for when changing type or spacing: it
-diffs 1600 measured values across all 5 pages instead of relying on eyeballing.
+`.baseline/css-current.txt` holds a current snapshot baseline (1606 values,
+verified clean). Diff against it before and after any type, spacing or layout
+change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — then
+refresh it with `--save` once the change is accepted. It is scratch, not a
+source of truth; delete and re-create freely. Prefer it to eyeballing: the
+figures are measured, not judged.
 CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `main`.
 `.github/workflows/update-data.yml` refreshes `data.json` daily at 04:00 UTC.
 
@@ -152,5 +156,5 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   (plaintext `lausepank-andmed.json` is gitignored; see `.vscode/tasks.json`).
 
 ## Local artifacts (gitignored)
-`sessions/`, `data/stats.json`, `.baseline/` (css-snapshot diff baselines) —
-agent runtime state, never commit.
+`sessions/`, `data/stats.json`, `agent_journal/`, `.agent_todos.json*`,
+`.baseline/` (css-snapshot diff baselines) — agent runtime state, never commit.
