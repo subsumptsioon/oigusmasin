@@ -3,6 +3,7 @@ sessions/
 data/stats.json
 .agent_todos.json*
 agent_journal/
+.baseline/
 
 # ── Defence-in-depth: never commit the plaintext lausepank source.
 #    Encrypt locally (lausepank-krypt.html) and push only lausepank-andmed.enc.

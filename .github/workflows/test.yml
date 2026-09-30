@@ -35,3 +35,6 @@ jobs:
 
       - name: Design-token WCAG contrast audit
         run: node tools/contrast-audit.mjs
+
+      - name: CSS convention lint
+        run: node tools/check-css.mjs

@@ -10,8 +10,10 @@
     "test": "node tools/run-rehkendaja-tests.mjs",
     "check": "node tools/check-assets.mjs",
     "contrast": "node tools/contrast-audit.mjs",
-    "verify": "npm test && npm run check && npm run contrast",
+    "verify": "npm test && npm run check && npm run contrast && npm run css",
     "dom": "node tools/dom-tests.mjs",
-    "smoke": "node tools/smoke-test.mjs"
+    "smoke": "node tools/smoke-test.mjs",
+    "css": "node tools/check-css.mjs",
+    "snapshot": "node tools/css-snapshot.mjs"
   }
 }

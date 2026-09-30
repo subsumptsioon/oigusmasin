@@ -6,7 +6,8 @@
  *   1. every local href/src referenced by an HTML page resolves to a file;
  *   2. every NAV_ITEMS entry in nav.js points to an existing page;
  *   3. every page includes nav.js and noir.css (site-wide consistency);
- *   4. every page that includes nav.js has the sidebar/overlay scaffold.
+ *   4. every page that includes nav.js has the sidebar/overlay scaffold;
+ *   5. every url() in a stylesheet (notably the @font-face src) resolves.
  *
  * Usage:  node tools/check-assets.mjs
  * Exit:   0 clean, 1 problems found.
@@ -104,6 +105,27 @@ function checkConsistency(pages, navHrefs) {
   }
 }
 
+/* Every url() referenced from a stylesheet must exist on disk. @font-face src
+   urls are not href/src attributes, so checkRefs cannot see them — a renamed
+   or uncommitted font file would otherwise only surface as a silent fallback
+   to ui-monospace in production. */
+function checkStyleAssets() {
+  const sheets = [...fs.readdirSync(ROOT).filter((f) => f.endsWith(".css")), "noir.css"];
+  for (const sheet of new Set(sheets)) {
+    const p = path.join(ROOT, sheet);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const m of css.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)) {
+      const ref = m[1].trim();
+      if (/^(https?:|data:|\/\/)/i.test(ref)) continue;
+      const target = path.join(ROOT, ref);
+      if (!fs.existsSync(target)) {
+        note(`${sheet}: url(${ref}) -> file missing`);
+      }
+    }
+  }
+}
+
 function main() {
   const pages = listPages();
   if (!pages.length) {
@@ -114,10 +136,11 @@ function main() {
   checkRefs(pages);
   const navHrefs = checkNav(pages);
   checkConsistency(pages, navHrefs);
+  checkStyleAssets();
 
   console.log(`Asset check: ${pages.length} pages scanned.`);
   if (!problems.length) {
-    console.log("\x1b[32mOK\x1b[0m  all local refs resolve; nav + includes consistent.");
+    console.log("\x1b[32mOK\x1b[0m  all local refs resolve; nav + includes + style assets consistent.");
     process.exit(0);
   }
   console.log(`\x1b[31m${problems.length} problem(s):\x1b[0m`);
