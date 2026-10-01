@@ -182,6 +182,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Form controls are the one thing that does NOT pick the family up from body:
+   the UA stylesheet hard-resets font-family on button/input/select/textarea,
+   so every control fell back to the platform UI font while the text around it
+   rendered in the Nerd Font. Measured across all four pages, that was 20
+   controls — #search, every .field, and every button.
+
+   Only the family is restored. `font: inherit` would also drag each control's
+   font-size back to body's, clobbering the per-component type scale that
+   .field--* and the button rules set on purpose.
+
+   :where() keeps specificity at 0 so a component rule can still opt a control
+   into something else later; .list-header carried a `font: inherit` of its own
+   for exactly this reason (noir.css ~906), which is what made it the one
+   control that happened to render correctly. */
+:where(button, input, select, textarea) {
+  font-family: inherit;
+}
+
 /* Text selection — Retro 82 (amber bg, navy text) */
 ::selection {
   background: var(--amber);
