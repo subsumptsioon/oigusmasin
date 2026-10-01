@@ -143,11 +143,10 @@
      Only the Nerd Font is requested; the @font-face block at the top of this
      file serves it to anyone who does not already have it. It ships in
      Regular/Bold only, so weights 500 and 800 resolve to the nearest real
-     weight rather than being synthesised. */
+     weight rather than being synthesised. It is the only family in the
+     system — body sets it and no rule opts out. */
   --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", ui-monospace,
     monospace;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    sans-serif;
 
   /* ── Layout ── */
   --sidebar-w: 260px;
@@ -166,8 +165,8 @@
 /* ── BASE ── */
 /* The whole site is mono-forward (Retro 82), so the mono stack is the body
    default and the 59 per-rule `font-family: var(--mono)` declarations that
-   used to repeat it are gone. Opt back into the UI sans with an explicit
-   `font-family: var(--sans)` — see .substances-table below. */
+   used to repeat it are gone. No rule opts back out to a proportional
+   face — there is no second stack to opt into. */
 body {
   background: var(--void);
   color: var(--text);
@@ -1025,13 +1024,9 @@ main {
   display: none;
 }
 
-/* Substance names are the one place that opts back into the UI sans: they
-   are long chemical names and mono measurably hurts their scanability.
-   Everything else on the page stays mono. */
 .substances-table td {
   padding: var(--sp-3) var(--sp-5);
   line-height: 1.45;
-  font-family: var(--sans);
 }
 .substances-table td:nth-child(3) {
   border-left: 1px solid var(--border);

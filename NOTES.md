@@ -122,9 +122,8 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   Mono = **JetBrainsMono Nerd Font**, self-hosted from `fonts/`. Sharp corners
   (`--radius: 0`), amber glow on focus/hero, accent-chip active nav.
 - The body sets the mono stack, so individual rules must **not** repeat
-  `font-family: var(--mono)`. The one deliberate exception is
-  `.substances-table td`, which opts into `var(--sans)` because long chemical
-  names are harder to scan in a monospace face.
+  `font-family: var(--mono)` — and no rule may opt out to a proportional
+  face. There is no second stack in the design system.
 - `@media print` re-points the palette at paper, drops the sidebar/topbar/
   search/footer, forces collapsed lists open, and repeats table headers.
   Printing is a first-class path — these tools exist to produce a number
