@@ -133,6 +133,11 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 ## Conventions
 - Adding a page: create `<name>.html`, incl. `noir.css` + `nav.js` + `#sidebar`,
   then add a `NAV_ITEMS` entry in `nav.js` (`npm run check` enforces this).
+- **Form controls** (`button`, `input`, `select`, `textarea`) do not inherit
+  `font-family` — the UA stylesheet hard-resets it, so they render in the
+  platform UI font no matter what `body` says. One `:where(...)` base in
+  `noir.css` restores it. Never set `font` shorthand on a control: it drags
+  `font-size` back to body's and defeats the `--fs-*` scale.
 - **Text inputs:** use the `.field` component and one of its size modifiers
   (`.field--code/--md/--sm/--cal`, plus `.field--raised` for the lighter
   surface). A page must **not** declare `border` or `outline` on an input —
