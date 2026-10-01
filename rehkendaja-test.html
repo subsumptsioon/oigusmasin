@@ -287,10 +287,6 @@
           amounts("0,0002g fentanüüli", "eur"),
           "gram suffix not euro",
         ).toEqual([]);
-        expect(
-          amounts("-50 €", "eur"),
-          "negative sign ignored — 50 detected",
-        ).toEqual([50]);
         expect(amounts("nr 1-23/456", "eur"), "case number not euro").toEqual(
           [],
         );
@@ -352,6 +348,112 @@
         expect(res.every((v) => v <= 1000)).toEqual(
           true,
           "no merged garbage from case numbers",
+        );
+      });
+
+      // ── Negatives ──────────────────────────────────────────────────────────────────
+      // A leading "-" is part of the amount. U+2212 MINUS SIGN counts too,
+      // because that is what et-EE formatting emits — the tool has to be able
+      // to read back its own output.
+      suite("Negatiivsed arvud — märk loetaksesummasse", () => {
+        expect(amounts("-50 €", "eur"), "miinusmärk enne €").toEqual([-50]);
+        expect(amounts("-50,50 EUR", "eur"), "miinusmärk + komakomata").toEqual([
+          -50.5,
+        ]);
+        expect(amounts("-50€", "eur"), "miinusmärk, tühik puudub").toEqual([-50]);
+        expect(amounts("eur -99", "eur"), "sõna enne miinusarvu").toEqual([-99]);
+        expect(
+          amounts("EUR -1 234,56", "eur"),
+          "tuhandega miinusarv",
+        ).toEqual([-1234.56]);
+        expect(amounts("-0,5g", "g"), "miinus grammides").toEqual([-0.5]);
+        expect(amounts("-3 grammi", "g"), "miinus, ühik sõna järel").toEqual([
+          -3,
+        ]);
+        expect(amounts("-50", "n"), "miinusarv lihtrežiimis").toEqual([-50]);
+        expect(amounts("-0,001", "n"), "miinus, mitu komakohta").toEqual([
+          -0.001,
+        ]);
+      });
+
+      suite("Negatiivsed arvud — U+2212 ja U+2013", () => {
+        // Intl et-EE formats with U+2212, so a value the tool itself produced
+        // must parse back as negative.
+        expect(amounts("\u221250 EUR", "eur"), "U+2212 loetakse miinusmärgiks")
+          .toEqual([-50]);
+        expect(amounts("-50 EUR", "eur"), "U+002D miinusmärk").toEqual([-50]);
+        // U+2013 EN DASH is a range dash, not a minus: stays positive.
+        expect(amounts("\u201350 EUR", "eur"), "U+2013 vahemärk ei ole miinus")
+          .toEqual([50]);
+      });
+
+      suite("Negatiivsed arvud — märk ei kleepu võõrast sõnast", () => {
+        expect(amounts("nr 1-23/456", "eur"), "asjanumber").toEqual([]);
+        expect(amounts("COVID-19 EUR", "eur"), "COVID-19 on positiivne").toEqual([
+          19,
+        ]);
+        expect(amounts("-12.03.2024", "n"), "miinusmärgiga kuupäev").toEqual(
+          [],
+        );
+        expect(amounts("12.03.2024", "n"), "kuupäev").toEqual([]);
+        expect(amounts("2024-03-12", "n"), "ISO kuupäev").toEqual([]);
+        expect(amounts("10.01-10.02", "n"), "kuupäevavahemik").toEqual([]);
+        expect(amounts("14:30", "n"), "kellaaeg").toEqual([]);
+        expect(amounts("a-50", "n"), "miinusmärk sõna taga").toEqual([]);
+        expect(amounts("2024-2025", "n"), "aastavahemik on positiivne").toEqual([
+          2024,
+        ]);
+      });
+
+      suite("Negatiivsed arvud — summad", () => {
+        expect(sum("-50 € ja 100 €", "eur"), "lahutamine").toBeCloseTo(50, 6);
+        expect(sum("100 € ja -100 €", "eur"), "tühistuvad").toBeCloseTo(0, 6);
+        expect(
+          sum("-1 234,56 € ja 89,50 €", "eur"),
+          "negatiivne summa",
+        ).toBeCloseTo(-1145.06, 2);
+        expect(sum("-0,5g ja 1,2g", "g"), "grammides").toBeCloseTo(0.7, 6);
+      });
+
+      // The letter guard that makes the sign safe also stops an amount from
+      // being read out of the middle of a word.
+      suite("Negatiivsed arvud — sõna sees ei alustata arvu", () => {
+        expect(amounts("x500", "n"), "number tähe järel").toEqual([]);
+        expect(amounts("ab12", "n"), "number sõna taga").toEqual([]);
+        expect(amounts("telegram 5", "g"), "'gram' sõna sees").toEqual([]);
+        expect(amounts("kirogramm 3", "g"), "'gramm' sõna sees").toEqual([]);
+        expect(amounts("curseur 5", "eur"), "'eur' sõna sees").toEqual([]);
+        expect(amounts("programm 2 g", "g"), "'programm' siiski arv").toEqual([2]);
+      });
+
+      suite("Negatiivsed arvud — vormindus", () => {
+        mode = "eur";
+        // The exact minus character is ICU/browser dependent (U+2212 here), so
+        // assert the sign, not the codepoint. A negative that rounds to zero
+        // keeps its sign on purpose.
+        expect(
+          /^[-−]/.test(formatValue(-0.001, 3)),
+          "miinusmärk jääb alles ka ümardamisel",
+        ).toEqual(true);
+        expect(
+          formatValue(-0.001, 3),
+          "kümnendikuni ümardatud miinussumma",
+        ).toEqual(
+          (-0.001).toLocaleString("et-EE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) + "\u00A0€",
+        );
+        expect(formatValue(-50.5, 1).endsWith("\u00A0€"), "ühik U+00A0").toEqual(
+          true,
+        );
+        mode = "g";
+        expect(/^[-−]/.test(formatValue(-1234.56, 2)), "grammides miinus").toEqual(
+          true,
+        );
+        mode = "n";
+        expect(/^[-−]/.test(formatValue(-50.5, 2)), "lihtrežiimis miinus").toEqual(
+          true,
         );
       });
 

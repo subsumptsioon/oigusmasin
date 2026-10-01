@@ -10,7 +10,7 @@ calculators.
 - `narkonimekirjad.html` — narcotics lists I–VI (data from `data.json`).
 - `ennetahtaegne-vabastamine.html` — early release.
 - `isikukood.html` — Estonian personal ID / age.
-- `rehkendaja-test.html` — browser test page for Rehkendaja (18 suites / 80 tests).
+- `rehkendaja-test.html` — browser test page for Rehkendaja (24 suites / 115 tests).
 - `rehkendaja-core.js` — **pure** detection+formatting logic shared by Rehkendaja and its tests. No DOM, no side effects. This is what the tests exercise.
 - `nav.js` — single source of truth for the sidebar (`NAV_ITEMS`). Auto-detects active page.
 - `noir.css` — the whole design system: tokens, layout, and shared components
@@ -154,6 +154,19 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   list rather than re-declaring the four declarations.
 - Adding a Rehkendaja test: add a `suite(...)` block in `rehkendaja-test.html`;
   the headless runner picks it up automatically.
+- **Rehkendaja signs.** A leading `-` is part of the amount, so `-50 €` sums as
+  −50 and a credit reduces the total. Both ASCII `-` and U+2212 MINUS SIGN are
+  accepted — `et-EE` formatting emits U+2212, so the tool must be able to read
+  back its own output; `parseAmount` normalises it because `parseFloat` only
+  knows ASCII. U+2013 EN DASH is a range dash, not a minus, and stays positive.
+  The three detection patterns are built with `new RegExp` from one shared
+  `NUM_SRC` fragment so the sign cannot drift between alternatives, and every
+  pattern is guarded by `(?<![\p{L}\p{N}])` so an amount can never start inside a
+  word — without that, the `-` in `COVID-19` would open a match.
+- **A dot is a decimal separator**, not a thousands separator: `1.234` is one-two-
+  point-three-four and renders as `1,23 €`. `1 234,56` and `1.234,56` are the
+  thousands forms. A number followed by `. ` and another digit (`100. 200 EUR`)
+  is therefore one value, `100,20 €`, which is intended and tested.
 - Rehkendaja copy-to-clipboard glues amount to unit with a **non-breaking space**
   (`\u00A0`) so Word never line-breaks between the number and € / g.
 - `lausepank` work lives on the `lausepank` branch and uses encrypted data
