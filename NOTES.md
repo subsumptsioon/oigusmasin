@@ -10,7 +10,7 @@ calculators.
 - `narkonimekirjad.html` — narcotics lists I–VI (data from `data.json`).
 - `ennetahtaegne-vabastamine.html` — early release.
 - `isikukood.html` — Estonian personal ID / age.
-- `rehkendaja-test.html` — browser test page for Rehkendaja (24 suites / 115 tests).
+- `rehkendaja-test.html` — browser test page for Rehkendaja (40 suites / 552 tests).
 - `rehkendaja-core.js` — **pure** detection+formatting logic shared by Rehkendaja and its tests. No DOM, no side effects. This is what the tests exercise.
 - `nav.js` — single source of truth for the sidebar (`NAV_ITEMS`). Auto-detects active page.
 - `noir.css` — the whole design system: tokens, layout, and shared components
@@ -98,7 +98,9 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   (isikukood, narkonimekirjad, index, karistuste-liitmine, ennetähtaegne) that
   the pure-core runner can't reach. Loads each page in headless Chromium over the
   DevTools Protocol (no npm deps; Node built-in `WebSocket`) and asserts page
-  globals. Add a check to `CHECKS`. Run `npm run dom`.
+  globals. Add a check to `CHECKS`. Run `npm run dom`. The checks share one live
+  page, so each one that touches `excluded`/`inputEl` must reset the state it
+  depends on (`excluded.clear()`) — otherwise it only passes in one order.
 - `smoke-test.mjs` — loads every page in headless Chromium and fails on any
   uncaught exception / console error. `npm run smoke`.
 - `page-eval.mjs` — one-off probe: `node tools/page-eval.mjs <page> "<expr>"`
@@ -153,7 +155,15 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   (`.panel-header`, `.field-label`, `.result-label`, …). Add new labels to that
   list rather than re-declaring the four declarations.
 - Adding a Rehkendaja test: add a `suite(...)` block in `rehkendaja-test.html`;
-  the headless runner picks it up automatically.
+  the headless runner picks it up automatically. Beyond `toEqual`/`toBeCloseTo`
+  the harness also has `toBeTruthy`, `toBeFalse`, `toBeLessThan`, `toHaveLength`,
+  `toContain` and `toMatchFields` (partial deep compare, key-order agnostic —
+  use it for `extractAmounts` records rather than `toEqual`, which compares
+  `JSON.stringify` and so is key-order sensitive). `CORPUS` at the top of the
+  suite block holds realistic Estonian legal strings; the `Regexi — invariant:`
+  suites iterate it in all three modes and assert the *shape* of every result
+  (raw spans the text it claims, matches are ordered and disjoint, amounts are
+  finite, eur/g matches carry their unit) rather than specific strings.
 - **Rehkendaja signs.** A leading `-` is part of the amount, so `-50 €` sums as
   −50 and a credit reduces the total. Both ASCII `-` and U+2212 MINUS SIGN are
   accepted — `et-EE` formatting emits U+2212, so the tool must be able to read

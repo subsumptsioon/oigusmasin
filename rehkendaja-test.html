@@ -161,44 +161,85 @@
         fn();
       }
 
-      // expect(actual).toEqual(expected)
-      // expect(actual).toBeCloseTo(expected, decimalPlaces)
-      // expect(actual).toBeNull()
+      // Every matcher funnels through record() so a failure always carries a
+      // printable "got"/"expected" pair.
+      function record(pass, got, expected, label) {
+        currentSuite.tests.push({
+          pass,
+          label: label || "",
+          got: pass ? null : got,
+          expected: pass ? null : expected,
+        });
+      }
+
+      // Partial deep compare: every key in `expected` must match in `actual`,
+      // extra keys in `actual` are ignored. Unlike toEqual this does not care
+      // about key order, so an extractAmounts record can be asserted by name.
+      function deepMatches(actual, expected) {
+        if (expected === null || typeof expected !== "object") {
+          return JSON.stringify(actual) === JSON.stringify(expected);
+        }
+        if (actual === null || typeof actual !== "object") return false;
+        return Object.keys(expected).every(
+          (k) =>
+            Object.prototype.hasOwnProperty.call(actual, k) &&
+            deepMatches(actual[k], expected[k]),
+        );
+      }
+
+      // expect(actual, label)
+      //   .toEqual(expected)         strict JSON equality
+      //   .toBeCloseTo(expected, dp) rounded comparison
+      //   .toBeNull()
+      //   .toBeTruthy() / .toBeFalse()
+      //   .toHaveLength(n)          array or string length
+      //   .toContain(sub)           substring, or array member
+      //   .toMatchFields(expected)  partial deep compare, key-order agnostic
       function expect(actual, label) {
+        const lbl = label || "";
+        const j = (v) => JSON.stringify(v);
         return {
           toEqual(expected) {
-            const pass = JSON.stringify(actual) === JSON.stringify(expected);
-            currentSuite.tests.push({
-              pass,
-              label: label || "",
-              got: pass ? null : JSON.stringify(actual),
-              expected: pass ? null : JSON.stringify(expected),
-            });
+            const pass = j(actual) === j(expected);
+            record(pass, j(actual), j(expected), lbl);
           },
           toBeCloseTo(expected, dp = 6) {
             const factor = Math.pow(10, dp);
             const pass =
               Math.round(actual * factor) === Math.round(expected * factor);
-            currentSuite.tests.push({
-              pass,
-              label: label || "",
-              got: pass ? null : actual,
-              expected: pass ? null : expected,
-            });
+            record(pass, actual, expected, lbl);
           },
           toBeNull() {
-            const pass = actual === null;
-            currentSuite.tests.push({
-              pass,
-              label: label || "",
-              got: pass ? null : JSON.stringify(actual),
-              expected: pass ? null : "null",
-            });
+            record(actual === null, j(actual), "null", lbl);
+          },
+          toBeLessThan(n) {
+            record(actual < n, actual, `< ${n}`, lbl);
+          },
+          toBeTruthy() {
+            record(!!actual, j(actual), "truthy", lbl);
+          },
+          toBeFalse() {
+            record(actual === false, j(actual), "false", lbl);
+          },
+          toHaveLength(n) {
+            const len = actual == null ? -1 : actual.length;
+            record(len === n, len, n, lbl);
+          },
+          toContain(sub) {
+            const hit = Array.isArray(actual)
+              ? actual.includes(sub)
+              : String(actual).includes(sub);
+            record(hit, j(actual), j(sub), lbl);
+          },
+          toMatchFields(expected) {
+            const pass = deepMatches(actual, expected);
+            record(pass, j(actual), j(expected), lbl);
           },
         };
       }
 
-      // ── Helper: extract amounts in a given mode from a string ─────────────────────
+      // ── Helpers ───────────────────────────────────────────────────────────────────
+      // extract amounts in a given mode from a string
       function detect(text, m) {
         mode = m;
         return extractAmounts(text);
@@ -209,6 +250,53 @@
       function sum(text, m) {
         return detect(text, m).reduce((a, x) => a + x.amount, 0);
       }
+      function raws(text, m) {
+        return detect(text, m).map((x) => x.raw);
+      }
+      function setMode(m) {
+        mode = m;
+      }
+
+      // Shared corpus for the property-style suites: realistic Estonian legal
+      // phrasing, plus the shapes that have historically confused the patterns
+      // (dates, case numbers, word ranges, adjacent amounts, bare signs).
+      const CORPUS = [
+        "Süüdistatud sai 1 234,56 € ja 89,50 € kokku.",
+        "Kaalutud oli 0,5g heroiini ja 1,2g kokaiini.",
+        "Kokku 12 345,67 eurot.",
+        "Leidsin 7 asja ja 3 raamatut.",
+        "Maksime 3000. Seejärel 4000.",
+        "Summa 4500. Teine summa 3200.",
+        "punktid 1. 2. ja 3.",
+        "Kahest hulgast 500 € ja 250 €",
+        "hind on 0,99 €",
+        "Tegemist on 300 grammi ainega",
+        "grammides 1000,001g",
+        "3,14g kokaiini ja 12 grammi amfetamiini",
+        "kuupäev 12.03.2024 ja 14:30",
+        "nr 1-23/456",
+        "alates 01.01.2024 kehtib",
+        "vahemikus 10.01-10.02",
+        "majandusaasta 2024-2025",
+        "artikkel 5-6 leppet",
+        "telefon 555-1234",
+        "COVID-19",
+        "märkus nr 42.",
+        "x500",
+        "-50 € kahjulik kulu",
+        "50 € ja -50 € tühistuvad",
+        "(50 €)",
+        "a & b 100 €",
+        "",
+        "   ",
+      ];
+
+      // A match in eur/g mode must carry its unit. Kept as data so the
+      // property suite stays independent of the regex sources.
+      const UNIT_TOKEN = {
+        eur: /€|eur|euro|eurot/i,
+        g: /(^|\s)(g\.?|gramm\w*)\b|\b(gramm\w*)\b(\s|$)/i,
+      };
 
       // ═════════════════════════════════════════════════════════════════════════════
       // SUITES
@@ -576,6 +664,379 @@
           mode = "n"; // restore
         },
       );
+
+      // ═════════════════════════════════════════════════════════════════════════════
+      // PROPERTY-STYLE INVARIANTS
+      // These run over the whole CORPUS in all three modes. They are written
+      // against the shape of the result rather than specific strings, so they
+      // keep holding when new cases are added to the corpus.
+      // ═════════════════════════════════════════════════════════════════════════════
+      const MODES = ["eur", "g", "n"];
+
+      // Strip everything a number is allowed to contain, leaving only the unit.
+      function unitRemainder(raw) {
+        return raw.replace(/[-\u22120-9.,\u00A0\s]+/g, "");
+      }
+
+      suite("Regexi — invariant: raw spans exactly the text it claims", () => {
+        for (const m of MODES) {
+          for (const text of CORPUS) {
+            for (const r of detect(text, m)) {
+              expect(
+                text.slice(r.index, r.index + r.matchLen),
+                `${m}: "${r.raw}" slice == raw`,
+              ).toEqual(r.raw);
+            }
+          }
+        }
+      });
+
+      suite("Regexi — invariant: matches never overlap and stay in order", () => {
+        for (const m of MODES) {
+          for (const text of CORPUS) {
+            const rs = detect(text, m);
+            const ordered = rs.every((r, i) => i === 0 || r.index >= rs[i - 1].index);
+            const end = (x) => x.index + x.matchLen;
+            const disjoint = rs.every((r, i) => i === 0 || r.index >= end(rs[i - 1]));
+            expect(ordered, `${m}: "${text}" indices ascending`).toEqual(true);
+            expect(disjoint, `${m}: "${text}" matches disjoint`).toEqual(true);
+          }
+        }
+      });
+
+      suite("Regexi — invariant: amount finite, decimals in range", () => {
+        for (const m of MODES) {
+          for (const text of CORPUS) {
+            for (const r of detect(text, m)) {
+              expect(Number.isFinite(r.amount), `${m}: "${r.raw}" finite`).toEqual(
+                true,
+              );
+              expect(
+                r.decimals >= 0 && r.decimals <= r.raw.length,
+                `${m}: "${r.raw}" decimals ${r.decimals} in range`,
+              ).toEqual(true);
+            }
+          }
+        }
+      });
+
+      suite("Regexi — invariant: eur/g matches carry their unit", () => {
+        const tokens = { eur: /^(€|eur|euro|eurot)$/i, g: /^(g\.?|gramm\w*)$/i };
+        for (const m of ["eur", "g"]) {
+          for (const text of CORPUS) {
+            for (const raw of raws(text, m)) {
+              expect(
+                tokens[m].test(unitRemainder(raw)),
+                `${m}: "${raw}" carries a unit`,
+              ).toEqual(true);
+            }
+          }
+        }
+      });
+
+      // The three patterns are module-level /g regexes sharing one lastIndex, so a
+      // call that left lastIndex dirty would make the next call resume
+      // mid-string. Two independent safeguards already prevent that —
+      // activeRe() resets it on the way in, and a completed exec loop resets it
+      // too (exec returns null at the end) — so this holds by construction and
+      // is a defensive pin rather than a currently-falsifiable check: no
+      // single-point mutation of rehkendaja-core.js makes it fail. It guards a
+      // future refactor that removes both safeguards at once, which would
+      // produce a silent, order-dependent bug.
+      suite("Regexi — invariant: no state leaks between calls", () => {
+        const probe = "1 234,56 € ja 0,5g ja 7 asja ja 2 500,00 €";
+        const baseline = JSON.stringify([
+          raws(probe, "eur"),
+          raws(probe, "g"),
+          raws(probe, "n"),
+        ]);
+        for (let i = 0; i < 5; i++) {
+          detect("täiesti muu 999 €", "eur");
+          detect("99g", "g");
+          detect("12345", "n");
+        }
+        expect(
+          JSON.stringify([
+            raws(probe, "eur"),
+            raws(probe, "g"),
+            raws(probe, "n"),
+          ]),
+          "results identical after interleaved calls",
+        ).toEqual(baseline);
+        expect(raws(probe, "eur"), "repeat call is stable").toEqual(
+          JSON.parse(baseline)[0],
+        );
+        // The shared regex must be back at the start after every call.
+        for (const m of MODES) {
+          detect(probe, m);
+          expect(activeRe().lastIndex, `${m}: lastIndex reset after call`).toEqual(
+            0,
+          );
+        }
+      });
+
+      suite("Regexi — tühja sisendi servad", () => {
+        for (const m of MODES) {
+          expect(detect("", m).length, `${m}: tühi string`).toEqual(0);
+          expect(detect("   ", m).length, `${m}: ainult tühikud`).toEqual(0);
+          expect(detect("\n\t", m).length, `${m}: whitespace`).toEqual(0);
+          expect(detect("pole siin arve", m).length, `${m}: ainult tekst`).toEqual(
+            0,
+          );
+        }
+      });
+
+      // A digit/comma run with no unit after it makes EURO_RE and G_RE rescan
+      // the run from every offset, which is quadratic: measured 26 / 90 / 361 /
+      // 1422 / 5669 ms for 4k / 8k / 16k / 32k / 64k characters. The bound below
+      // is deliberately far above the ~350 ms that 16k costs today, so it only
+      // fires on catastrophic (exponential) blowup; the quadratic case is
+      // tracked separately as a known performance issue.
+      suite("Regexi — jõudlus: ei ole katastrofaalselt aeglane", () => {
+        const run = (text, m) => {
+          const t0 = Date.now();
+          detect(text, m);
+          return Date.now() - t0;
+        };
+        expect(
+          run("1" + ",9".repeat(16000), "eur"),
+          "16k-kohaline arvujada, eur",
+        ).toBeLessThan(5000);
+        expect(
+          run("1" + ",9".repeat(16000), "g"),
+          "16k-kohaline arvujada, g",
+        ).toBeLessThan(5000);
+        expect(run("x".repeat(200000) + " 5 EUR", "eur"), "200k märgia").toBeLessThan(
+          5000,
+        );
+        expect(run("1" + "9".repeat(200000), "n"), "200k digit").toBeLessThan(
+          5000,
+        );
+      });
+
+      // ═════════════════════════════════════════════════════════════════════════════
+      // PATTERN MATRICES
+      // ═════════════════════════════════════════════════════════════════════════════
+      suite("EURO_RE — märgi, ühiku ja tühiku kombinatsioonid", () => {
+        const cases = [
+          ["€ 1234,56", 1234.56],
+          ["1234,56 €", 1234.56],
+          ["€350", 350],
+          ["350€", 350],
+          ["€ 1 234,56", 1234.56],
+          ["EUR 500", 500],
+          ["500 EUR", 500],
+          ["eur 500", 500],
+          ["500 eur", 500],
+          ["Euro 500", 500],
+          ["500 Euro", 500],
+          ["EURO 500", 500],
+          ["500 EURO", 500],
+          ["75,00 eurot", 75],
+          ["75,00 euro", 75],
+          ["1.234,56 EUR", 1234.56],
+          ["89.50 €", 89.5],
+        ];
+        for (const [text, expected] of cases) {
+          expect(amounts(text, "eur"), `"${text}"`).toEqual([expected]);
+        }
+      });
+
+      suite("G_RE — ühikuvariandid", () => {
+        for (const text of [
+          "10g",
+          "10 g",
+          "10G",
+          "10gram",
+          "10grammi",
+          "10 gramm",
+          "10 grammi",
+          "10 Grammi",
+          "10 grammides",
+          "10 gram",
+          "gramm 10",
+          "grammi 10",
+        ]) {
+          expect(amounts(text, "g"), `"${text}"`).toEqual([10]);
+        }
+        // The second alternative has no bare "g", so a unit never precedes its
+        // number — and "10g." does not swallow the sentence period.
+        expect(amounts("g 10", "g"), "g ei eelne arvule").toEqual([]);
+        expect(amounts("G 10", "g"), "G ei eelne arvule").toEqual([]);
+        expect(raws("10g.", "g"), "reeglõpp ei neela punkti").toEqual(["10g"]);
+      });
+
+      suite("N_RE — kuupäevad, ajad ja asjanumbrid jäetakse välja", () => {
+        for (const text of [
+          "12.03.2024",
+          "12/03/2024",
+          "12-03-2024",
+          "2024.03.12",
+          "2024-03-12",
+          "14:30",
+          "9:05",
+          "23:59",
+          "nr 1-23/456",
+          "1-23/456",
+        ]) {
+          expect(detect(text, "n").length, `"${text}"`).toEqual(0);
+        }
+        // A newline is not in the number class, so two lines never merge.
+        expect(raws("500\n600", "n"), "kaks rida ei liitu").toEqual(["500", "600"]);
+        // The tail of a hyphenated number is dropped: "-" is a lookbehind class.
+        expect(raws("sõnum 555-1234", "n"), "kriipsu järel ei loeta").toEqual([
+          "555",
+        ]);
+      });
+
+      // ═════════════════════════════════════════════════════════════════════════════
+      // NUMBER NORMALISATION
+      // ═════════════════════════════════════════════════════════════════════════════
+      suite("Numbrid — punkt on kümnenderaldaja", () => {
+        // Not a thousands separator: this is one-two-point-three-four.
+        expect(parseAmount("1.234"), "1.234 on 1,234").toBeCloseTo(1.234, 6);
+        expect(countDecimals("1.234"), "1.234 kolm kohta").toEqual(3);
+        // The thousands forms.
+        expect(parseAmount("1 234,56"), "tühik tuhandeks").toBeCloseTo(
+          1234.56,
+          6,
+        );
+        expect(parseAmount("1.234,56"), "punkt tuhandeks").toBeCloseTo(
+          1234.56,
+          6,
+        );
+        expect(parseAmount("1,234.56"), "koma tuhandeks").toBeCloseTo(
+          1234.56,
+          6,
+        );
+
+        setMode("eur");
+        expect(
+          formatValue(1.234, 3),
+          "1.234 kuvatakse kahe komakohaga",
+        ).toContain("1,23");
+        // Same rule downstream: ". " then a digit is still one decimal value,
+        // so "100. 200 EUR" is a single 100.2 and renders as 100,20 €.
+        expect(
+          amounts("100. 200 EUR", "eur"),
+          '"100. 200 EUR" on üks arv',
+        ).toEqual([100.2]);
+        expect(
+          formatValue(sum("100. 200 EUR", "eur"), 3),
+          "summa kuvatakse 100,20 €",
+        ).toContain("100,20");
+      });
+
+      suite("parseAmount — vigased ja mitmetähenduslikud vormistused", () => {
+        expect(parseAmount("1e3"), "teaduslik tähis").toBeCloseTo(1000, 6);
+        expect(parseAmount(".5"), "puuduv täisarv").toBeCloseTo(0.5, 6);
+        expect(parseAmount("1234."), "trailing punkt").toBeCloseTo(1234, 6);
+        // Two separators is malformed input; parseFloat takes the first run.
+        // Documented rather than guarded.
+        expect(parseAmount("1.234.567"), "kaks punkti").toBeCloseTo(1.234, 6);
+        expect(parseAmount("1,5,5"), "kaks koma").toBeCloseTo(1.5, 6);
+        expect(parseAmount("1 234 567"), "mitu tühikut").toBeCloseTo(
+          1234567,
+          6,
+        );
+        expect(parseAmount("1.000.000,50"), "punkt+koma").toBeCloseTo(
+          1000000.5,
+          6,
+        );
+        expect(parseAmount("-50,50"), "miinusmärk").toBeCloseTo(-50.5, 6);
+        expect(parseAmount("\u221250,50"), "U+2212 miinusmärk").toBeCloseTo(
+          -50.5,
+          6,
+        );
+        for (const bad of ["abc", "", ",", ".", "€", "-"]) {
+          expect(parseAmount(bad), `"${bad}" → null`).toBeNull();
+        }
+      });
+
+      suite("countDecimals — kooskõlas parseAmount-ga", () => {
+        for (const raw of [
+          "42",
+          "1,56",
+          "1.56",
+          "1.234,56",
+          "1 234,56",
+          "0,0002",
+          "-50,50",
+          "\u221250,50",
+          "1234.",
+          "1.234",
+        ]) {
+          // Whatever the separator style, the reported precision must equal the
+          // number of digits actually kept after it.
+          const di = Math.max(raw.lastIndexOf(","), raw.lastIndexOf("."));
+          const expected = di === -1 ? 0 : raw.length - di - 1;
+          expect(countDecimals(raw), `"${raw}"`).toEqual(expected);
+        }
+        expect(parseAmount("-1 234,56"), "summad miinusega").toBeCloseTo(
+          -1234.56,
+          6,
+        );
+      });
+
+      // ═════════════════════════════════════════════════════════════════════════════
+      // FORMATTING
+      // ═════════════════════════════════════════════════════════════════════════════
+      suite("formatValue — ühiku ees on U+00A0, mitte tavaline tühik", () => {
+        setMode("eur");
+        const eur = formatValue(1234.56, 2);
+        expect(eur, "sisaldab U+00A0 + €").toContain("\u00A0\u20AC");
+        expect(eur.includes(" €"), "tavalist tühikut € ees pole").toEqual(
+          false,
+        );
+        expect(/ \u20AC/.test(eur), "tavalist tühikut € ees pole").toEqual(false);
+        setMode("g");
+        expect(/ \u20AC/.test(formatValue(1.5, 1)), "g režiimis samuti").toEqual(
+          false,
+        );
+        expect(formatValue(1.5, 1), "g ühik U+00A0").toContain("\u00A0g");
+        setMode("n");
+        expect(unitShort(), "n režiimis ühikut pole").toEqual("");
+        expect(
+          /[€g]$/.test(formatValue(42, 0)),
+          "n režiimis numbri järel ühikut pole",
+        ).toEqual(false);
+      });
+
+      suite("formatValue — komakohtade käitumine", () => {
+        setMode("eur");
+        // eur ignores the detected precision and always shows 2 places.
+        expect(formatValue(0.5, 5), "eur sunnib 2 kohta").toEqual(
+          formatValue(0.5, 2),
+        );
+        expect(formatValue(1234, 0), "eur täisarv → 2 kohta").toContain(
+          ",00" + "\u00A0€",
+        );
+        setMode("g");
+        expect(formatValue(0.0002, 4), "4 kohta g").toContain(",0002");
+        // Precision is capped, so a long decimal cannot blow up the output.
+        expect(
+          formatValue(0.123456789012345, 99),
+          "99 kohta → kõige rohkem 10",
+        ).toHaveLength(
+          formatValue(0.123456789012345, 10).length,
+        );
+      });
+
+      suite("formatValue — ümardamine", () => {
+        setMode("g");
+        // IEEE-754 makes 1.005 slightly below the midpoint, so it rounds down.
+        // Pinned so nobody "fixes" it into a different value by accident.
+        expect(formatValue(1.005, 2), "1.005 @2").toEqual(
+          new Intl.NumberFormat("et-EE", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          }).format(1.005) + "\u00A0g",
+        );
+        expect(formatValue(2.5, 0), "2.5 → 3").toContain("\u00A0g");
+        expect(formatValue(3.5, 0), "3.5 → 4").toContain("\u00A0g");
+        setMode("n");
+        expect(formatValue(0.1 + 0.2, 1), "0.1+0.2 → 0,3").toContain(",3");
+      });
 
       // ═════════════════════════════════════════════════════════════════════════════
       // RENDER
