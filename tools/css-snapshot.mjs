@@ -17,6 +17,13 @@
  * the element's own computed font, which is what catches a real font-fallback
  * change (the computed `font-family` stack is just the declaration echoed back).
  *
+ * Pseudo-elements that carry chrome are captured via the PSEUDOS list: without
+ * it a rule that exists only on ::before/::after is invisible to the diff. They
+ * record style only — a pseudo has no box, so w/h/textWidth would be noise.
+ *
+ * A selector that matches nothing is skipped rather than reported, so a rule can
+ * rot unnoticed. When adding one, confirm it resolves (`rg 'sel' baseline`).
+ *
  * Exit: 0 clean (or diff with no differences), 1 diff found changes, 2 harness error.
  */
 import { spawn } from "node:child_process";
@@ -42,7 +49,6 @@ const only = flag("--page");
 const PAGES = fs
   .readdirSync(ROOT)
   .filter((f) => f.endsWith(".html"))
-  .filter((f) => f !== "rehkendaja-test.html")
   .filter((f) => (only ? f === only : true))
   .sort();
 
@@ -150,6 +156,41 @@ const SELECTORS = [
   ".field--cal",
   ".pill-bar[data-list=\"3\"]",
   ".list-sigil[data-list=\"3\"]",
+  // Utilities and page state classes
+  ".result-header-actions",
+  ".list-section--last",
+  ".source-link",
+  // Rehkendaja test page
+  ".tool-wrap",
+  ".result-block.animate",
+  ".code-input-wrap",
+  // Modifiers — these replaced page-level overrides that used to be scoped by
+  // stylesheet order. Track them, or a leak back to every page goes unseen.
+  ".tool-wrap--tight",
+  ".field-label--spaced",
+  ".panel-body--stack",
+  ".result-header--stack",
+  ".result-block--full",
+  ".suite",
+  ".suite-title",
+  ".test",
+  ".test-icon",
+  ".test-name",
+  ".test-detail",
+  ".test-extra",
+  ".summary",
+  ".summary-pass",
+  ".summary-fail",
+  ".summary-total",
+];
+
+/* Pseudo-elements that carry real chrome. querySelector cannot reach a pseudo,
+ * so these are measured as (base selector, pseudo) pairs — without them a rule
+ * that only exists on ::before/::after is invisible to the diff. */
+const PSEUDOS = [
+  [".or-separator", "::before"],
+  [".or-separator", "::after"],
+  [".header-chrome", "::after"],
 ];
 
 const MIME = {
@@ -245,12 +286,11 @@ const COLLECT = `(async () => {
   const round = (n) => Math.round(n * 10) / 10;
   const out = {};
   const selectors = ${JSON.stringify(SELECTORS)};
-  for (const sel of selectors) {
-    const el = document.querySelector(sel);
-    if (!el) continue;
-    const cs = getComputedStyle(el);
-    const r = el.getBoundingClientRect();
-    const key = (p) => location.pathname.split("/").pop() + "|" + sel + "|" + p;
+  const pseudos = ${JSON.stringify(PSEUDOS)};
+  const page = location.pathname.split("/").pop();
+  const measure = (el, sel, pseudo) => {
+    const cs = getComputedStyle(el, pseudo || null);
+    const key = (p) => page + "|" + sel + "|" + p;
     out[key("font-size")] = cs.fontSize;
     out[key("letter-spacing")] = cs.letterSpacing;
     out[key("font-weight")] = cs.fontWeight;
@@ -259,9 +299,21 @@ const COLLECT = `(async () => {
     out[key("background")] = cs.backgroundColor;
     out[key("border-color")] = cs.borderTopColor;
     out[key("padding")] = cs.padding;
+    if (pseudo) return; // no box of its own: w/h/textWidth would be noise
+    const r = el.getBoundingClientRect();
     out[key("w")] = round(r.width) + "px";
     out[key("h")] = round(r.height) + "px";
     out[key("textWidth")] = (ctx.font = cs.font || (cs.fontWeight + " 16px " + cs.fontFamily), Math.round(ctx.measureText(PROBE).width * 10) / 10) + "px";
+  };
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (!el) continue;
+    measure(el, sel, null);
+  }
+  for (const [sel, pseudo] of pseudos) {
+    const el = document.querySelector(sel);
+    if (!el) continue;
+    measure(el, sel + pseudo, pseudo);
   }
   return out;
 })()`;

@@ -5,69 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ennetähtaegne vabastamine — Tööriistad</title>
     <link rel="stylesheet" href="noir.css" />
-    <style>
-      /* ── Page-specific styles ── */
-      /* Panel body — column layout on top of noir.css's .panel-body padding */
-      .panel-body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-6);
-      }
-      .panel-note {
-        padding: var(--sp-3) var(--sp-5);
-        border-top: 1px solid var(--border);
-        font-size: var(--fs-xs);
-        color: var(--dim);
-        letter-spacing: var(--track-wide);
-        line-height: 1.65;
-        background: var(--deep);
-      }
-      .panel-note em {
-        font-style: normal;
-        color: var(--muted);
-      }
-
-      .field-group {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-2);
-      }
-      /* .field-label text styling lives in noir.css */
-
-      /* Stacked variant of the shared .result-header (row by default) */
-      .result-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--sp-2);
-      }
-      .result-header-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--sp-3);
-      }
-      .result-fraction {
-        font-size: var(--fs-lg);
-        font-weight: 700;
-        color: var(--amber);
-        line-height: 1;
-        letter-spacing: var(--track-wide);
-      }
-      .result-legal-label {
-        font-size: var(--fs-xs);
-        color: var(--muted);
-        letter-spacing: var(--track-wide);
-        line-height: 1.55;
-      }
-
-      .result-min-note {
-        font-size: var(--fs-xs);
-        color: var(--amber);
-        letter-spacing: var(--track-wide);
-        margin-top: 1px;
-      }
-
-    </style>
   </head>
   <body>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -103,7 +40,7 @@
             <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">// Sisend</div>
-              <div class="panel-body">
+              <div class="panel-body panel-body--stack">
                 <div class="field-group">
                   <div class="field-label">Karistuse alguskuupäev</div>
                   <input class="field" type="date" id="start-date" />
@@ -271,7 +208,7 @@
           block.className = "result-block animate";
           block.style.animationDelay = `${idx * 0.06}s`;
           block.innerHTML = `
-            <div class="result-header">
+            <div class="result-header result-header--stack">
               <div class="result-header-top">
                 <span class="result-fraction">${def.glyph}</span>
                 ${hasInput ? `<button class="copy-btn" data-date="${copyDateStr}">Kopeeri</button>` : ""}

@@ -5,95 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rehkendaja — testid</title>
     <link rel="stylesheet" href="noir.css" />
-    <style>
-      main {
-        max-width: 860px;
-      }
-
-      .suite {
-        margin-bottom: var(--sp-7);
-      }
-      .suite-title {
-        font-size: var(--fs-xs);
-        letter-spacing: var(--track-caps);
-        text-transform: uppercase;
-        color: var(--dim);
-        border-bottom: 1px solid var(--border);
-        padding-bottom: var(--sp-2);
-        margin-bottom: var(--sp-3);
-      }
-
-      .test {
-        display: grid;
-        grid-template-columns: 18px 1fr auto;
-        align-items: baseline;
-        gap: var(--sp-2);
-        padding: var(--sp-2) 0;
-        border-bottom: 1px solid var(--border);
-        font-size: var(--fs-sm);
-        line-height: 1.5;
-      }
-      .test:last-child {
-        border-bottom: none;
-      }
-
-      .test-icon {
-        font-size: var(--fs-xs);
-      }
-      .pass .test-icon {
-        color: var(--amber);
-      }
-      .fail .test-icon {
-        color: var(--red);
-      }
-
-      .test-name {
-        color: var(--text);
-      }
-      .fail .test-name {
-        color: var(--red);
-      }
-
-      .test-detail {
-        font-size: var(--fs-xs);
-        color: var(--dim);
-        text-align: right;
-        white-space: nowrap;
-      }
-      .fail .test-detail {
-        color: var(--red);
-      }
-
-      .test-extra {
-        grid-column: 2 / -1;
-        font-size: var(--fs-xs);
-        color: var(--dim);
-        margin-top: var(--sp-1);
-        padding-bottom: var(--sp-1);
-      }
-
-      .summary {
-        display: flex;
-        gap: var(--sp-6);
-        padding: var(--sp-4) 0 var(--sp-2) 0;
-        font-size: var(--fs-sm);
-        border-top: 1px solid var(--border);
-        margin-top: var(--sp-2);
-      }
-      .summary-pass {
-        color: var(--amber);
-        font-weight: 700;
-      }
-      .summary-fail {
-        color: var(--red);
-        font-weight: 700;
-      }
-      .summary-total {
-        color: var(--muted);
-      }
-    </style>
   </head>
-  <body>
+  <body class="test-harness">
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="app-shell">
       <nav class="sidebar" id="sidebar"></nav>
@@ -121,7 +34,7 @@
         </div>
 
         <main id="output">
-          <p style="color: var(--muted); font-size: var(--fs-sm)">
+          <p class="test-idle">
             // testid käivituvad…
           </p>
         </main>
@@ -1059,9 +972,9 @@
         div.innerHTML =
           '<div class="suite-title">// ' +
           s.name +
-          ' <span style="color:var(--' +
-          (fail ? "red" : "amber") +
-          ')">' +
+          ' <span class="' +
+          (fail ? "is-fail" : "is-pass") +
+          '">' +
           pass +
           "/" +
           s.tests.length +
