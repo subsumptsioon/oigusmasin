@@ -530,11 +530,6 @@
       });
 
       // ── Bootstrap ─────────────────────────────────────────────────────────────────
-      const yr = new Date().getFullYear();
-      document
-        .querySelectorAll(".footer-year")
-        .forEach((el) => (el.textContent = yr));
-
       fetch("data.json")
         .then((r) => {
           if (!r.ok) throw new Error("HTTP " + r.status);

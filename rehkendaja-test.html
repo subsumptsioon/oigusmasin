@@ -46,24 +46,6 @@
     <script src="rehkendaja-core.js"></script>
     <script src="nav.js"></script>
     <script>
-      // ── Sidebar ───────────────────────────────────────────────────────────────────
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("sidebar-overlay");
-      const togBtn = document.getElementById("sidebar-toggle");
-      togBtn.addEventListener("click", () =>
-        sidebar.classList.contains("open")
-          ? (sidebar.classList.remove("open"),
-            overlay.classList.remove("visible"))
-          : (sidebar.classList.add("open"), overlay.classList.add("visible")),
-      );
-      overlay.addEventListener("click", () => {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("visible");
-      });
-      document
-        .querySelectorAll(".footer-year")
-        .forEach((el) => (el.textContent = new Date().getFullYear()));
-
       // ── Test harness ──────────────────────────────────────────────────────────────
       const suites = [];
       let currentSuite = null;
