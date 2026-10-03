@@ -9,11 +9,6 @@
       /* ── Page-specific styles ── */
       /* duration-row/field/sublabel live in noir.css */
 
-      /* Result block — spans both columns (chrome & fade come from noir.css) */
-      .result-block {
-        grid-column: 1 / -1;
-      }
-
       .result-unit {
         font-size: var(--fs-md);
         color: var(--muted);
@@ -108,7 +103,7 @@
             </div>
 
             <!-- ── RESULT ── -->
-            <div class="result-block animate" id="result-block">
+            <div class="result-block result-block--full animate" id="result-block">
               <div class="result-header">
                 <span class="result-label">// Kokku</span>
                 <button class="copy-btn" id="copy-btn" style="display: none">
