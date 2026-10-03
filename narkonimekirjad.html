@@ -106,7 +106,7 @@
 
         <main>
           <div id="loading">// laen andmeid…</div>
-          <div id="main-content" style="display: none">
+          <div id="main-content" class="hidden">
             <!-- I nimekiri -->
             <div class="list-section" id="section1">
               <button
@@ -301,7 +301,7 @@
 
             <!-- VI nimekiri -->
             <div class="list-vi-wrap" id="list-vi-wrap">
-              <div class="list-section" id="section6" style="margin-bottom: 0">
+              <div class="list-section list-section--last" id="section6">
                 <button
                 type="button"
                 class="list-header"
@@ -348,10 +348,8 @@
           <span
             >Allikas:
             <a
+              class="source-link"
               href="https://www.riigiteataja.ee/akt/120022026006?leiaKehtiv"
-              style="color: var(--amber); text-decoration: none"
-              onmouseover="this.style.textDecoration = 'underline'"
-              onmouseout="this.style.textDecoration = 'none'"
               target="_blank"
               >narkootiliste ja psühhotroopsete ainete nimekirjad ning nende
               ainete meditsiinilisel ja teaduslikul eesmärgil käitlemine</a
@@ -437,8 +435,8 @@
         }
 
         initSearch(DATA);
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("main-content").style.display = "";
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("main-content").classList.remove("hidden");
       }
 
       // ── Search ───────────────────────────────────────────────────────────────────
@@ -485,8 +483,9 @@
               ? `${vis}/${subs.length}`
               : subs.length + u;
             if (list === 6) {
-              document.getElementById("list-vi-wrap").style.display =
-                q && vis === 0 ? "none" : "";
+              document
+                .getElementById("list-vi-wrap")
+                .classList.toggle("hidden", !!(q && vis === 0));
             }
           }
           rc.textContent = q ? `${total} tulemust` : "";
@@ -544,8 +543,8 @@
         .then(renderData)
         .catch((err) => {
           document.getElementById("loading").innerHTML =
-            `<p style="color:var(--red)">// viga andmete laadimisel: ${esc(err.message)}</p>` +
-            `<p style="margin-top:var(--sp-2);font-size:var(--fs-xs);color:var(--muted)">Veendu, et <code>data.json</code> asub samas kaustas.</p>`;
+            `<p class="load-error">// viga andmete laadimisel: ${esc(err.message)}</p>` +
+            `<p class="load-error-hint">Veendu, et <code>data.json</code> asub samas kaustas.</p>`;
         });
     </script>
   </body>

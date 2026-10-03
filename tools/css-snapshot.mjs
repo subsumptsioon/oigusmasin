@@ -156,6 +156,10 @@ const SELECTORS = [
   ".field--cal",
   ".pill-bar[data-list=\"3\"]",
   ".list-sigil[data-list=\"3\"]",
+  // Utilities and page state classes
+  ".result-header-actions",
+  ".list-section--last",
+  ".source-link",
   // Rehkendaja test page
   ".tool-wrap",
   ".result-block.animate",

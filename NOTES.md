@@ -58,7 +58,7 @@ npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
-`.baseline/css-current.txt` holds a current snapshot baseline (1982 values,
+`.baseline/css-current.txt` holds a current snapshot baseline (2015 values,
 verified clean). Diff against it before and after any type, spacing or layout
 change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — then
 refresh it with `--save` once the change is accepted. It is scratch, not a

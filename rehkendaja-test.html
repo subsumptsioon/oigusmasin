@@ -34,7 +34,7 @@
         </div>
 
         <main id="output">
-          <p style="color: var(--muted); font-size: var(--fs-sm)">
+          <p class="test-idle">
             // testid käivituvad…
           </p>
         </main>
@@ -972,9 +972,9 @@
         div.innerHTML =
           '<div class="suite-title">// ' +
           s.name +
-          ' <span style="color:var(--' +
-          (fail ? "red" : "amber") +
-          ')">' +
+          ' <span class="' +
+          (fail ? "is-fail" : "is-pass") +
+          '">' +
           pass +
           "/" +
           s.tests.length +

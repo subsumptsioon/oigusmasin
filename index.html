@@ -69,7 +69,7 @@
               <div class="result-block animate" id="block-sum">
                 <div class="result-header">
                   <span class="result-label">// Hulga summa</span>
-                  <div style="display: flex; align-items: center; gap: var(--sp-3)">
+                  <div class="result-header-actions">
                     <button class="reset-btn" id="reset-btn">lähtesta</button>
                     <button class="copy-btn" id="copy-sum">
                       Kopeeri summa
@@ -96,7 +96,7 @@
                   </button>
                 </div>
                 <ol class="elements-list" id="val-list">
-                  <li style="color: var(--dim)">–</li>
+                  <li class="is-empty">–</li>
                 </ol>
               </div>
             </div>
@@ -240,7 +240,7 @@
         if (!hasText) {
           valSum.textContent = "0";
           valCount.textContent = "0";
-          valList.innerHTML = '<li style="color:var(--dim)">–</li>';
+          valList.innerHTML = '<li class="is-empty">–</li>';
           return;
         }
 
@@ -257,16 +257,14 @@
         valList.innerHTML = "";
         if (lastFound.length === 0) {
           const li = document.createElement("li");
-          li.style.cssText =
-            "color:var(--dim);font-size:12px;letter-spacing:0.1em";
+          li.className = "is-blank";
           li.textContent = "// ühtegi elementi ei leitud";
           valList.appendChild(li);
         } else {
           lastFound.forEach((item, i) => {
             const li = document.createElement("li");
             const isExcluded = excluded.has(i);
-            li.className = isExcluded ? "el-excluded" : "";
-            li.style.cursor = "pointer";
+            li.className = isExcluded ? "el-row el-excluded" : "el-row";
             li.title = isExcluded
               ? "Kliki, et lisada tagasi"
               : "Kliki, et eemaldada";
