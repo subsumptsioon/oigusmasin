@@ -151,20 +151,34 @@ function checkCss(file, raw) {
   }
 }
 
-function checkHtml(file, raw) {
-  // Only <style> blocks; inline style="" attributes are checked separately.
-  for (const m of raw.matchAll(/<style>([\s\S]*?)<\/style>/g)) {
-    checkCss(`${file} <style>`, m[1]);
+/* ── 0. One stylesheet, and it is noir.css ─────────────────────────────────
+   Every page links noir.css and nothing else. There are no page <style> blocks
+   and no style="" attributes: page rules live in noir.css's PAGE COMPONENTS
+   section, and inline styling drifts off the token scale without anything
+   noticing — a raw `letter-spacing:0.1em` sat in a style.cssText for months
+   because the token checks only ever read stylesheets.
+
+   This is the check that keeps that from eroding back. Paired with
+   check-assets.mjs, which enforces that the <link> is present, the two together
+   mean a page can neither drop noir.css nor quietly grow a second stylesheet.
+
+   JS writing `el.style.x` is still allowed: those three sites compute a value
+   at runtime (scroll offset, stagger index, caret position) and cannot be a
+   rule. Only the declarative forms are banned. */
+function checkNoInlineCss(file, raw) {
+  for (const m of raw.matchAll(/<style[\s>]/g)) {
+    report(file, lineOf(raw, m.index), "inline-css",
+      "<style> block — all CSS lives in noir.css; add a rule and use a class");
   }
-  // Inline style attributes must not smuggle in raw colours or spacing.
-  for (const m of raw.matchAll(/style="([^"]*)"/g)) {
-    const decls = m[1];
-    if (/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/.test(decls)) {
-      report(file, lineOf(raw, m.index), "raw-color", `hardcoded colour in style="${decls}" — use a token`);
-    }
-    for (const v of decls.matchAll(/(?:padding|margin|gap|font-size|letter-spacing)[a-z-]*:\s*(-?[\d.]+(?:px|em))/g)) {
-      report(file, lineOf(raw, m.index), "inline-style", `style="${decls}" uses a raw ${v[0]} value — use a token`);
-    }
+  for (const m of raw.matchAll(/\sstyle\s*=\s*["']/g)) {
+    report(file, lineOf(raw, m.index), "inline-css",
+      "style attribute — add a rule to noir.css and use a class");
+  }
+  for (const m of raw.matchAll(
+    /\son(?:mouseover|mouseout|mouseenter|mouseleave|click)\s*=\s*["'][^"']*\.style\./g
+  )) {
+    report(file, lineOf(raw, m.index), "inline-css",
+      "inline handler writing .style — use a :hover/:active rule in noir.css");
   }
 }
 
@@ -173,8 +187,8 @@ function main() {
   console.log("─".repeat(72));
 
   try {
-    // Collect the global token vocabulary from the stylesheet first: page
-    // <style> blocks are written against it, not against their own :root.
+    // Collect the global token vocabulary from the stylesheet first: it is the
+    // only stylesheet, so this set covers every rule on the site.
     const sheet = fs.readFileSync(path.join(ROOT, CSS), "utf8");
     for (const m of stripComments(sheet).matchAll(/(--[a-z0-9-]+)\s*:/g)) {
       TOKENS.add(m[1]);
@@ -186,7 +200,7 @@ function main() {
 
     checkCss(CSS, sheet);
     for (const page of HTML) {
-      checkHtml(page, fs.readFileSync(path.join(ROOT, page), "utf8"));
+      checkNoInlineCss(page, fs.readFileSync(path.join(ROOT, page), "utf8"));
     }
   } catch (err) {
     console.error("harness error:", err?.message || err);

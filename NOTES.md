@@ -16,10 +16,9 @@ calculators.
 - `noir.css` — **the only stylesheet.** Tokens, layout, shared components
   (`.field`, `.panel`, `.result-*`, `.list-*`, the label base), and a
   `PAGE COMPONENTS` section at the end holding the rules that belong to exactly
-  one page, grouped by owning page. There are no page `<style>` blocks and no
-  `style=""` attributes; `npm run css` fails the build if either reappears.
-- `tools/css_audit.py` — compares inline CSS across pages. Now dead: it reads
-  page `<style>` blocks, and there are none. Kept only until PR5 deletes it.
+  one page, grouped by owning page. There are no page `<style>` blocks, no
+  `style=""` attributes and no inline handlers that write styles; `npm run css`
+  fails the build if any of the three reappears.
 - `fonts/` — self-hosted JetBrainsMono Nerd Font (subset WOFF2, OFL 1.1). See
   `fonts/README.md` for provenance and how to regenerate.
 - `scrape.py` — fetches narcotics data → `data.json` (run by `update-data.yml` cron).
@@ -79,20 +78,20 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `#sidebar`, every non-test page is listed in `nav.js`, and every `url()` in a
   stylesheet resolves (so a renamed font file fails CI instead of silently
   falling back to `ui-monospace`).
-- `css_audit.py` — compares inline CSS across pages to spot duplicates that
-  should be hoisted into `noir.css` (run: `python3 tools/css_audit.py --all`).
 - `contrast-audit.mjs` — WCAG 2.1 checker for the `noir.css` design tokens.
   Covers three families: opaque fg/bg pairs, **text on translucent tints**
   (composited over each surface first), and the **focus ring** against every
   surface. The last one exists because a focus ring that resolves to a
   near-invisible colour used to pass CI silently — see `--json` for the rows.
   Run `npm run contrast`; wired into `verify`/CI.
-- `check-css.mjs` — convention lint for the stylesheets, no npm deps. Enforces
+- `check-css.mjs` — convention lint for the stylesheet, no npm deps. Enforces
   that every `var(--x)` is a real token, that no raw colour appears outside a
-  `:root` palette block, and that type/spacing/z-index/breakpoints come from
-  the documented scales. The `outline: none` and `100vh` rules each exist
-  because they caught a real regression. Run `npm run css`; wired into
-  `verify`/CI.
+  `:root` palette block, that type/spacing/z-index/breakpoints come from the
+  documented scales, and — in each page — that there is no `<style>` block, no
+  `style=""` attribute and no inline handler writing `.style`. The
+  `outline: none` and `100vh` rules each exist because they caught a real
+  regression. Run `npm run css`; wired into `verify`/CI.
+  Deleted with `css_audit.py`: there is no second stylesheet left to compare.
 - `css-snapshot.mjs` — measures computed style + geometry (incl. a canvas
   text-width probe, which is what catches a real font-fallback change) for
   every shared component on all 6 pages, and diffs two runs. Use it before and
@@ -145,6 +144,15 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 ## Conventions
 - Adding a page: create `<name>.html`, incl. `noir.css` + `nav.js` + `#sidebar`,
   then add a `NAV_ITEMS` entry in `nav.js` (`npm run check` enforces this).
+- **All CSS goes in `noir.css`.** No page `<style>` block, no `style=""`
+  attribute, no `onclick`-style handler that writes `.style` — `npm run css`
+  fails on all three, and between it and `npm run check` (which requires the
+  `noir.css` `<link>`) a page can neither drop the stylesheet nor grow a second
+  one. Add the page's rules to the `PAGE COMPONENTS` section. The one
+  sanctioned exception is JS assigning `el.style.<prop>` to a value computed at
+  runtime — there are three, all arithmetic on a measured or indexed value
+  (scroll offset, animation stagger, caret position). Those are behaviour, not
+  styling.
 - **Form controls** (`button`, `input`, `select`, `textarea`) do not inherit
   `font-family` — the UA stylesheet hard-resets it, so they render in the
   platform UI font no matter what `body` says. One `:where(...)` base in
