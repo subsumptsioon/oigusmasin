@@ -55,7 +55,7 @@ npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
-`.baseline/css-current.txt` holds a current snapshot baseline (1606 values,
+`.baseline/css-current.txt` holds a current snapshot baseline (1982 values,
 verified clean). Diff against it before and after any type, spacing or layout
 change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — then
 refresh it with `--save` once the change is accepted. It is scratch, not a
@@ -92,8 +92,12 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `verify`/CI.
 - `css-snapshot.mjs` — measures computed style + geometry (incl. a canvas
   text-width probe, which is what catches a real font-fallback change) for
-  every shared component on all 5 pages, and diffs two runs. Use it before and
-  after any change to type, spacing or layout.
+  every shared component on all 6 pages, and diffs two runs. Use it before and
+  after any change to type, spacing or layout. `PSEUDOS` additionally captures
+  `::before`/`::after` chrome (e.g. `.or-separator`'s dividers), which the
+  selector list cannot reach. A selector matching nothing is **skipped, not
+  reported** — when adding one, confirm it resolves with
+  `rg 'sel' .baseline/css-current.txt`.
 - `dom-tests.mjs` — regression checks for the *inline* logic of the tool pages
   (isikukood, narkonimekirjad, index, karistuste-liitmine, ennetähtaegne) that
   the pure-core runner can't reach. Loads each page in headless Chromium over the
@@ -146,6 +150,15 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   that is exactly what used to silently outrank the shared focus style and
   leave the whole site with no focus indicator. Keep the `id` for JS, style via
   the class.
+- **Varying a shared component: add a `--modifier`, do not re-declare the
+  selector.** A page `<style>` block is parsed *after* `noir.css`, so a page
+  rule that named a shared class used to win on order alone — fine while it was
+  the only mechanism, but invisible and easy to leak once the rules share a
+  file. That is why `.tool-wrap--tight`, `.panel-body--stack`,
+  `.result-header--stack`, `.result-block--full` and `.field-label--spaced`
+  exist instead of bare `.tool-wrap`/`.panel-body`/… overrides. The one
+  exception is `main`, the page shell, which has no component to modify and so
+  is opted into with `<body class="test-harness">`.
 - **Focus:** the ring is one universal
   `:where(a, button, input, …):focus-visible` rule in `noir.css`, so new
   controls get it for free. `outline: none` is allowlisted only for `#search`

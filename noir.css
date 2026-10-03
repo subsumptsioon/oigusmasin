@@ -610,6 +610,12 @@ main {
   padding: var(--sp-8) var(--sp-9);
   width: 100%;
 }
+/* The test harness reads as one long column rather than a full-width page. It
+   cannot be a modifier — `main` is the page shell, with no component to hang a
+   `--` variant off — so the page marks itself on <body> instead. */
+.test-harness main {
+  max-width: 860px;
+}
 
 /* ── LIST SECTIONS ── */
 .list-section {
@@ -668,6 +674,10 @@ main {
     grid-template-columns: 1fr;
   }
 }
+/* Tighter gutter, for tools whose two columns hold little text. */
+.tool-wrap--tight {
+  gap: var(--sp-6);
+}
 
 /* Card panel (input pane, results pane) */
 .panel {
@@ -696,6 +706,12 @@ main {
 .panel-body {
   padding: var(--sp-5);
 }
+/* Panel body that stacks its children as a column instead of flowing them. */
+.panel-body--stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
 
 /* Result card — base chrome; add .animate for the entrance fade */
 .result-block {
@@ -705,6 +721,10 @@ main {
 }
 .result-block.animate {
   animation: appear-sm 0.2s ease both;
+}
+/* Spans both columns of a .tool-wrap, for a result that is not one of a pair. */
+.result-block--full {
+  grid-column: 1 / -1;
 }
 
 /* Small ghost copy button (base + hover + copied states) */
@@ -744,6 +764,12 @@ main {
   background: var(--deep);
   border-bottom: 1px solid var(--border);
 }
+/* Stacked variant (label above value) — use with a .result-header-top row. */
+.result-header--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
 
 /* Uppercase mono label used inside result headers */
 .result-label {
@@ -758,6 +784,10 @@ main {
 
 /* Field label (uppercase mono); pages may add spacing on their layout */
 .field-label {
+}
+/* Spacing variant, for a label that heads a block of its own. */
+.field-label--spaced {
+  margin-bottom: var(--sp-2);
 }
 
 /* Result body base; direction/alignment live on the page */

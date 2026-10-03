@@ -7,18 +7,10 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific overrides ── */
-      /* Tool layout is shared in noir.css; this page uses a tighter gutter */
-      .tool-wrap {
-        gap: var(--sp-6);
-      }
 
       /* ── Input field ── */
       .input-section {
         padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
-      }
-      /* .field-label text styling lives in noir.css; page adds spacing */
-      .field-label {
-        margin-bottom: var(--sp-2);
       }
       .code-input-wrap {
         position: relative;
@@ -186,7 +178,7 @@
         </div>
 
         <main>
-          <div class="tool-wrap">
+          <div class="tool-wrap tool-wrap--tight">
             <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">
@@ -195,7 +187,7 @@
 
               <!-- ID code -->
               <div class="input-section">
-                <div class="field-label">// Isikukood</div>
+                <div class="field-label field-label--spaced">// Isikukood</div>
                 <div class="code-input-wrap">
                   <span
                     class="code-suffix"
@@ -231,7 +223,7 @@
 
               <!-- Date of birth -->
               <div class="dob-section">
-                <div class="field-label">// Sünniaeg</div>
+                <div class="field-label field-label--spaced">// Sünniaeg</div>
                 <input
                   type="text"
                   class="field field--raised field--md"
@@ -249,7 +241,7 @@
 
               <!-- Reference date -->
               <div class="ref-section">
-                <div class="field-label" style="margin-bottom: var(--sp-2)">
+                <div class="field-label field-label--spaced">
                   // Arvutuskuupäev
                 </div>
                 <div class="ref-row">
