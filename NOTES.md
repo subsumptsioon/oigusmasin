@@ -55,7 +55,7 @@ npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
-`.baseline/css-current.txt` holds a current snapshot baseline (1606 values,
+`.baseline/css-current.txt` holds a current snapshot baseline (1927 values,
 verified clean). Diff against it before and after any type, spacing or layout
 change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — then
 refresh it with `--save` once the change is accepted. It is scratch, not a
@@ -92,8 +92,12 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `verify`/CI.
 - `css-snapshot.mjs` — measures computed style + geometry (incl. a canvas
   text-width probe, which is what catches a real font-fallback change) for
-  every shared component on all 5 pages, and diffs two runs. Use it before and
-  after any change to type, spacing or layout.
+  every shared component on all 6 pages, and diffs two runs. Use it before and
+  after any change to type, spacing or layout. `PSEUDOS` additionally captures
+  `::before`/`::after` chrome (e.g. `.or-separator`'s dividers), which the
+  selector list cannot reach. A selector matching nothing is **skipped, not
+  reported** — when adding one, confirm it resolves with
+  `rg 'sel' .baseline/css-current.txt`.
 - `dom-tests.mjs` — regression checks for the *inline* logic of the tool pages
   (isikukood, narkonimekirjad, index, karistuste-liitmine, ennetähtaegne) that
   the pure-core runner can't reach. Loads each page in headless Chromium over the
