@@ -160,6 +160,13 @@ const SELECTORS = [
   ".tool-wrap",
   ".result-block.animate",
   ".code-input-wrap",
+  // Modifiers — these replaced page-level overrides that used to be scoped by
+  // stylesheet order. Track them, or a leak back to every page goes unseen.
+  ".tool-wrap--tight",
+  ".field-label--spaced",
+  ".panel-body--stack",
+  ".result-header--stack",
+  ".result-block--full",
   ".suite",
   ".suite-title",
   ".test",

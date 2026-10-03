@@ -7,12 +7,6 @@
     <link rel="stylesheet" href="noir.css" />
     <style>
       /* ── Page-specific styles ── */
-      /* Panel body — column layout on top of noir.css's .panel-body padding */
-      .panel-body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-6);
-      }
       .panel-note {
         padding: var(--sp-3) var(--sp-5);
         border-top: 1px solid var(--border);
@@ -34,12 +28,6 @@
       }
       /* .field-label text styling lives in noir.css */
 
-      /* Stacked variant of the shared .result-header (row by default) */
-      .result-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--sp-2);
-      }
       .result-header-top {
         display: flex;
         align-items: center;
@@ -103,7 +91,7 @@
             <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">// Sisend</div>
-              <div class="panel-body">
+              <div class="panel-body panel-body--stack">
                 <div class="field-group">
                   <div class="field-label">Karistuse alguskuupäev</div>
                   <input class="field" type="date" id="start-date" />
@@ -271,7 +259,7 @@
           block.className = "result-block animate";
           block.style.animationDelay = `${idx * 0.06}s`;
           block.innerHTML = `
-            <div class="result-header">
+            <div class="result-header result-header--stack">
               <div class="result-header-top">
                 <span class="result-fraction">${def.glyph}</span>
                 ${hasInput ? `<button class="copy-btn" data-date="${copyDateStr}">Kopeeri</button>` : ""}
