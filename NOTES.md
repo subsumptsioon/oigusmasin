@@ -13,10 +13,12 @@ calculators.
 - `rehkendaja-test.html` — browser test page for Rehkendaja (40 suites / 552 tests).
 - `rehkendaja-core.js` — **pure** detection+formatting logic shared by Rehkendaja and its tests. No DOM, no side effects. This is what the tests exercise.
 - `nav.js` — single source of truth for the sidebar (`NAV_ITEMS`). Auto-detects active page.
-- `noir.css` — the whole design system: tokens, layout, and shared components
-  (`.field`, `.panel`, `.result-*`, `.list-*`, the label base). Pages keep only
-  genuinely page-specific rules in their own `<style>`, and `npm run css` fails
-  the build if a page re-declares something that belongs to a component.
+- `noir.css` — **the only stylesheet.** Tokens, layout, shared components
+  (`.field`, `.panel`, `.result-*`, `.list-*`, the label base), and a
+  `PAGE COMPONENTS` section at the end holding the rules that belong to exactly
+  one page, grouped by owning page. There are no page `<style>` blocks, no
+  `style=""` attributes and no inline handlers that write styles; `npm run css`
+  fails the build if any of the three reappears.
 - `fonts/` — self-hosted JetBrainsMono Nerd Font (subset WOFF2, OFL 1.1). See
   `fonts/README.md` for provenance and how to regenerate.
 - `scrape.py` — fetches narcotics data → `data.json` (run by `update-data.yml` cron).
@@ -55,7 +57,7 @@ npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
-`.baseline/css-current.txt` holds a current snapshot baseline (1606 values,
+`.baseline/css-current.txt` holds a current snapshot baseline (2015 values,
 verified clean). Diff against it before and after any type, spacing or layout
 change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — then
 refresh it with `--save` once the change is accepted. It is scratch, not a
@@ -76,24 +78,28 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `#sidebar`, every non-test page is listed in `nav.js`, and every `url()` in a
   stylesheet resolves (so a renamed font file fails CI instead of silently
   falling back to `ui-monospace`).
-- `css_audit.py` — compares inline CSS across pages to spot duplicates that
-  should be hoisted into `noir.css` (run: `python3 tools/css_audit.py --all`).
 - `contrast-audit.mjs` — WCAG 2.1 checker for the `noir.css` design tokens.
   Covers three families: opaque fg/bg pairs, **text on translucent tints**
   (composited over each surface first), and the **focus ring** against every
   surface. The last one exists because a focus ring that resolves to a
   near-invisible colour used to pass CI silently — see `--json` for the rows.
   Run `npm run contrast`; wired into `verify`/CI.
-- `check-css.mjs` — convention lint for the stylesheets, no npm deps. Enforces
+- `check-css.mjs` — convention lint for the stylesheet, no npm deps. Enforces
   that every `var(--x)` is a real token, that no raw colour appears outside a
-  `:root` palette block, and that type/spacing/z-index/breakpoints come from
-  the documented scales. The `outline: none` and `100vh` rules each exist
-  because they caught a real regression. Run `npm run css`; wired into
-  `verify`/CI.
+  `:root` palette block, that type/spacing/z-index/breakpoints come from the
+  documented scales, and — in each page — that there is no `<style>` block, no
+  `style=""` attribute and no inline handler writing `.style`. The
+  `outline: none` and `100vh` rules each exist because they caught a real
+  regression. Run `npm run css`; wired into `verify`/CI.
+  Deleted with `css_audit.py`: there is no second stylesheet left to compare.
 - `css-snapshot.mjs` — measures computed style + geometry (incl. a canvas
   text-width probe, which is what catches a real font-fallback change) for
-  every shared component on all 5 pages, and diffs two runs. Use it before and
-  after any change to type, spacing or layout.
+  every shared component on all 6 pages, and diffs two runs. Use it before and
+  after any change to type, spacing or layout. `PSEUDOS` additionally captures
+  `::before`/`::after` chrome (e.g. `.or-separator`'s dividers), which the
+  selector list cannot reach. A selector matching nothing is **skipped, not
+  reported** — when adding one, confirm it resolves with
+  `rg 'sel' .baseline/css-current.txt`.
 - `dom-tests.mjs` — regression checks for the *inline* logic of the tool pages
   (isikukood, narkonimekirjad, index, karistuste-liitmine, ennetähtaegne) that
   the pure-core runner can't reach. Loads each page in headless Chromium over the
@@ -104,7 +110,10 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 - `smoke-test.mjs` — loads every page in headless Chromium and fails on any
   uncaught exception / console error. `npm run smoke`.
 - `page-eval.mjs` — one-off probe: `node tools/page-eval.mjs <page> "<expr>"`
-  evaluates JS in a loaded page (handy while debugging).
+  evaluates JS in a loaded page (handy while debugging). `--media print`
+  emulates a media type, which is the only way to inspect anything inside an
+  `@media` block — computed style otherwise reports as if the query never
+  matched, so a print-only rule looks broken until you emulate it.
 
 ## Design / theming
 - All page colour lives in `noir.css` `:root` tokens, and `npm run css` now
@@ -135,6 +144,15 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 ## Conventions
 - Adding a page: create `<name>.html`, incl. `noir.css` + `nav.js` + `#sidebar`,
   then add a `NAV_ITEMS` entry in `nav.js` (`npm run check` enforces this).
+- **All CSS goes in `noir.css`.** No page `<style>` block, no `style=""`
+  attribute, no `onclick`-style handler that writes `.style` — `npm run css`
+  fails on all three, and between it and `npm run check` (which requires the
+  `noir.css` `<link>`) a page can neither drop the stylesheet nor grow a second
+  one. Add the page's rules to the `PAGE COMPONENTS` section. The one
+  sanctioned exception is JS assigning `el.style.<prop>` to a value computed at
+  runtime — there are three, all arithmetic on a measured or indexed value
+  (scroll offset, animation stagger, caret position). Those are behaviour, not
+  styling.
 - **Form controls** (`button`, `input`, `select`, `textarea`) do not inherit
   `font-family` — the UA stylesheet hard-resets it, so they render in the
   platform UI font no matter what `body` says. One `:where(...)` base in
@@ -146,6 +164,15 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   that is exactly what used to silently outrank the shared focus style and
   leave the whole site with no focus indicator. Keep the `id` for JS, style via
   the class.
+- **Varying a shared component: add a `--modifier`, do not re-declare the
+  selector.** A page `<style>` block is parsed *after* `noir.css`, so a page
+  rule that named a shared class used to win on order alone — fine while it was
+  the only mechanism, but invisible and easy to leak once the rules share a
+  file. That is why `.tool-wrap--tight`, `.panel-body--stack`,
+  `.result-header--stack`, `.result-block--full` and `.field-label--spaced`
+  exist instead of bare `.tool-wrap`/`.panel-body`/… overrides. The one
+  exception is `main`, the page shell, which has no component to modify and so
+  is opted into with `<body class="test-harness">`.
 - **Focus:** the ring is one universal
   `:where(a, button, input, …):focus-visible` rule in `noir.css`, so new
   controls get it for free. `outline: none` is allowlisted only for `#search`

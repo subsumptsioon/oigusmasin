@@ -5,156 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Isikukood ja vanus | Õigusmasin</title>
     <link rel="stylesheet" href="noir.css" />
-    <style>
-      /* ── Page-specific overrides ── */
-      /* Tool layout is shared in noir.css; this page uses a tighter gutter */
-      .tool-wrap {
-        gap: var(--sp-6);
-      }
-
-      /* ── Input field ── */
-      .input-section {
-        padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
-      }
-      /* .field-label text styling lives in noir.css; page adds spacing */
-      .field-label {
-        margin-bottom: var(--sp-2);
-      }
-      .code-input-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
-      /* Dim suffix hint — shows remaining digits after the cursor */
-      .code-suffix {
-        position: absolute;
-        pointer-events: none;
-        font-size: var(--fs-2xl);
-        letter-spacing: var(--track-caps);
-        color: var(--dim);
-        opacity: 0.35;
-        white-space: pre;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: var(--z-overlay-top);
-      }
-
-
-      .input-clear {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: var(--fs-lg);
-        color: var(--dim);
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--sp-1) var(--sp-2);
-        line-height: 1;
-        z-index: var(--z-overlay-top);
-        display: none;
-        transition: color 0.12s;
-      }
-      .input-clear:hover {
-        color: var(--text);
-      }
-      .input-clear.visible {
-        display: block;
-      }
-
-      .input-hint {
-        margin-top: var(--sp-2);
-        font-size: var(--fs-xs);
-        color: var(--dim);
-        letter-spacing: var(--track-wide);
-        min-height: 18px;
-      }
-      .input-hint.err {
-        color: var(--red);
-      }
-
-      /* ── Date separator ── */
-      .or-separator {
-        display: flex;
-        align-items: center;
-        gap: var(--sp-3);
-        margin: var(--sp-5) 0 0 0;
-        padding: 0 var(--sp-5);
-      }
-      .or-separator::before,
-      .or-separator::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-      }
-
-      /* ── DOB input ── */
-      .dob-section {
-        padding: var(--sp-4) var(--sp-6) 0 var(--sp-6);
-      }
-
-      /* ── Reference date ── */
-      .ref-section {
-        padding: var(--sp-5) var(--sp-6);
-        border-top: 1px solid var(--border);
-        margin-top: var(--sp-5);
-      }
-      .ref-row {
-        display: flex;
-        align-items: center;
-        gap: var(--sp-3);
-      }
-      .ref-label {
-        flex-shrink: 0;
-      }
-      .ref-today-btn {
-        font-size: var(--fs-xs);
-        letter-spacing: var(--track-wide);
-        color: var(--dim);
-        background: none;
-        border: 1px solid var(--border);
-        padding: var(--sp-2) var(--sp-3);
-        cursor: pointer;
-        white-space: nowrap;
-        transition:
-          background 0.12s,
-          color 0.12s;
-        flex-shrink: 0;
-      }
-      .ref-today-btn:hover {
-        background: var(--lift);
-        color: var(--text);
-      }
-      .ref-today-btn.active {
-        color: var(--amber);
-        border-color: var(--line);
-      }
-
-      /* ── Results panel (shared chrome lives in noir.css) ── */
-
-      /* Age display */
-      .age-main {
-        padding: var(--sp-5) var(--sp-5) var(--sp-4) var(--sp-5);
-        font-size: var(--fs-2xl);
-        font-weight: 700;
-        color: var(--amber);
-        letter-spacing: var(--track-tight);
-        line-height: 1.5;
-      }
-      .age-detail {
-        padding: 0 var(--sp-4) var(--sp-4) var(--sp-4);
-        font-size: var(--fs-sm);
-        color: var(--muted);
-        letter-spacing: var(--track-wide);
-      }
-
-      /* Idle placeholder */
-      .idle-state {
-        padding: var(--sp-6) var(--sp-4);
-      }
-    </style>
   </head>
   <body>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -186,7 +36,7 @@
         </div>
 
         <main>
-          <div class="tool-wrap">
+          <div class="tool-wrap tool-wrap--tight">
             <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">
@@ -195,7 +45,7 @@
 
               <!-- ID code -->
               <div class="input-section">
-                <div class="field-label">// Isikukood</div>
+                <div class="field-label field-label--spaced">// Isikukood</div>
                 <div class="code-input-wrap">
                   <span
                     class="code-suffix"
@@ -231,7 +81,7 @@
 
               <!-- Date of birth -->
               <div class="dob-section">
-                <div class="field-label">// Sünniaeg</div>
+                <div class="field-label field-label--spaced">// Sünniaeg</div>
                 <input
                   type="text"
                   class="field field--raised field--md"
@@ -249,7 +99,7 @@
 
               <!-- Reference date -->
               <div class="ref-section">
-                <div class="field-label" style="margin-bottom: var(--sp-2)">
+                <div class="field-label field-label--spaced">
                   // Arvutuskuupäev
                 </div>
                 <div class="ref-row">
@@ -679,7 +529,7 @@
         // ── Age block ──
         if (td < 0) {
           ageContent.innerHTML =
-            '<div class="idle-state" style="color:var(--red)">// arvutuskuupäev on enne sünnikuupäeva</div>';
+            '<div class="idle-state err">// arvutuskuupäev on enne sünnikuupäeva</div>';
         } else {
           const age = calcAge(born, ref);
           const today = todayDMY();
@@ -708,17 +558,17 @@
             infl(age.days, "päev", "päeva");
           const refNote = isToday
             ? ""
-            : ' <span style="color:var(--dim);font-size:var(--fs-md);font-weight:400">(' +
+            : ' <span class="age-inline">(' +
               refLabel +
               ")</span>";
 
           let bdNote = "";
           if (isBirthday) {
             bdNote =
-              '<div class="age-detail" style="color:var(--amber)">// sünnipäev</div>';
+              '<div class="age-detail age-detail--amber">// sünnipäev</div>';
           } else {
             bdNote =
-              '<div class="age-detail" style="color:var(--dim)">järgmine sünnipäev: ' +
+              '<div class="age-detail age-detail--muted">järgmine sünnipäev: ' +
               fmtDMY(nextBirthday.date) +
               " (" +
               (nextBirthday.daysUntil === 1
