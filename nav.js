@@ -9,19 +9,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { sigil: "01", label: "Rehkendaja", href: "index.html" },
+  { label: "Rehkendaja", href: "index.html" },
+  { label: "Karistuste liitmine", href: "karistuste-liitmine.html" },
+  { label: "Narkonimekirjad I–VI", href: "narkonimekirjad.html" },
   {
-    sigil: "02",
-    label: "Karistuste liitmine",
-    href: "karistuste-liitmine.html",
-  },
-  { sigil: "03", label: "Narkonimekirjad I–VI", href: "narkonimekirjad.html" },
-  {
-    sigil: "04",
     label: "Ennetähtaegne vabastamine",
     href: "ennetahtaegne-vabastamine.html",
   },
-  { sigil: "05", label: "Vanus", href: "isikukood.html" },
+  { label: "Vanus", href: "isikukood.html" },
 ];
 
 const NAV_BRAND = "Tööriistad";
@@ -35,10 +30,12 @@ const NAV_AUTHOR = "© Andraš Tšitškan";
   const currentFile = window.location.pathname.split("/").pop() || "index.html";
 
   // ── Build sidebar HTML ─────────────────────────────────────────────────────
-  const items = NAV_ITEMS.map((item) => {
-    const isActive = item.href === currentFile;
-    return `<a class="nav-item${isActive ? " active" : ""}" href="${item.href}">
-      <span class="nav-sigil">${item.sigil}</span>
+  const items = NAV_ITEMS.map((item, i) => {
+    const active = item.href === currentFile;
+    const cls = active ? "nav-item active" : "nav-item";
+    const cur = active ? ' aria-current="page"' : "";
+    return `<a class="${cls}"${cur} href="${item.href}">
+      <span class="nav-sigil">${String(i + 1).padStart(2, "0")}</span>
       ${item.label}
     </a>`;
   }).join("\n    ");
@@ -50,29 +47,20 @@ const NAV_AUTHOR = "© Andraš Tšitškan";
     </a>
     ${items}
     <div class="sidebar-foot">
-      ${NAV_AUTHOR}&nbsp;<span class="nav-year"></span>
+      ${NAV_AUTHOR}&nbsp;${new Date().getFullYear()}
     </div>`;
-
-  // Fill year
-  const yr = new Date().getFullYear();
-  sidebar.querySelectorAll(".nav-year").forEach((el) => (el.textContent = yr));
 
   // ── Mobile toggle ──────────────────────────────────────────────────────────
   const overlay = document.getElementById("sidebar-overlay");
   const togBtn = document.getElementById("sidebar-toggle");
   if (!overlay || !togBtn) return;
 
-  function openSidebar() {
-    sidebar.classList.add("open");
-    overlay.classList.add("visible");
-  }
-  function closeSidebar() {
-    sidebar.classList.remove("open");
-    overlay.classList.remove("visible");
-  }
-
+  const setOpen = (on) => {
+    sidebar.classList.toggle("open", on);
+    overlay.classList.toggle("visible", on);
+  };
   togBtn.addEventListener("click", () =>
-    sidebar.classList.contains("open") ? closeSidebar() : openSidebar(),
+    setOpen(!sidebar.classList.contains("open")),
   );
-  overlay.addEventListener("click", closeSidebar);
+  overlay.addEventListener("click", () => setOpen(false));
 })();
