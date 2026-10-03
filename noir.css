@@ -1174,6 +1174,495 @@ footer {
   display: block;
 }
 
+/* ── PAGE COMPONENTS ─────────────────────────────────────────────────────────
+   Rules that belong to exactly one page. They used to live in a <style> block
+   in that page, which worked because the block is parsed after this file — so
+   the override won on order, with nothing in the rule saying so. That is not a
+   scoping mechanism: it holds only while the two are in separate files, and it
+   does not survive the print block below silently outranking (or being
+   outranked by) anything.
+
+   So they live here now, grouped by owning page rather than by component, so
+   it stays obvious which page a rule belongs to and what it would cost to
+   share. If two pages grow the same rule, promote it to a real component above
+   this section rather than letting the copies drift.
+
+   A shared component must be varied with a `--modifier`, never by re-declaring
+   its selector from here — see .tool-wrap--tight and friends. */
+
+
+/* ══ REHKENDAJA  ·  index.html ══ */
+
+/* Highlight overlay container — mirror div sizes it, textarea overlays */
+.input-wrap {
+  position: relative;
+  pointer-events: auto;
+}
+/* A11y (WCAG 2.4.7 / 2.4.11): the textarea inside is borderless and
+   sets outline:none, so the wrapper owns the focus ring. 2px to match
+   the universal ring everywhere else (it used to be 1px). */
+.input-wrap:focus-within {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* The mirror div — drives height; textarea overlaid on top */
+.input-highlight {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 120px;
+  padding: var(--sp-4);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  color: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  cursor: text;
+}
+
+.input-highlight mark {
+  background: var(--amber-28);
+  color: transparent;
+  border-radius: var(--radius);
+  outline: 1px solid var(--amber-50);
+  padding: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.input-highlight mark.excluded {
+  background: var(--muted-12);
+  outline: 1px solid var(--muted-25);
+  text-decoration: line-through;
+}
+.reset-btn {
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  letter-spacing: var(--track-wide);
+  transition: color 0.12s;
+  display: none;
+}
+.reset-btn:hover {
+  color: var(--amber);
+}
+.reset-btn.visible {
+  display: inline;
+}
+.el-excluded {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+#input-text {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  padding: var(--sp-4);
+  resize: none;
+  outline: none;
+  caret-color: var(--amber);
+  overflow: hidden;
+  pointer-events: auto;
+}
+#input-text::placeholder {
+  color: var(--dim);
+}
+
+/* Results panel — .results-panel / .result-header / .result-label are
+   components above. (.result-value used to live here but nothing referenced it
+   — the page renders .sum-value / .count-value / .elements-list instead.) */
+
+/* Sum value — larger */
+.sum-value {
+  font-size: var(--fs-hero);
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: var(--track-tight);
+  padding: var(--sp-5) var(--sp-5);
+  /* Amber CRT bloom on the hero number (Retro 82) */
+  text-shadow: 0 0 18px var(--amber-35);
+}
+
+/* Count */
+.count-value {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--text);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+/* Ordered list of elements */
+.elements-list {
+  padding: var(--sp-3) var(--sp-5);
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.elements-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+  color: var(--text);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.elements-list li:last-child {
+  border-bottom: none;
+}
+
+.el-num {
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.empty-state {
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+}
+
+/* Unit switcher */
+.unit-switcher {
+  display: flex;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.unit-btn {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-caps);
+  padding: var(--sp-2) var(--sp-4);
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  border-right: 1px solid var(--border);
+}
+.unit-btn:last-child {
+  border-right: none;
+}
+.unit-btn:hover {
+  background: var(--lift);
+  color: var(--text);
+}
+.unit-btn.active {
+  background: var(--surface);
+  color: var(--amber);
+}
+
+/* ══ KARISTUSTE LIITMINE  ·  karistuste-liitmine.html ══ */
+
+.result-unit {
+  font-size: var(--fs-md);
+  color: var(--muted);
+  letter-spacing: var(--track-wide);
+  margin-right: var(--sp-3);
+}
+
+/* Equation recap shown below the result */
+.result-equation {
+  padding: var(--sp-2) var(--sp-6) var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  letter-spacing: var(--track-wide);
+  border-top: 1px solid var(--border);
+}
+.result-equation span {
+  color: var(--muted);
+}
+
+/* ══ ENNETÄHTAEGNE VABASTAMINE  ·  ennetahtaegne-vabastamine.html ══ */
+
+.panel-note {
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  letter-spacing: var(--track-wide);
+  line-height: 1.65;
+  background: var(--deep);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.result-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.result-fraction {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--amber);
+  line-height: 1;
+  letter-spacing: var(--track-wide);
+}
+.result-legal-label {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: var(--track-wide);
+  line-height: 1.55;
+}
+
+.result-min-note {
+  font-size: var(--fs-xs);
+  color: var(--amber);
+  letter-spacing: var(--track-wide);
+  margin-top: 1px;
+}
+
+/* ══ ISIKUKOOD / VANUS  ·  isikukood.html ══ */
+
+/* ── Input field ── */
+.input-section {
+  padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
+}
+.code-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+/* Dim suffix hint — shows remaining digits after the cursor */
+.code-suffix {
+  position: absolute;
+  pointer-events: none;
+  font-size: var(--fs-2xl);
+  letter-spacing: var(--track-caps);
+  color: var(--dim);
+  opacity: 0.35;
+  white-space: pre;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--z-overlay-top);
+}
+
+.input-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--fs-lg);
+  color: var(--dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-1) var(--sp-2);
+  line-height: 1;
+  z-index: var(--z-overlay-top);
+  display: none;
+  transition: color 0.12s;
+}
+.input-clear:hover {
+  color: var(--text);
+}
+.input-clear.visible {
+  display: block;
+}
+
+.input-hint {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  letter-spacing: var(--track-wide);
+  min-height: 18px;
+}
+.input-hint.err {
+  color: var(--red);
+}
+
+/* ── Date separator ── */
+.or-separator {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-5) 0 0 0;
+  padding: 0 var(--sp-5);
+}
+.or-separator::before,
+.or-separator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── DOB input ── */
+.dob-section {
+  padding: var(--sp-4) var(--sp-6) 0 var(--sp-6);
+}
+
+/* ── Reference date ── */
+.ref-section {
+  padding: var(--sp-5) var(--sp-6);
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-5);
+}
+.ref-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.ref-label {
+  flex-shrink: 0;
+}
+.ref-today-btn {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  flex-shrink: 0;
+}
+.ref-today-btn:hover {
+  background: var(--lift);
+  color: var(--text);
+}
+.ref-today-btn.active {
+  color: var(--amber);
+  border-color: var(--line);
+}
+
+/* ── Results panel ── */
+
+/* Age display */
+.age-main {
+  padding: var(--sp-5) var(--sp-5) var(--sp-4) var(--sp-5);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: var(--track-tight);
+  line-height: 1.5;
+}
+.age-detail {
+  padding: 0 var(--sp-4) var(--sp-4) var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  letter-spacing: var(--track-wide);
+}
+
+/* Idle placeholder */
+.idle-state {
+  padding: var(--sp-6) var(--sp-4);
+}
+
+/* ══ REHKENDAJA TEST PAGE  ·  rehkendaja-test.html ══ */
+
+.suite {
+  margin-bottom: var(--sp-7);
+}
+.suite-title {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.test {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.test:last-child {
+  border-bottom: none;
+}
+
+.test-icon {
+  font-size: var(--fs-xs);
+}
+.pass .test-icon {
+  color: var(--amber);
+}
+.fail .test-icon {
+  color: var(--red);
+}
+
+.test-name {
+  color: var(--text);
+}
+.fail .test-name {
+  color: var(--red);
+}
+
+.test-detail {
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  text-align: right;
+  white-space: nowrap;
+}
+.fail .test-detail {
+  color: var(--red);
+}
+
+.test-extra {
+  grid-column: 2 / -1;
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  margin-top: var(--sp-1);
+  padding-bottom: var(--sp-1);
+}
+
+.summary {
+  display: flex;
+  gap: var(--sp-6);
+  padding: var(--sp-4) 0 var(--sp-2) 0;
+  font-size: var(--fs-sm);
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-2);
+}
+.summary-pass {
+  color: var(--amber);
+  font-weight: 700;
+}
+.summary-fail {
+  color: var(--red);
+  font-weight: 700;
+}
+.summary-total {
+  color: var(--muted);
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 800px) {
   .sidebar {

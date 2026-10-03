@@ -13,10 +13,13 @@ calculators.
 - `rehkendaja-test.html` — browser test page for Rehkendaja (40 suites / 552 tests).
 - `rehkendaja-core.js` — **pure** detection+formatting logic shared by Rehkendaja and its tests. No DOM, no side effects. This is what the tests exercise.
 - `nav.js` — single source of truth for the sidebar (`NAV_ITEMS`). Auto-detects active page.
-- `noir.css` — the whole design system: tokens, layout, and shared components
-  (`.field`, `.panel`, `.result-*`, `.list-*`, the label base). Pages keep only
-  genuinely page-specific rules in their own `<style>`, and `npm run css` fails
-  the build if a page re-declares something that belongs to a component.
+- `noir.css` — **the only stylesheet.** Tokens, layout, shared components
+  (`.field`, `.panel`, `.result-*`, `.list-*`, the label base), and a
+  `PAGE COMPONENTS` section at the end holding the rules that belong to exactly
+  one page, grouped by owning page. There are no page `<style>` blocks and no
+  `style=""` attributes; `npm run css` fails the build if either reappears.
+- `tools/css_audit.py` — compares inline CSS across pages. Now dead: it reads
+  page `<style>` blocks, and there are none. Kept only until PR5 deletes it.
 - `fonts/` — self-hosted JetBrainsMono Nerd Font (subset WOFF2, OFL 1.1). See
   `fonts/README.md` for provenance and how to regenerate.
 - `scrape.py` — fetches narcotics data → `data.json` (run by `update-data.yml` cron).
@@ -108,7 +111,10 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 - `smoke-test.mjs` — loads every page in headless Chromium and fails on any
   uncaught exception / console error. `npm run smoke`.
 - `page-eval.mjs` — one-off probe: `node tools/page-eval.mjs <page> "<expr>"`
-  evaluates JS in a loaded page (handy while debugging).
+  evaluates JS in a loaded page (handy while debugging). `--media print`
+  emulates a media type, which is the only way to inspect anything inside an
+  `@media` block — computed style otherwise reports as if the query never
+  matched, so a print-only rule looks broken until you emulate it.
 
 ## Design / theming
 - All page colour lives in `noir.css` `:root` tokens, and `npm run css` now
