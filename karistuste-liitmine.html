@@ -83,7 +83,7 @@
             <div class="result-block result-block--full animate" id="result-block">
               <div class="result-header">
                 <span class="result-label">// Kokku</span>
-                <button class="copy-btn" id="copy-btn" style="display: none">
+                <button class="copy-btn hidden" id="copy-btn">
                   Kopeeri
                 </button>
               </div>
@@ -135,7 +135,7 @@
 
         if (parts.length === 0) {
           body.innerHTML = `<span class="result-figure empty">—</span>`;
-          copyBtn.style.display = "none";
+          copyBtn.classList.add("hidden");
         } else {
           body.innerHTML = parts
             .map(
@@ -143,7 +143,7 @@
                 `<span class="result-figure">${n}</span><span class="result-unit">${u}</span>`,
             )
             .join("");
-          copyBtn.style.display = "";
+          copyBtn.classList.remove("hidden");
           copyBtn._clipText = parts.map(([n, u]) => `${n}\u00A0${u}`).join(" ");
         }
       }

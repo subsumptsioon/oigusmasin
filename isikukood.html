@@ -529,7 +529,7 @@
         // ── Age block ──
         if (td < 0) {
           ageContent.innerHTML =
-            '<div class="idle-state" style="color:var(--red)">// arvutuskuupäev on enne sünnikuupäeva</div>';
+            '<div class="idle-state err">// arvutuskuupäev on enne sünnikuupäeva</div>';
         } else {
           const age = calcAge(born, ref);
           const today = todayDMY();
@@ -558,17 +558,17 @@
             infl(age.days, "päev", "päeva");
           const refNote = isToday
             ? ""
-            : ' <span style="color:var(--dim);font-size:var(--fs-md);font-weight:400">(' +
+            : ' <span class="age-inline">(' +
               refLabel +
               ")</span>";
 
           let bdNote = "";
           if (isBirthday) {
             bdNote =
-              '<div class="age-detail" style="color:var(--amber)">// sünnipäev</div>';
+              '<div class="age-detail age-detail--amber">// sünnipäev</div>';
           } else {
             bdNote =
-              '<div class="age-detail" style="color:var(--dim)">järgmine sünnipäev: ' +
+              '<div class="age-detail age-detail--muted">järgmine sünnipäev: ' +
               fmtDMY(nextBirthday.date) +
               " (" +
               (nextBirthday.daysUntil === 1

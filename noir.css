@@ -162,6 +162,20 @@
   padding: 0;
 }
 
+/* ── UTILITIES ──
+   The one state class JS toggles. It used to be two component-scoped rules
+   (.list-section.hidden, .substances-table tbody tr.hidden) plus a third
+   inline style="display:none" per element that needed hiding — so the same
+   intent was expressed three ways. `display` is not overridable by a utility
+   class, so anything that must stay visible while hidden needs a plain
+   `visibility`/`.hidden` pairing; nothing here does.
+
+   The two component rules are kept: they document intent at the point of use
+   and are more specific, so they still win. */
+.hidden {
+  display: none;
+}
+
 /* ── BASE ── */
 /* The whole site is mono-forward (Retro 82), so the mono stack is the body
    default and the 59 per-rule `font-family: var(--mono)` declarations that
@@ -1036,6 +1050,10 @@ main {
 .list-section.collapsed .list-body {
   display: none;
 }
+/* The last list has no following sibling, so it drops its bottom margin. */
+.list-section--last {
+  margin-bottom: 0;
+}
 
 /* ── TABLE ── */
 .substances-table {
@@ -1119,6 +1137,24 @@ mark {
 /* ── VI WRAPPER ── */
 .list-vi-wrap {
   margin-bottom: var(--sp-6);
+}
+
+/* Shown in place of the lists when data.json is missing or unparseable. */
+.load-error {
+  color: var(--red);
+}
+.load-error-hint {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+/* The riigiteataja source link in the footer. */
+.source-link {
+  color: var(--amber);
+  text-decoration: none;
+}
+.source-link:hover {
+  text-decoration: underline;
 }
 .groups-note {
   background: var(--deep);
@@ -1259,6 +1295,15 @@ footer {
   text-decoration: line-through;
 }
 
+/* Actions sitting at the right end of a .result-header. Same row as
+   .panel-header-row, minus the space-between: a result header already puts its
+   label on the left. */
+.result-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
 #input-text {
   position: absolute;
   inset: 0;
@@ -1325,6 +1370,24 @@ footer {
 }
 .elements-list li:last-child {
   border-bottom: none;
+}
+
+/* A detected amount. Clickable, so it owns the pointer — the placeholder rows
+   below are not, and must not inherit the affordance. */
+.elements-list .el-row {
+  cursor: pointer;
+}
+/* The "–" shown before anything has been pasted. */
+.elements-list .is-empty {
+  color: var(--dim);
+}
+/* The "nothing found" note, which sits where rows would be but is not one.
+   This was `li.style.cssText`, carrying a raw 12px/0.1em that no scale token
+   matched — invisible to the lint, which only reads stylesheets. */
+.elements-list .is-blank {
+  color: var(--dim);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
 }
 
 .el-num {
@@ -1573,16 +1636,47 @@ footer {
   color: var(--muted);
   letter-spacing: var(--track-wide);
 }
+/* Today's date, when the reference date *is* the user's birthday. */
+.age-detail--amber {
+  color: var(--amber);
+}
+.age-detail--muted {
+  color: var(--dim);
+}
+/* The "(next birthday is in N days)" parenthetical, inline after the age. */
+.age-inline {
+  color: var(--dim);
+  font-size: var(--fs-md);
+  font-weight: 400;
+}
 
 /* Idle placeholder */
 .idle-state {
   padding: var(--sp-6) var(--sp-4);
 }
+/* Idle placeholder carrying an error rather than a waiting state. */
+.idle-state.err {
+  color: var(--red);
+}
 
 /* ══ REHKENDAJA TEST PAGE  ·  rehkendaja-test.html ══ */
 
+/* Placeholder in <main> before the suites have run. */
+.test-idle {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
 .suite {
   margin-bottom: var(--sp-7);
+}
+/* The pass/fail tally in a suite title. Was built by concatenating
+   `style="color:var(--red|amber)"` into an innerHTML string. */
+.suite-title .is-pass {
+  color: var(--amber);
+}
+.suite-title .is-fail {
+  color: var(--red);
 }
 .suite-title {
   font-size: var(--fs-xs);
