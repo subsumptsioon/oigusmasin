@@ -5,34 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Karistuste liitmine | Õigusmasin</title>
     <link rel="stylesheet" href="noir.css" />
-    <style>
-      /* ── Page-specific styles ── */
-      /* duration-row/field/sublabel live in noir.css */
-
-      /* Result block — spans both columns (chrome & fade come from noir.css) */
-      .result-block {
-        grid-column: 1 / -1;
-      }
-
-      .result-unit {
-        font-size: var(--fs-md);
-        color: var(--muted);
-        letter-spacing: var(--track-wide);
-        margin-right: var(--sp-3);
-      }
-
-      /* Equation recap shown below the result */
-      .result-equation {
-        padding: var(--sp-2) var(--sp-6) var(--sp-3);
-        font-size: var(--fs-xs);
-        color: var(--dim);
-        letter-spacing: var(--track-wide);
-        border-top: 1px solid var(--border);
-      }
-      .result-equation span {
-        color: var(--muted);
-      }
-    </style>
   </head>
   <body>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -108,7 +80,7 @@
             </div>
 
             <!-- ── RESULT ── -->
-            <div class="result-block animate" id="result-block">
+            <div class="result-block result-block--full animate" id="result-block">
               <div class="result-header">
                 <span class="result-label">// Kokku</span>
                 <button class="copy-btn" id="copy-btn" style="display: none">

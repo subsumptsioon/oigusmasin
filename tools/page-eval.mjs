@@ -6,8 +6,11 @@
  * top-level classic-script declarations, so they live on the page's global).
  *
  * Usage:
- *   node tools/page-eval.mjs <page.html> "<expression>" [--json]
- *     --json   pretty-print the result instead of a compact form
+ *   node tools/page-eval.mjs <page.html> "<expression>" [--json] [--media <m>]
+ *     --json           pretty-print the result instead of a compact form
+ *     --media <m>      emulate a media type, e.g. `print`. Needed to inspect
+ *                       anything inside an @media block, which computed style
+ *                       otherwise reports as if the query never matched.
  *
  * Example:
  *   node tools/page-eval.mjs isikukood.html "parseIdCode('37605030000')"
@@ -26,10 +29,16 @@ const ROOT = path.resolve(__dirname, "..");
 const page = process.argv[2];
 const expr = process.argv[3];
 if (!page || !expr) {
-  console.error("usage: node tools/page-eval.mjs <page.html> \"<expression>\" [--json]");
+  console.error("usage: node tools/page-eval.mjs <page.html> \"<expression>\" [--json] [--media <m>]");
   process.exit(2);
 }
 const asJson = process.argv.includes("--json");
+const mi = process.argv.indexOf("--media");
+const media = mi === -1 ? null : process.argv[mi + 1];
+if (mi !== -1 && !media) {
+  console.error("--media needs a value, e.g. --media print");
+  process.exit(2);
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -90,6 +99,8 @@ async function main() {
   await send("Runtime.enable", {}, sessionId);
   await send("Page.navigate", { url: `${base}/${page}` }, sessionId);
   await sleep(1500);
+  /* Set after load so the emulation applies to the query being asked about. */
+  if (media) await send("Emulation.setEmulatedMedia", { media }, sessionId);
 
   const out = await send("Runtime.evaluate", {
     expression: expr, returnByValue: true, awaitPromise: true,
