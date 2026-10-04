@@ -78,7 +78,6 @@
   /* Alpha ramps. Literal rgba() rather than color-mix() on purpose: the
      values here have to stay statically resolvable for
      tools/contrast-audit.mjs, which cannot follow a nested var(). */
-  --amber-08: rgba(250, 169, 104, 0.08);
   --amber-15: rgba(250, 169, 104, 0.15);
   --amber-22: rgba(250, 169, 104, 0.22);
   --amber-28: rgba(250, 169, 104, 0.28);
@@ -132,7 +131,6 @@
   /* ── Stacking order ──
      App chrome lives in the hundreds; in-control overlays stay low so they
      can never punch through the drawer. */
-  --z-raised: 1; /* raised surfaces, list rows */
   --z-overlay: 2; /* overlay inside a control (the input itself) */
   --z-overlay-top: 3; /* overlay above another overlay (suffix, clear btn) */
   --z-sticky: 100; /* topbar */
@@ -232,8 +230,8 @@ body {
    each component below can still override, and each now carries only its
    own chrome. */
 :where(.panel-header, .result-label, .field-label, .duration-sublabel,
-  .no-results, .note-label, .ref-label, .or-separator, .empty-state,
-  .idle-state, .substances-table thead th) {
+  .no-results, .or-separator, .idle-state,
+  .substances-table thead th) {
   font-size: var(--fs-xs);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
@@ -539,7 +537,7 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 600px;
+  max-width: var(--measure);
   background: var(--deep);
   border: 1px solid var(--border);
   transition:
@@ -785,10 +783,6 @@ main {
   gap: var(--sp-2);
 }
 
-/* Uppercase mono label used inside result headers */
-.result-label {
-}
-
 /* Vertical stack of result cards */
 .results-panel {
   display: flex;
@@ -797,8 +791,6 @@ main {
 }
 
 /* Field label (uppercase mono); pages may add spacing on their layout */
-.field-label {
-}
 /* Spacing variant, for a label that heads a block of its own. */
 .field-label--spaced {
   margin-bottom: var(--sp-2);
@@ -849,8 +841,6 @@ main {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-}
-.duration-sublabel {
 }
 
 /* ── FIELD ──
@@ -1156,22 +1146,7 @@ mark {
 .source-link:hover {
   text-decoration: underline;
 }
-.groups-note {
-  background: var(--deep);
-  border: 1px solid var(--border);
-  border-bottom: none;
-  padding: var(--sp-2) var(--sp-4);
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-3);
-  font-size: var(--fs-sm);
-  color: var(--muted);
-}
-.note-label {
-  font-weight: 700;
-  color: var(--l6);
-  white-space: nowrap;
-}
+
 
 /* ── FOOTER ── */
 footer {
@@ -1246,7 +1221,6 @@ footer {
 /* The mirror div — drives height; textarea overlaid on top */
 .input-highlight {
   display: block;
-  box-sizing: border-box;
   width: 100%;
   min-height: 120px;
   padding: var(--sp-4);
@@ -1278,7 +1252,6 @@ footer {
   color: var(--dim);
   background: none;
   border: none;
-  padding: 0;
   cursor: pointer;
   letter-spacing: var(--track-wide);
   transition: color 0.12s;
@@ -1307,7 +1280,6 @@ footer {
 #input-text {
   position: absolute;
   inset: 0;
-  box-sizing: border-box;
   width: 100%;
   height: 100%;
   background: transparent;
@@ -1338,7 +1310,7 @@ footer {
   letter-spacing: var(--track-tight);
   padding: var(--sp-5) var(--sp-5);
   /* Amber CRT bloom on the hero number (Retro 82) */
-  text-shadow: 0 0 18px var(--amber-35);
+  text-shadow: var(--glow-hero);
 }
 
 /* Count */
@@ -1352,7 +1324,6 @@ footer {
 /* Ordered list of elements */
 .elements-list {
   padding: var(--sp-3) var(--sp-5);
-  margin: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -1398,12 +1369,6 @@ footer {
   flex-shrink: 0;
 }
 
-/* Empty state */
-.empty-state {
-  padding: var(--sp-8) var(--sp-4);
-  text-align: center;
-}
-
 /* Unit switcher */
 .unit-switcher {
   display: flex;
@@ -1443,18 +1408,6 @@ footer {
   color: var(--muted);
   letter-spacing: var(--track-wide);
   margin-right: var(--sp-3);
-}
-
-/* Equation recap shown below the result */
-.result-equation {
-  padding: var(--sp-2) var(--sp-6) var(--sp-3);
-  font-size: var(--fs-xs);
-  color: var(--dim);
-  letter-spacing: var(--track-wide);
-  border-top: 1px solid var(--border);
-}
-.result-equation span {
-  color: var(--muted);
 }
 
 /* ══ ENNETÄHTAEGNE VABASTAMINE  ·  ennetahtaegne-vabastamine.html ══ */
@@ -1592,9 +1545,6 @@ footer {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-}
-.ref-label {
-  flex-shrink: 0;
 }
 .ref-today-btn {
   font-size: var(--fs-xs);
