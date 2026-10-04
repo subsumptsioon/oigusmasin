@@ -18,7 +18,7 @@
         <div class="topbar">
           <div class="header-main">
             <button
-              class="sidebar-toggle"
+              class="btn btn--icon"
               id="sidebar-toggle"
               aria-label="Ava menüü"
             >
@@ -43,9 +43,9 @@
               <div class="panel-header header-row">
                 <span>// Sisesta tekst</span>
                 <div class="unit-switcher">
-                  <button class="unit-btn active" id="btn-eur">€ euro</button>
-                  <button class="unit-btn" id="btn-g">g gramm</button>
-                  <button class="unit-btn" id="btn-n">∑ kõik arvud</button>
+                  <button class="btn is-on" id="btn-eur">€ euro</button>
+                  <button class="btn" id="btn-g">g gramm</button>
+                  <button class="btn" id="btn-n">∑ kõik arvud</button>
                 </div>
               </div>
               <div class="input-wrap">
@@ -70,8 +70,8 @@
                 <div class="result-header">
                   <span class="result-label">// Hulga summa</span>
                   <div class="control-row">
-                    <button class="reset-btn" id="reset-btn">lähtesta</button>
-                    <button class="copy-btn" id="copy-sum">
+                    <button class="btn reset-btn" id="reset-btn">lähtesta</button>
+                    <button class="btn" id="copy-sum">
                       Kopeeri summa
                     </button>
                   </div>
@@ -91,7 +91,7 @@
               <div class="result-block animate" id="block-list">
                 <div class="result-header">
                   <span class="result-label">// Hulga elemendid</span>
-                  <button class="copy-btn" id="copy-list">
+                  <button class="btn" id="copy-list">
                     Kopeeri nimekiri
                   </button>
                 </div>
@@ -122,9 +122,9 @@
 
       function setMode(m) {
         mode = m;
-        btnEur.classList.toggle("active", m === "eur");
-        btnG.classList.toggle("active", m === "g");
-        btnN.classList.toggle("active", m === "n");
+        btnEur.classList.toggle("is-on", m === "eur");
+        btnG.classList.toggle("is-on", m === "g");
+        btnN.classList.toggle("is-on", m === "n");
         update();
       }
 
@@ -287,15 +287,15 @@
       // ── Copy buttons ────────────────────────────────────────────────────────────
       function copyText(btn, text) {
         // Improvement #5 — prevent spam
-        if (btn.classList.contains("copied")) return;
+        if (btn.classList.contains("is-on")) return;
 
         navigator.clipboard.writeText(text).then(() => {
-          btn.classList.add("copied");
+          btn.classList.add("is-on");
           const orig = btn.textContent;
           btn.textContent = "Kopeeritud ✓";
           setTimeout(() => {
             btn.textContent = orig;
-            btn.classList.remove("copied");
+            btn.classList.remove("is-on");
           }, 1800);
         });
       }

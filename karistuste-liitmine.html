@@ -18,7 +18,7 @@
         <div class="topbar">
           <div class="header-main">
             <button
-              class="sidebar-toggle"
+              class="btn btn--icon"
               id="sidebar-toggle"
               aria-label="Ava menüü"
             >
@@ -83,7 +83,7 @@
             <div class="result-block result-block--full animate" id="result-block">
               <div class="result-header">
                 <span class="result-label">// Kokku</span>
-                <button class="copy-btn hidden" id="copy-btn">
+                <button class="btn hidden" id="copy-btn">
                   Kopeeri
                 </button>
               </div>
@@ -151,14 +151,14 @@
       document
         .getElementById("copy-btn")
         .addEventListener("click", function () {
-          if (this.classList.contains("copied")) return;
+          if (this.classList.contains("is-on")) return;
           navigator.clipboard.writeText(this._clipText).then(() => {
-            this.classList.add("copied");
+            this.classList.add("is-on");
             const orig = this.textContent;
             this.textContent = "✓";
             setTimeout(() => {
               this.textContent = orig;
-              this.classList.remove("copied");
+              this.classList.remove("is-on");
             }, 1800);
           });
         });

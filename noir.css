@@ -135,6 +135,9 @@
   --gap-tight: var(--sp-2); /* inside one control, or one short group */
   --gap-wide: var(--sp-6); /* between blocks: cards, sections, grids */
 
+  /* Control interior. The one padding every button and input shares. */
+  --pad: var(--sp-2) var(--sp-3);
+
   /* ── Timing ──
      Two durations. Feedback — a colour or border answering a hover — is quick
      and uniform; movement is slower because it is distance, not acknowledgement.
@@ -191,6 +194,60 @@
    and are more specific, so they still win. */
 .hidden {
   display: none;
+}
+
+/* ── BUTTON ──
+   The button. Every action on the site is this one class: same size, same fill,
+   same padding, same voice.
+
+   There were eight button classes before this, across 25 buttons, in three
+   font-sizes, three letter-spacings, five paddings, two border treatments and
+   three hover behaviours — none of it recorded anywhere. Three near-identical
+   buttons had picked three different paddings. Now there is one, and a
+   variant only where something genuinely differs.
+
+   Variants:
+     .btn--icon   square, glyph only, no label
+     .is-on       the current state of a toggle — amber, inverse text
+
+   State classes JS toggles: `is-on` for a toggle's current state, `.hidden`
+   for show/hide. Nothing else. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  padding: var(--pad);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+  color: var(--text);
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    background var(--dur),
+    color var(--dur),
+    border-color var(--dur);
+}
+.btn:hover {
+  background: var(--lift);
+  border-color: var(--amber);
+}
+/* A toggle showing which option is selected. */
+.btn.is-on {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--void);
+}
+/* Square, for a glyph with no label beside it. */
+.btn--icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: var(--fs-lg);
 }
 
 /* ── BASE ── */
@@ -300,9 +357,7 @@ body {
   flex-shrink: 0;
 }
 /* Hover on a control with no fill of its own just brightens its label. */
-.sidebar-brand:hover .brand-name,
-.search-clear:hover,
-.input-clear:hover {
+.sidebar-brand:hover .brand-name {
   color: var(--text);
 }
 
@@ -354,9 +409,7 @@ body {
   white-space: normal;
   line-height: 1.4;
 }
-/* Nav item and drawer toggle: both chrome on --deep, same hover lift. */
-.nav-item:hover,
-.sidebar-toggle:hover {
+.nav-item:hover {
   background: var(--surface);
   color: var(--text);
 }
@@ -452,22 +505,10 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-/* Mobile toggle (hidden on desktop) */
-.sidebar-toggle {
+/* The drawer toggle only exists on a narrow screen. Its button styling is
+   .btn .btn--icon in the markup; all this adds is when it is shown. */
+#sidebar-toggle {
   display: none;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  cursor: pointer;
-  font-size: var(--fs-lg);
-  flex-shrink: 0;
-  transition:
-    background var(--dur),
-    color var(--dur);
 }
 
 .title-block h1 {
@@ -525,8 +566,7 @@ body {
   background: var(--surface);
 }
 /* Last item in a run drops its trailing divider. */
-.stat-pill:last-child,
-.unit-btn:last-child {
+.stat-pill:last-child {
   border-right: none;
 }
 
@@ -613,22 +653,12 @@ body {
   color: var(--dim);
 }
 
+/* Only shown when there is a query to clear. */
 .search-clear {
-  padding: 0 var(--sp-3);
-  font-size: var(--fs-xl);
-  line-height: 1;
-  color: var(--dim);
-  cursor: pointer;
-  flex-shrink: 0;
-  background: none;
-  border: none;
   display: none;
-  align-items: center;
-  justify-content: center;
-  transition: color var(--dur);
 }
 .search-clear.visible {
-  display: flex;
+  display: inline-flex;
 }
 
 #result-count {
@@ -776,30 +806,7 @@ main {
   grid-column: 1 / -1;
 }
 
-/* Small ghost copy button (base + hover + copied states) */
-.copy-btn {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  background: none;
-  border: 1px solid var(--border);
-  padding: var(--sp-1) var(--sp-3);
-  cursor: pointer;
-  letter-spacing: var(--track-wide);
-  transition:
-    background var(--dur),
-    color var(--dur),
-    border-color var(--dur);
-  flex-shrink: 0;
-}
-.copy-btn:hover {
-  background: var(--lift);
-  color: var(--text);
-  border-color: var(--line);
-}
-.copy-btn.copied {
-  color: var(--amber);
-  border-color: var(--amber);
-}
+/* Copy feedback is the toggle state, not a third button style. */
 
 /* -- SHARED PAGE-TOOL COMPONENTS #2 (hoisted + unified near-duplicates) -- */
 
@@ -1142,11 +1149,9 @@ mark {
 .no-results:not(.visible) {
   display: none;
 }
-/* The reveal state: `display: none` until the script finds something to show.
-   (.search-clear reveals as flex, .reset-btn as inline.) */
+/* The reveal state: `display: none` until the script finds something to show. */
 .no-results.visible,
-.sidebar-overlay.visible,
-.input-clear.visible {
+.sidebar-overlay.visible {
   display: block;
 }
 
@@ -1267,21 +1272,12 @@ footer {
   outline: 1px solid var(--muted-25);
   text-decoration: line-through;
 }
+/* Only shown once there is an exclusion to undo. */
 .reset-btn {
-  font-size: var(--fs-xs);
-  color: var(--dim);
-  background: none;
-  border: none;
-  cursor: pointer;
-  letter-spacing: var(--track-wide);
-  transition: color var(--dur);
   display: none;
 }
-.reset-btn:hover {
-  color: var(--amber);
-}
 .reset-btn.visible {
-  display: inline;
+  display: inline-flex;
 }
 .el-excluded {
   opacity: 0.35;
@@ -1374,35 +1370,12 @@ footer {
   flex-shrink: 0;
 }
 
-/* Unit switcher */
+/* Unit switcher — the buttons carry their own borders now, so this is just a
+   row of them rather than a bordered well with dividers inside. */
 .unit-switcher {
   display: flex;
-  border: 1px solid var(--border);
-  overflow: hidden;
+  gap: var(--gap-tight);
   flex-shrink: 0;
-}
-.unit-btn {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--track-caps);
-  padding: var(--sp-2) var(--sp-4);
-  background: none;
-  border: none;
-  color: var(--dim);
-  cursor: pointer;
-  transition:
-    background var(--dur),
-    color var(--dur);
-  border-right: 1px solid var(--border);
-}
-/* Hover on a small control raises it off the surface. */
-.unit-btn:hover,
-.ref-today-btn:hover {
-  background: var(--lift);
-  color: var(--text);
-}
-.unit-btn.active {
-  background: var(--surface);
-  color: var(--amber);
 }
 
 /* ══ KARISTUSTE LIITMINE  ·  karistuste-liitmine.html ══ */
@@ -1480,21 +1453,14 @@ footer {
   z-index: var(--z-overlay-top);
 }
 
+/* Pinned inside the field it clears, so only its position is bespoke. */
 .input-clear {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: var(--fs-lg);
-  color: var(--dim);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--sp-1) var(--sp-2);
-  line-height: 1;
   z-index: var(--z-overlay-top);
   display: none;
-  transition: color var(--dur);
 }
 
 .input-hint {
@@ -1533,24 +1499,6 @@ footer {
   margin-top: var(--sp-5);
 }
 
-.ref-today-btn {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--track-wide);
-  color: var(--dim);
-  background: none;
-  border: 1px solid var(--border);
-  padding: var(--sp-2) var(--sp-3);
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background var(--dur),
-    color var(--dur);
-  flex-shrink: 0;
-}
-.ref-today-btn.active {
-  color: var(--amber);
-  border-color: var(--line);
-}
 
 /* ── Results panel ── */
 
@@ -1700,8 +1648,8 @@ footer {
     transform: translateX(0);
   }
 
-  .sidebar-toggle {
-    display: flex;
+  #sidebar-toggle {
+    display: inline-flex;
   }
 
   .header-main {
@@ -1786,19 +1734,16 @@ footer {
     font-size: 11pt;
   }
 
-  /* Chrome that carries no information. */
+  /* Chrome that carries no information. Every button goes: there is nothing on
+     paper to copy, reset, toggle or close. */
   .sidebar,
   .sidebar-overlay,
   .topbar,
   .search-zone,
   .stats-band,
-  .sidebar-toggle,
   footer,
-  .copy-btn,
-  .unit-switcher,
-  .reset-btn,
-  .search-clear,
-  .ref-today-btn,
+  .btn,
+  .list-header,
   #loading {
     display: none !important;
   }

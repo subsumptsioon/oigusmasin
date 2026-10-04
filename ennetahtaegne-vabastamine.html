@@ -18,7 +18,7 @@
         <div class="topbar">
           <div class="header-main">
             <button
-              class="sidebar-toggle"
+              class="btn btn--icon"
               id="sidebar-toggle"
               aria-label="Ava menüü"
             >
@@ -211,7 +211,7 @@
             <div class="result-header result-header--stack">
               <div class="header-row">
                 <span class="result-fraction">${def.glyph}</span>
-                ${hasInput ? `<button class="copy-btn" data-date="${copyDateStr}">Kopeeri</button>` : ""}
+                ${hasInput ? `<button class="btn" data-date="${copyDateStr}">Kopeeri</button>` : ""}
               </div>
               <div class="result-legal-label">${def.label}</div>
             </div>
@@ -224,16 +224,16 @@
         });
 
         // Wire copy buttons
-        panel.querySelectorAll(".copy-btn").forEach((btn) => {
+        panel.querySelectorAll(".btn").forEach((btn) => {
           btn.addEventListener("click", () => {
-            if (btn.classList.contains("copied")) return;
+            if (btn.classList.contains("is-on")) return;
             navigator.clipboard.writeText(btn.dataset.date).then(() => {
-              btn.classList.add("copied");
+              btn.classList.add("is-on");
               const orig = btn.textContent;
               btn.textContent = "✓";
               setTimeout(() => {
                 btn.textContent = orig;
-                btn.classList.remove("copied");
+                btn.classList.remove("is-on");
               }, 1800);
             });
           });
