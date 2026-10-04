@@ -144,7 +144,6 @@ const SELECTORS = [
   ".idle-state",
   ".field",
   ".field--code",
-  ".field--sm",
   ".field--cal",
   ".pill-bar[data-list=\"3\"]",
   ".list-sigil[data-list=\"3\"]",
