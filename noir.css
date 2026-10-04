@@ -1,26 +1,24 @@
 /* ============================================================
    noir.css — design system
 
-   Breakpoints. Plain CSS cannot read custom properties inside a media
-   query without a build step, so these stay a documented convention that
-   tools/check-css.mjs enforces:
+   Breakpoints are a documented convention rather than a token: plain CSS
+   cannot read a custom property inside a media query without a build
+   step. tools/check-css.mjs enforces both.
      900px  two-column tool layout -> one column
      800px  sidebar collapses into a drawer
    ============================================================ */
 
 /* ── WEBFONT ──
-   "JetBrainsMono Nerd Font" is a patched build (nerd-fonts) and exists on no
-   font CDN, so the two weights the design uses are self-hosted in fonts/.
-   The family name here matches the first entry of --mono, so the stack
-   resolves identically whether or not the visitor has the font installed.
+   "JetBrainsMono Nerd Font" is a patched build (nerd-fonts) and is on no
+   font CDN, so the two weights used are self-hosted in fonts/. The family
+   name here matches the first entry of --mono, so the stack resolves the
+   same whether or not the visitor has it installed.
 
-   local() is listed first on purpose: a visitor who already has the Nerd Font
-   gets their system copy and downloads nothing, and everyone else falls
-   through to the woff2 below.
+   local() is listed first on purpose: a visitor who already has the font
+   downloads nothing, and everyone else falls through to the woff2 below.
 
-   unicode-range mirrors the subset (see fonts/README.md). It also makes
-   per-character fallback correct — U+2011 has no glyph upstream, so it now
-   falls back instead of rendering .notdef. */
+   unicode-range mirrors the subset (fonts/README.md). It also makes
+   per-character fallback correct — U+2011 has no glyph upstream. */
 @font-face {
   font-family: "JetBrainsMono Nerd Font";
   font-style: normal;
@@ -50,23 +48,21 @@
 
 /* ── TOKENS ── */
 :root {
-  /* Global dark color-scheme so native controls/scrollbars render dark
-     everywhere */
+  /* Native controls and scrollbars render dark everywhere. */
   color-scheme: dark;
 
-  /* ── Retro 82 palette (Omarchy Retro 82: navy surfaces, amber accent,
-     teal support, cream text) ────────────────────────────────────────── */
-  --void: #000c17; /* darker_bg — page backdrop */
-  --deep: #001123; /* dark_bg — sidebar / topbar */
-  --surface: #00172e; /* bg — cards / panels */
+  /* ── Palette ── */
+  --void: #000c17; /* page backdrop */
+  --deep: #001123; /* sidebar / topbar */
+  --surface: #00172e; /* cards / panels */
   --lift: #021f37; /* derived raised surface (hover) */
-  --border: #57898a; /* muted — WCAG 1.4.11 non-text: >=3:1 on all bgs */
+  --border: #57898a; /* WCAG 1.4.11 non-text: >=3:1 on all bgs */
   --line: #0e2c47; /* derived hairline */
   --amber: #faa968; /* accent */
-  --red: #f85525; /* red */
-  --text: #f6dcac; /* fg */
-  --muted: #8cbfb8; /* cyan */
-  --dim: #65a5a1; /* bright_magenta */
+  --red: #f85525; /* error */
+  --text: #f6dcac; /* body text */
+  --muted: #8cbfb8; /* secondary text */
+  --dim: #65a5a1; /* labels, de-emphasised text */
 
   /* Narkonimekirjad list I–VI accents */
   --l2: #ed9563;
@@ -75,9 +71,8 @@
   --l5: #8cbfb8;
   --l6: #a3ccc6;
 
-  /* Alpha ramps. Literal rgba() rather than color-mix() on purpose: the
-     values here have to stay statically resolvable for
-     tools/contrast-audit.mjs, which cannot follow a nested var(). */
+  /* Literal rgba() rather than color-mix(): tools/contrast-audit.mjs cannot
+     follow a nested var(), so these must stay statically resolvable. */
   --amber-15: rgba(250, 169, 104, 0.15);
   --amber-22: rgba(250, 169, 104, 0.22);
   --amber-28: rgba(250, 169, 104, 0.28);
@@ -87,14 +82,12 @@
   --muted-25: rgba(140, 191, 184, 0.25);
   --scrim: rgba(0, 0, 0, 0.65);
 
-  /* Amber CRT bloom — focused inputs + the hero value (Retro 82) */
+  /* Amber bloom — focused inputs and the hero value. */
   --ring: 0 0 0 2px var(--amber-15);
   --glow: 0 0 24px var(--amber-22);
   --glow-hero: 0 0 18px var(--amber-35);
 
-  /* ── Type scale ──
-     13 ad-hoc sizes snapped onto 8 steps. The former 11px micro-label
-     folded up to 12px: same tier, a shade more legible. */
+  /* ── Type scale ── */
   --fs-xs: 12px;
   --fs-sm: 13px;
   --fs-md: 14px; /* body default */
@@ -105,9 +98,8 @@
   --fs-hero: 32px;
 
   /* ── Tracking scale ──
-     10 ad-hoc values snapped onto 3. The uppercase mono label was one of
-     0.1/0.12/0.14/0.16/0.18em depending on the page; they all share
-     --track-caps now. */
+     The uppercase mono label is --track-caps everywhere; it used to be one
+     of five values depending on the page. */
   --track-tight: -0.02em;
   --track-wide: 0.04em;
   --track-caps: 0.18em;
@@ -124,13 +116,9 @@
   --sp-9: 48px;
 
   /* ── Spacing roles ──
-     The scale above is what exists; these are what a situation wants. Pick the
-     role that matches the relationship rather than reaching for a number, so
-     that two controls of the same kind end up the same size instead of each
-     having chosen a step that looked right at the time.
-
-     Before this, seven gap values were in use across the sheet and three
-     near-identical buttons picked three different ones. */
+     The scale above is what exists; these are what a situation wants. Pick
+     the role that matches the relationship rather than reaching for a
+     number, so two controls of the same kind end up the same size. */
   --gap: var(--gap); /* label↔control, sibling controls, list items */
   --gap-tight: var(--sp-2); /* inside one control, or one short group */
   --gap-wide: var(--sp-6); /* between blocks: cards, sections, grids */
@@ -144,15 +132,13 @@
 --pad-page: var(--sp-8) var(--sp-9); /* main */
 
   /* ── Timing ──
-     Two durations. Feedback — a colour or border answering a hover — is quick
-     and uniform; movement is slower because it is distance, not acknowledgement.
-     Seven durations were in use, the slowest and quickest 14ms apart. */
+     Feedback — a colour or border answering a hover — is quick; movement
+     is slower, because it covers distance rather than acknowledging. */
   --dur: 0.12s;
   --dur-move: 0.2s;
 
   /* ── Shape ──
-     Sharp corners are the Retro 82 signature, so this stays 0. It exists
-     as a token only so no rule has to hardcode a radius. */
+     Sharp corners throughout. A token only so no rule hardcodes a radius. */
   --radius: 0;
 
   /* ── Stacking order ──
@@ -165,11 +151,10 @@
   --z-drawer: 200; /* mobile sidebar */
 
   /* ── Typeface ──
-     Only the Nerd Font is requested; the @font-face block at the top of this
-     file serves it to anyone who does not already have it. It ships in
-     Regular/Bold only, so weights 500 and 800 resolve to the nearest real
-     weight rather than being synthesised. It is the only family in the
-     system — body sets it and no rule opts out. */
+     The @font-face block at the top serves it to anyone who lacks it. Ships
+     Regular/Bold only, so 500 and 800 snap to a real weight rather than
+     being synthesised. The only family in the system: body sets it and no
+     rule opts out. */
   --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", ui-monospace,
     monospace;
 
@@ -188,35 +173,26 @@
 }
 
 /* ── UTILITIES ──
-   The one state class JS toggles. It used to be two component-scoped rules
-   (.list-section.hidden, .substances-table tbody tr.hidden) plus a third
-   inline style="display:none" per element that needed hiding — so the same
-   intent was expressed three ways. `display` is not overridable by a utility
-   class, so anything that must stay visible while hidden needs a plain
-   `visibility`/`.hidden` pairing; nothing here does.
+   The one state class JS toggles for show/hide.
 
-   The two component rules are kept: they document intent at the point of use
-   and are more specific, so they still win. */
+   `display` is not overridable by a utility class, so anything that must
+   stay visible while hidden needs a plain `visibility`/`.hidden` pairing.
+   Nothing here does, which is why the two component rules below are kept:
+   they document intent at the point of use and are more specific. */
 .hidden {
   display: none;
 }
 
 /* ── BUTTON ──
-   The button. Every action on the site is this one class: same size, same fill,
-   same padding, same voice.
-
-   There were eight button classes before this, across 25 buttons, in three
-   font-sizes, three letter-spacings, five paddings, two border treatments and
-   three hover behaviours — none of it recorded anywhere. Three near-identical
-   buttons had picked three different paddings. Now there is one, and a
-   variant only where something genuinely differs.
+   The button. Every action on the site is this one class: same size, same
+   fill, same padding, same voice. A variant exists only where something
+   genuinely differs.
 
    Variants:
      .btn--icon   square, glyph only, no label
-     .is-on       the current state of a toggle — amber, inverse text
+     .is-on       a toggle's current state — amber, inverse text
 
-   State classes JS toggles: `is-on` for a toggle's current state, `.hidden`
-   for show/hide. Nothing else. */
+   State classes JS toggles: `is-on` and `.hidden`. Nothing else. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -255,8 +231,8 @@
   font-size: var(--fs-lg);
 }
 
-/* Unit switcher — the buttons carry their own borders now, so this is just a
-   row of them rather than a bordered well with dividers inside. */
+/* Unit switcher — the buttons carry their own borders, so this is just a row
+   of them rather than a bordered well with dividers inside. */
 .unit-switcher {
   display: flex;
   gap: var(--gap-tight);
@@ -264,9 +240,7 @@
 }
 
 /* ── BASE ── */
-/* The whole site is mono-forward (Retro 82), so the mono stack is the body
-   default and the 59 per-rule `font-family: var(--mono)` declarations that
-   used to repeat it are gone. No rule opts back out to a proportional
+/* The mono stack is the body default and no rule opts out to a proportional
    face — there is no second stack to opt into. */
 body {
   background: var(--void);
@@ -277,8 +251,7 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* Subpixel antialiasing smears on dark navy; greyscale keeps the CRT
-     look crisp. */
+  /* Subpixel antialiasing smears on dark navy; greyscale stays crisp. */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -286,22 +259,19 @@ body {
 /* Form controls are the one thing that does NOT pick the family up from body:
    the UA stylesheet hard-resets font-family on button/input/select/textarea,
    so every control fell back to the platform UI font while the text around it
-   rendered in the Nerd Font. Measured across all four pages, that was 20
-   controls — #search, every .field, and every button.
+   rendered in the Nerd Font.
 
    Only the family is restored. `font: inherit` would also drag each control's
    font-size back to body's, clobbering the per-component type scale that
    .field--* and the button rules set on purpose.
 
    :where() keeps specificity at 0 so a component rule can still opt a control
-   into something else later; .list-header carried a `font: inherit` of its own
-   for exactly this reason (noir.css ~906), which is what made it the one
-   control that happened to render correctly. */
+   into something else later. */
 :where(button, input, select, textarea) {
   font-family: inherit;
 }
 
-/* Text selection — Retro 82 (amber bg, navy text) */
+/* Text selection — amber background, navy text. */
 ::selection {
   background: var(--amber);
   color: var(--void);
@@ -312,12 +282,9 @@ body {
    ══════════════════════════════════════════════ */
 
 /* ── LABEL ──
-   The uppercase mono micro-label, defined once. This exact 4-declaration
-   block used to be copy-pasted into ~10 rules spread over noir.css and
-   three page <style> blocks, with letter-spacing drifting between 0.1 and
-   0.18em depending on who wrote it. :where() keeps specificity at 0 so
-   each component below can still override, and each now carries only its
-   own chrome. */
+   The uppercase mono micro-label, defined once. :where() keeps specificity
+   at 0 so each component below can still override, and each now carries only
+   its own chrome. */
 :where(.panel-header, .result-label, .field-label, .duration-sublabel,
   .no-results, .or-separator, .idle-state,
   .substances-table thead th) {
@@ -392,13 +359,9 @@ body {
 }
 
 /* ── FOCUS (WCAG 2.4.7 / 2.4.11) ────────────────────────────────────────────
-   One base ring for every focusable element.
-
-   This used to be a hand-maintained list of 8 class names, which meant any
-   newly added button silently lost its focus ring. All 8 were real <a> or
-   <button> elements, so a universal selector covers them — and covers
-   anything added later, for free. :where() keeps specificity at 0 so
-   components can still override.
+   One base ring for every focusable element, so a newly added button cannot
+   silently lose its focus ring. :where() keeps specificity at 0 so components
+   can still override.
 
    It deliberately does not fire for tabindex="-1" affordances (the inline
    clear buttons), which are intentionally not keyboard-reachable. */
@@ -427,7 +390,7 @@ body {
   color: var(--text);
 }
 .nav-item.active {
-  /* Retro 82 "status chip": accent background + inverse text */
+  /* Status chip: accent background, inverse text. */
   color: var(--void);
   background: var(--amber);
 }
@@ -481,12 +444,12 @@ body {
   z-index: var(--z-sticky);
 }
 
-/* Chrome bar — a horizontally scrollable strip on narrow screens.
-   The scrollbar itself is hidden (it would break the sharp-corner look), so
-   a right-edge fade stands in as the "there is more" cue. The gradient is
-   drawn on a pseudo-element pinned to the strip rather than as a background
-   on .header-chrome, because a background on a scroll container scrolls with
-   the content instead of staying put. */
+/* Chrome bar — a horizontally scrollable strip on narrow screens. The
+   scrollbar is hidden (it would break the sharp-corner look), so a
+   right-edge fade stands in as the "there is more" cue. The gradient is on a
+   pseudo-element pinned to the strip rather than as a background on
+   .header-chrome, because a background on a scroll container scrolls with the
+   content instead of staying put. */
 .header-chrome {
   display: flex;
   align-items: center;
@@ -518,8 +481,8 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-/* The drawer toggle only exists on a narrow screen. Its button styling is
-   .btn .btn--icon in the markup; all this adds is when it is shown. */
+/* The drawer toggle only exists on a narrow screen; its button styling comes
+   from .btn .btn--icon in the markup. All this adds is when it is shown. */
 #sidebar-toggle {
   display: none;
 }
@@ -621,7 +584,7 @@ body {
     border-color var(--dur),
     box-shadow var(--dur);
 }
-/* The search input sets outline:none, so its wrapper owns the ring. Same
+/* The search input sets outline:none, so its wrapper owns the ring — the same
    declaration pair as .field:focus, which carries it for pointer users too.
    (.input-wrap looks similar but rings with outline — different treatment.) */
 .search-inner:focus-within,
@@ -709,8 +672,8 @@ main {
 .list-section:hover {
   border-color: var(--amber);
 }
-/* Kept together because the .hidden utility's comment above explains why these
-   exist at all: they outrank .hidden, which is what makes them win. */
+/* Kept because the .hidden utility above explains why they exist at all: they
+   outrank .hidden, which is what makes them win. */
 .list-section.hidden,
 .substances-table tbody tr.hidden {
   display: none;
@@ -739,7 +702,7 @@ main {
   }
 }
 
-/* ── SHARED PAGE-TOOL COMPONENTS (hoisted from page <style> blocks) ── */
+/* ── SHARED PAGE-TOOL COMPONENTS ── */
 
 /* Two-column tool layout.
    This is a *container* query, not a viewport one: the sidebar eats 260px, so
@@ -757,7 +720,7 @@ main {
     grid-template-columns: 1fr;
   }
 }
-/* Tighter gutter, for tools whose two columns hold little text. */
+/* Same gutter as .tool-wrap. */
 .tool-wrap--tight {
   gap: var(--gap-wide);
 }
@@ -777,9 +740,7 @@ main {
   background: var(--deep);
 }
 
-/* A header bar with content on one side and a control on the other. Used by a
-   panel header holding a unit switcher and by a result header holding a copy
-   button, which were two byte-identical rules under two names. */
+/* A header bar with content on one side and a control on the other. */
 .header-row {
   display: flex;
   align-items: center;
@@ -831,9 +792,6 @@ main {
   grid-column: 1 / -1;
 }
 
-/* Copy feedback is the toggle state, not a third button style. */
-
-/* -- SHARED PAGE-TOOL COMPONENTS #2 (hoisted + unified near-duplicates) -- */
 
 /* Result card header row (default). Enneht overrides to a stacked column. */
 .result-header {
@@ -859,8 +817,6 @@ main {
   gap: var(--gap);
 }
 
-/* Field label (uppercase mono); pages may add spacing on their layout */
-/* Spacing variant, for a label that heads a block of its own. */
 .field-label--spaced {
   margin-bottom: var(--sp-2);
 }
@@ -883,9 +839,8 @@ main {
 }
 
 /* ── RESULT FIGURE ──
-   The prominent value inside a result card. This was copy-pasted twice with
-   byte-identical declarations under two names — .result-value (32px) and
-   .result-date (28px) — so it is one component with a size modifier. */
+   The prominent value inside a result card, as one component with a size
+   modifier. */
 .result-figure {
   font-size: var(--fs-hero);
   font-weight: 700;
@@ -907,9 +862,7 @@ main {
   gap: var(--gap);
 }
 
-/* A column stacking a label above its control. Shared by the duration inputs
-   and the plain labelled fields, which were two byte-identical rules under two
-   names — and which nest inside each other on one page. */
+/* A column stacking a label above its control. */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -939,16 +892,10 @@ main {
 /* ── FIELD ──
    The canonical text input.
 
-   This component used to be copy-pasted into three page <style> blocks plus
-   four #id selectors on isikukood, and every one of those copies declared a
-   `border` shorthand. Because a page <style> block is parsed after noir.css,
-   each of those shorthands silently outranked noir.css's own `input:focus`
-   rule — so *no* input on the site showed a focus border, and the four
-   isikukood ones additionally set `outline: none`, which also killed the
-   focus ring. One owner means a base style can no longer outrank focus.
-
-   Pages style size and tracking through the .field--* modifiers below; they
-   must not re-declare `border` or `outline`. */
+   Pages must not re-declare `border` or `outline` on a field. A page <style>
+   block is parsed after noir.css, so any shorthand there silently outranks
+   noir.css's own focus rule — which is how every input on the site ended up
+   with no focus border. Pages style through the .field--* modifiers below. */
 .field {
   appearance: none;
   -moz-appearance: textfield;
@@ -960,12 +907,11 @@ main {
   caret-color: var(--amber);
   font-size: var(--fs-lg);
   line-height: 1.4;
-  /* An explicit block-size, so that every field is the same height whatever its
-     type. Left to itself, a type="date" input is 2px taller than a text one:
+  /* An explicit block-size, so every field is the same height whatever its
+     type. Left to itself a type="date" input is 2px taller than a text one:
      Chrome gives the date editor a 24px intrinsic content box that ignores the
-     line-height, so the two fields in one row did not line up. 1.4em is this
-     element's own line-height, so the total still scales with font-size — the
-     code variant at 24px comes out at the same 59.6px it did before. */
+     line-height. 1.4em is this element's own line-height, so the total still
+     scales with font-size. */
   block-size: calc(1.4em + 2 * var(--sp-3) + 2px);
   transition:
     border-color var(--dur),
@@ -1001,26 +947,15 @@ main {
   margin: 0;
 }
 
-/* Size modifiers — the only thing a page should need. Values mirror what
-   each page used to declare, so this is a pure de-duplication. */
 /* Every field on the site is a plain .field: one background, one size, one
-   padding. Two modifiers existed so that one page's four fields could each be a
-   slightly different shape — a raised ground, a step smaller, tighter padding
-   than the base. Nothing recorded why, and the result was that the isikukood
-   page read as a different site: 14px type on a lighter ground at 37.6px tall,
-   against 16px on the standard ground at 48.4px everywhere else.
+   padding. Two modifiers remain, and both are layout rather than a different
+   size of the same thing:
 
-   Two modifiers remain, and both are a different kind of thing rather than a
-   different size of the same thing:
-
-     .field--code   the eleven-digit identity number, set large on purpose,
-                    with room on the right for the suffix hint
-     .field--cal    a date field's calendar affordance, sized to sit beside a
-                    plain .field rather than to differ from it */
-/* The identity-code field. No size of its own — it is a plain .field at the
-   site's standard 16px, like every other field. What it still needs is room on
-   the right for .code-suffix, the faint run of underscores showing how many
-   digits are outstanding; that is the whole reason this modifier exists. */
+     .field--code   room on the right for .code-suffix
+     .field--cal    a date field's calendar affordance, sized to sit beside
+                    a plain .field rather than to differ from it */
+/* No size of its own — a plain .field. The padding above is the whole reason
+   this modifier exists. */
 .field--code {
   padding: var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-3);
   position: relative;
@@ -1035,8 +970,7 @@ main {
   filter: invert(0.55) sepia(1) saturate(3) hue-rotate(5deg) brightness(1.1);
 }
 
-/* Collapse toggle. This is a real <button> (it was a div[onclick], so it was
-   unreachable by keyboard) — hence the UA reset below. */
+/* Collapse toggle. A real <button>, hence the UA reset below. */
 .list-header {
   display: flex;
   align-items: center;
@@ -1066,9 +1000,8 @@ main {
   min-width: 0;
 }
 
-/* Narkonimekirjad list I–VI accents. The colour used to be an inline
-   style="color: var(--l2)" on every sigil and pill bar; a data attribute
-   keeps it in the stylesheet where a re-theme can reach it. */
+/* Narkonimekirjad list I–VI accents, kept in the stylesheet (via a data
+   attribute) so a re-theme can reach them. */
 [data-list="1"] { --list-accent: var(--red); }
 [data-list="2"] { --list-accent: var(--l2); }
 [data-list="3"] { --list-accent: var(--l3); }
@@ -1271,40 +1204,35 @@ footer {
   cursor: pointer;
 }
 
-/* ── SINGLE-PAGE COMPONENTS ───────────────────────────────────────────────────
-   Rules only one page uses. They used to live in a <style> block in that page,
-   which worked because the block is parsed after this file — so the override
-   won on order, with nothing in the rule saying so. That is not a scoping
-   mechanism: it holds only while the two are in separate files, and it does
-   not survive the print block below silently outranking (or being outranked
-   by) anything.
+/* ── SINGLE-PAGE COMPONENTS ───────────────────────────────────────────────
+   Rules only one page uses. They used to live in a <style> block in that
+   page, which worked only because the block is parsed after this file — the
+   override won on order, with nothing in the rule saying so.
 
-   They live here now, and they are grouped by what the rule *is*, not by which
-   page owns it. The page grouping was tried and abandoned: it answered "which
-   file do I open" and nothing else. Two pages each had a `.result-*` rule and
-   a `.field` layout rule that were near-identical, and being under different
-   headings is what let them drift rather than what stopped them.
+   They live here now, grouped by what the rule *is*, not by which page owns
+   it. Page grouping answers "which file do I open" and nothing else; two
+   pages each had a near-identical .result-* and .field layout rule, and
+   sitting under different headings is what let them drift.
 
-   So: if a rule describes a kind of thing, it goes with the other rules of that
-   kind. If a rule would be useful on a second page, promote it above into a
-   named component. A shared component is varied with a `--modifier`, never by
-   re-declaring its selector from down here — see .tool-wrap--tight and friends. */
+   So: if a rule describes a kind of thing, it goes with the other rules of
+   that kind. If it would be useful on a second page, promote it above into a
+   named component, and vary a shared component with a `--modifier` — never
+   by re-declaring its selector from down here. */
 
 
 /* ── Highlight overlay ──
    The Rehkendaja textarea is a transparent <textarea> laid exactly over a
-   <div> that holds the same text with the <mark> spans in it, so the browser
-   draws the highlighting and the caret stays real. The two must agree on every
-   box metric, which is why the padding and line-height are repeated on both. */
-
-/* Highlight overlay container — mirror div sizes it, textarea overlays */
+   <div> holding the same text with the <mark> spans in it, so the browser
+   draws the highlighting and the caret stays real. The two must agree on
+   every box metric, which is why padding and line-height are repeated on
+   both. */
 .input-wrap {
   position: relative;
   pointer-events: auto;
 }
-/* A11y (WCAG 2.4.7 / 2.4.11): the textarea inside is borderless and
-   sets outline:none, so the wrapper owns the focus ring. 2px to match
-   the universal ring everywhere else (it used to be 1px). */
+/* A11y (WCAG 2.4.7 / 2.4.11): the textarea inside is borderless and sets
+   outline:none, so the wrapper owns the focus ring. 2px to match the
+   universal ring. */
 .input-wrap:focus-within {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
@@ -1370,9 +1298,6 @@ footer {
   pointer-events: auto;
 }
 
-/* Results panel — .results-panel / .result-header / .result-label are
-   components above. (.result-value used to live here but nothing referenced it
-   — the page renders .sum-value / .count-value / .elements-list instead.) */
 
 /* Sum value — larger */
 .sum-value {
@@ -1381,7 +1306,7 @@ footer {
   color: var(--amber);
   letter-spacing: var(--track-tight);
   padding: var(--sp-5) var(--sp-5);
-  /* Amber CRT bloom on the hero number (Retro 82) */
+  /* Amber bloom on the hero number. */
   text-shadow: var(--glow-hero);
 }
 
@@ -1421,9 +1346,7 @@ footer {
 .elements-list .is-empty {
   color: var(--dim);
 }
-/* The "nothing found" note, which sits where rows would be but is not one.
-   This was `li.style.cssText`, carrying a raw 12px/0.1em that no scale token
-   matched — invisible to the lint, which only reads stylesheets. */
+/* The "nothing found" note, which sits where rows would be but is not one. */
 .elements-list .is-blank {
   color: var(--dim);
   font-size: var(--fs-xs);
@@ -1459,10 +1382,10 @@ footer {
 }
 /* Dim suffix hint — shows remaining digits after the cursor. Drawn over the
    input, not beside it, so its type has to be the input's type exactly: same
-   font-size and same letter-spacing, or the underscores stop lining up with the
-   digits above them. The offset is measured from the input's computed font by
-   updateCodeDisplay() in the page, so it follows this rule rather than a
-   hardcoded width. */
+   font-size and same letter-spacing, or the underscores stop lining up with
+   the digits above them. The offset is measured from the input's computed
+   font by updateCodeDisplay() in the page, so it follows this rule rather
+   than a hardcoded width. */
 .code-suffix {
   position: absolute;
   pointer-events: none;
@@ -1630,15 +1553,13 @@ footer {
 }
 
 /* ── STATUS COLOUR ──
-   The pass/fail pair, previously nine rules that each declared one property.
    .is-error / .is-pass are the names new code should use; the old spellings
    stay as members because .err and .is-fail are load-bearing across three
-   pages, and renaming them would buy nothing rendered.
+   pages.
 
-   Placement is load-bearing: .err and .is-fail were compound selectors at
-   0,2,0 and are now bare classes at 0,1,0, tying with the .input-hint and
-   .suite-title rules that set the resting colour. A tie goes to source order,
-   so this group must stay below both — hoisting it silently drops the colour. */
+   Placement is load-bearing: these tie at 0,1,0 with the .input-hint and
+   .suite-title rules that set the resting colour, and a tie goes to source
+   order — so this group must stay below both. Hoisting it drops the colour. */
 .is-error,
 .load-error,
 .err,
@@ -1713,8 +1634,7 @@ footer {
    PRINT
    ══════════════════════════════════════════════
    These tools exist to produce a number someone then writes into a file, so
-   printing is a first-class path, not an afterthought. Without this the whole
-   navy page prints, which wastes ink and is hard to read on paper.
+   printing is a first-class path, not an afterthought.
 
    The palette is re-pointed at print-safe values rather than restyled rule by
    rule, so every component follows automatically. */
@@ -1732,7 +1652,7 @@ footer {
     --text: #000000;
     --muted: #333333;
     --dim: #4a4a4a;
-    /* Glows and the CRT bloom are pure screen effects. */
+    /* Bloom is a screen effect. */
     --ring: none;
     --glow: none;
     --glow-hero: none;
