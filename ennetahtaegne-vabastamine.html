@@ -49,15 +49,15 @@
                 <div class="field-group">
                   <div class="field-label">Karistuse pikkus</div>
                   <div class="duration-row">
-                    <div class="duration-field">
+                    <div class="field-group">
                       <div class="duration-sublabel">Aastad</div>
                       <input class="field" type="number" id="inp-years" value="0" min="0" />
                     </div>
-                    <div class="duration-field">
+                    <div class="field-group">
                       <div class="duration-sublabel">Kuud</div>
                       <input class="field" type="number" id="inp-months" value="0" min="0" />
                     </div>
-                    <div class="duration-field">
+                    <div class="field-group">
                       <div class="duration-sublabel">Päevad</div>
                       <input class="field" type="number" id="inp-days" value="0" min="0" />
                     </div>
@@ -209,7 +209,7 @@
           block.style.animationDelay = `${idx * 0.06}s`;
           block.innerHTML = `
             <div class="result-header result-header--stack">
-              <div class="result-header-top">
+              <div class="header-row">
                 <span class="result-fraction">${def.glyph}</span>
                 ${hasInput ? `<button class="copy-btn" data-date="${copyDateStr}">Kopeeri</button>` : ""}
               </div>
