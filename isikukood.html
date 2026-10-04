@@ -18,7 +18,7 @@
         <div class="topbar">
           <div class="header-main">
             <button
-              class="sidebar-toggle"
+              class="btn btn--icon"
               id="sidebar-toggle"
               aria-label="Ava menüü"
             >
@@ -63,7 +63,7 @@
                     tabindex="1"
                   />
                   <button
-                    class="input-clear"
+                    class="btn btn--icon input-clear"
                     id="code-clear"
                     tabindex="-1"
                     aria-label="Kustuta"
@@ -121,7 +121,7 @@
                     title="Vali kuupäev"
                   />
                   <button
-                    class="ref-today-btn active"
+                    class="btn is-on"
                     id="ref-today-btn"
                     tabindex="5"
                   >
@@ -309,7 +309,7 @@
         state.ref = todayDMY();
         refInput.value = "";
         refInput.classList.remove("is-valid", "is-error");
-        refTodayBtn.classList.add("active");
+        refTodayBtn.classList.add("is-on");
         document.getElementById("ref-calendar").value = "";
         render();
       }
@@ -332,7 +332,7 @@
         refInput.value = pad2(d) + "." + pad2(mo) + "." + y;
         refInput.classList.add("is-valid");
         refInput.classList.remove("is-error");
-        refTodayBtn.classList.remove("active");
+        refTodayBtn.classList.remove("is-on");
         render();
       });
 
@@ -347,12 +347,12 @@
           state.ref = p;
           refInput.classList.add("is-valid");
           refInput.classList.remove("is-error");
-          refTodayBtn.classList.remove("active");
+          refTodayBtn.classList.remove("is-on");
           setCalendarValue(p);
         } else {
           refInput.classList.add("is-error");
           refInput.classList.remove("is-valid");
-          refTodayBtn.classList.remove("active");
+          refTodayBtn.classList.remove("is-on");
         }
         render();
       });
