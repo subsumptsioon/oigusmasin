@@ -168,11 +168,13 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   selector.** A page `<style>` block is parsed *after* `noir.css`, so a page
   rule that named a shared class used to win on order alone — fine while it was
   the only mechanism, but invisible and easy to leak once the rules share a
-  file. That is why `.tool-wrap--tight`, `.panel-body--stack`,
-  `.result-header--stack`, `.result-block--full` and `.field-label--spaced`
-  exist instead of bare `.tool-wrap`/`.panel-body`/… overrides. The one
-  exception is `main`, the page shell, which has no component to modify and so
-  is opted into with `<body class="test-harness">`.
+  file. That is why `.panel-body--stack`, `.result-header--stack`,
+  `.result-block--full` and `.field-label--spaced` exist instead of bare
+  `.panel-body`/`.result-header`/… overrides. A modifier has to actually change
+  something: `.tool-wrap--tight` set the same `--gap-wide` as its base, so it was
+  a knob that did nothing and has been deleted. The one exception is `main`, the
+  page shell, which has no component to modify and so is opted into with
+  `<body class="test-harness">`.
 - **Focus:** the ring is one universal
   `:where(a, button, input, …):focus-visible` rule in `noir.css`, so new
   controls get it for free. `outline: none` is allowlisted only for `#search`

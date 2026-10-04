@@ -720,10 +720,6 @@ main {
     grid-template-columns: 1fr;
   }
 }
-/* Same gutter as .tool-wrap. */
-.tool-wrap--tight {
-  gap: var(--gap-wide);
-}
 
 /* Card panel (input pane, results pane) */
 .panel {
@@ -1217,7 +1213,11 @@ footer {
    So: if a rule describes a kind of thing, it goes with the other rules of
    that kind. If it would be useful on a second page, promote it above into a
    named component, and vary a shared component with a `--modifier` — never
-   by re-declaring its selector from down here. */
+   by re-declaring its selector from down here.
+
+   A modifier earns its place by differing from its base. One that sets the
+   same value is a dead knob: it reads as an option nobody took. Either give
+   it a distinct value or delete it and its uses. */
 
 
 /* ── Highlight overlay ──
