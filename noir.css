@@ -135,8 +135,13 @@
   --gap-tight: var(--sp-2); /* inside one control, or one short group */
   --gap-wide: var(--sp-6); /* between blocks: cards, sections, grids */
 
-  /* Control interior. The one padding every button and input shares. */
-  --pad: var(--sp-2) var(--sp-3);
+/* Padding roles, the same way gaps are. Four interiors, chosen by what the
+     box is. A control that holds something, a full-width row, a card body,
+     the page. */
+--pad: var(--sp-2) var(--sp-3); /* control interior */
+--pad-row: var(--sp-2) var(--sp-5); /* full-width row: nav item, stat pill */
+--pad-block: var(--sp-4) var(--sp-5); /* card, panel or list body */
+--pad-page: var(--sp-8) var(--sp-9); /* main */
 
   /* ── Timing ──
      Two durations. Feedback — a colour or border answering a hover — is quick
@@ -399,7 +404,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: var(--gap-tight);
-  padding: var(--sp-2) var(--sp-5);
+  padding: var(--pad-row);
   font-size: var(--fs-sm);
   color: var(--muted);
   text-decoration: none;
@@ -501,7 +506,7 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap);
-  padding: var(--sp-6) var(--sp-8);
+  padding: var(--pad-page);
   border-bottom: 1px solid var(--border);
 }
 
@@ -552,7 +557,7 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap-tight);
-  padding: var(--sp-2) var(--sp-5);
+  padding: var(--pad-row);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
   cursor: pointer;
@@ -816,7 +821,7 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: var(--gap);
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--pad);
   background: var(--deep);
   border-bottom: 1px solid var(--border);
 }
@@ -843,7 +848,7 @@ main {
 /* Result body base; direction/alignment live on the page */
 .result-body {
   display: flex;
-  padding: var(--sp-4) var(--sp-5);
+  padding: var(--pad-block);
 }
 /* Stacked variant (label above value) */
 .result-body--stack {
@@ -952,20 +957,19 @@ main {
   position: relative;
   z-index: var(--z-overlay);
 }
-.field--md {
-  font-size: var(--fs-lg);
-  letter-spacing: var(--track-wide);
-  padding: var(--sp-2) var(--sp-3);
-}
+/* The inline field: label-sized text, tracking, tighter padding than .field's
+   roomier default. There were two of these differing only by a font-size step
+   and a flex, which made the reference-date and date-of-birth inputs look
+   like different kinds of field. They are the same kind of field. */
 .field--sm {
   font-size: var(--fs-md);
   letter-spacing: var(--track-wide);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--pad);
   flex: 1;
 }
 .field--cal {
   font-size: var(--fs-md);
-  padding: var(--sp-2) var(--sp-2);
+  padding: var(--pad);
   width: auto;
   flex-shrink: 0;
   cursor: pointer;
@@ -981,7 +985,7 @@ main {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--sp-4) var(--sp-5);
+  padding: var(--pad-block);
   cursor: pointer;
   user-select: none;
   background: var(--surface);
@@ -1055,7 +1059,7 @@ main {
   color: var(--muted);
   background: var(--deep);
   border: 1px solid var(--border);
-  padding: var(--sp-1) var(--sp-3);
+  padding: var(--pad);
   letter-spacing: var(--track-wide);
   white-space: nowrap;
 }
@@ -1090,7 +1094,7 @@ main {
 }
 
 .substances-table thead th {
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--pad);
   text-align: left;
   font-weight: 400;
 }
@@ -1322,7 +1326,7 @@ footer {
   font-size: var(--fs-2xl);
   font-weight: 700;
   color: var(--text);
-  padding: var(--sp-4) var(--sp-5);
+  padding: var(--pad-block);
 }
 
 /* Ordered list of elements */
