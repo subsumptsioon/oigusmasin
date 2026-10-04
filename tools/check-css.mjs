@@ -66,6 +66,81 @@ function stripRootBlocks(css) {
   return css.replace(/:root\s*\{[\s\S]*?\n\}/g, (m) => m.replace(/[^\n]/g, " "));
 }
 
+/* ── Rule walker ─────────────────────────────────────────────────────────────
+   Checks 9 and 10 need to know where a rule starts and ends, which a regular
+   expression cannot express: `{}` and `{ }` are the same string to a regex, so
+   an empty rule and a rule with a body are indistinguishable without counting
+   braces. This walks the sheet once and yields only *style* rules — @keyframes
+   steps are declarations rather than selectors, and @font-face/@page bodies
+   would otherwise be read as rules with their own properties as "selectors".
+
+   At-rule context is tracked rather than discarded, because a rule nested in
+   @media still has to be reported against its own line. Nested at-rules are
+   stepped *into* rather than skipped whole; leaf at-rules are skipped whole.
+   Mirrors the shape tools/css-snapshot.mjs already uses to walk the DOM. */
+function* styleRules(css) {
+  const NESTED_AT = /^@(media|container|supports|layer|scope|document)\b/;
+  const lineOfIdx = (i) => css.slice(0, i).split("\n").length;
+  const endOfBlock = (from) => {
+    let depth = 1;
+    let k = from + 1;
+    while (k < css.length && depth > 0) {
+      if (css[k] === "{") depth++;
+      else if (css[k] === "}") depth--;
+      k++;
+    }
+    return k;
+  };
+
+  let i = 0;
+  let preludeStart = 0;
+  const atStack = [];
+  while (i < css.length) {
+    const ch = css[i];
+    if (ch === "{") {
+      const selector = css.slice(preludeStart, i).trim().replace(/\s+/g, " ");
+      if (selector.startsWith("@")) {
+        if (NESTED_AT.test(selector)) {
+          atStack.push(selector);
+          i++;
+          preludeStart = i;
+          continue;
+        }
+        i = endOfBlock(i);
+        preludeStart = i;
+        continue;
+      }
+      const end = endOfBlock(i);
+      yield {
+        selector,
+        body: css.slice(i + 1, end - 1),
+        line: lineOfIdx(i),
+        context: atStack.join(" > "),
+      };
+      i = end;
+      preludeStart = i;
+      continue;
+    }
+    if (ch === "}") {
+      atStack.pop();
+      i++;
+      preludeStart = i;
+      continue;
+    }
+    if (ch === ";") {
+      i++;
+      preludeStart = i;
+      continue;
+    }
+    i++;
+  }
+}
+
+/* `box-sizing: border-box` is only ever the universal reset restated. Unlike
+   margin/padding it has no legitimate per-component use here, so it can be
+   flagged without a false-positive allowance. */
+const UNIVERSAL_RESET = "*, *::before, *::after";
+
 function checkCss(file, raw) {
   const css = stripComments(raw);
 
@@ -147,6 +222,57 @@ function checkCss(file, raw) {
     const selector = m[1].trim().split("\n").pop().trim();
     if (selector !== "body") {
       report(file, lineOf(css, m.index), "font", `font-family: var(--mono) on "${selector}" — body already sets it`);
+    }
+  }
+
+  // ── 9. No empty rules ───────────────────────────────────────────────────
+  // A selector with no block is the residue of a consolidation: when a group of
+  // near-identical rules becomes one shared base, the per-component selectors
+  // are left behind as empty pairs. Three had accumulated in noir.css
+  // (.result-label, .field-label, .duration-sublabel) and were invisible to
+  // every other rule here, because a regex cannot tell `{}` from `{ }`.
+  for (const r of styleRules(css)) {
+    if (r.body.trim() === "") {
+      report(file, r.line, "empty-rule", `empty rule "${r.selector}" — no declarations; delete it or the selector it was consolidated into`);
+    }
+  }
+
+  // ── 10. No unused tokens ────────────────────────────────────────────────
+  // A token nothing reads is a promise the stylesheet does not keep, and it is
+  // how a re-theme ends up recolouring a value that was hardcoded next to it.
+  // Four had accumulated: --amber-08, --z-raised, and --measure / --glow-hero,
+  // which were both bypassed at their own point of use until their consumers
+  // were rewired to reference them.
+  //
+  // Declaration sites are matched only after `^`, `;` or `{` so that a
+  // selector containing a custom-property-shaped fragment is not mistaken for
+  // one: `.field--cal::` declares nothing, but matches /--cal\s*:/.
+  //
+  // Reported once per name, at the first declaration. The print :root
+  // redeclares palette tokens, so a token nobody reads would otherwise be
+  // reported once per palette — five findings for four tokens the first time
+  // this ran, which is the kind of noise that gets a rule switched off.
+  const unused = new Map();
+  for (const m of css.matchAll(/(?:^|[;{])\s*(--[a-z0-9-]+)\s*:/gm)) {
+    const name = m[1];
+    if (unused.has(name) || LOCAL_TOKENS.has(name)) continue;
+    if (new RegExp(`var\\(\\s*${name}\\s*[,)]`).test(css)) continue;
+    unused.set(name, lineOf(css, m.index));
+  }
+  for (const [name, line] of unused) {
+    report(file, line, "unused-token", `${name} is declared but never referenced with var()`);
+  }
+
+  // ── 11. No restatement of the universal reset ───────────────────────────
+  // box-sizing is only ever the reset being repeated. margin/padding are
+  // deliberately NOT checked: `mark { padding: 0 }` overrides an earlier
+  // `mark { padding: 0 var(--sp-1) }` at equal specificity, and telling that
+  // apart from a redundant `padding: 0` needs selector-overlap reasoning this
+  // linter has no business doing. A rule that cries wolf gets deleted.
+  for (const r of styleRules(css)) {
+    if (r.selector === UNIVERSAL_RESET) continue;
+    if (/box-sizing:\s*border-box/.test(r.body)) {
+      report(file, r.line, "reset", `box-sizing: border-box in "${r.selector}" — the universal reset already sets it`);
     }
   }
 }
