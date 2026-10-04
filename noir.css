@@ -1130,9 +1130,6 @@ mark {
 }
 
 /* Shown in place of the lists when data.json is missing or unparseable. */
-.load-error {
-  color: var(--red);
-}
 .load-error-hint {
   margin-top: var(--sp-2);
   font-size: var(--fs-xs);
@@ -1510,9 +1507,6 @@ footer {
   letter-spacing: var(--track-wide);
   min-height: 18px;
 }
-.input-hint.err {
-  color: var(--red);
-}
 
 /* ── Date separator ── */
 .or-separator {
@@ -1604,10 +1598,6 @@ footer {
 .idle-state {
   padding: var(--sp-6) var(--sp-4);
 }
-/* Idle placeholder carrying an error rather than a waiting state. */
-.idle-state.err {
-  color: var(--red);
-}
 
 /* ══ REHKENDAJA TEST PAGE  ·  rehkendaja-test.html ══ */
 
@@ -1619,14 +1609,6 @@ footer {
 
 .suite {
   margin-bottom: var(--sp-7);
-}
-/* The pass/fail tally in a suite title. Was built by concatenating
-   `style="color:var(--red|amber)"` into an innerHTML string. */
-.suite-title .is-pass {
-  color: var(--amber);
-}
-.suite-title .is-fail {
-  color: var(--red);
 }
 .suite-title {
   font-size: var(--fs-xs);
@@ -1655,18 +1637,9 @@ footer {
 .test-icon {
   font-size: var(--fs-xs);
 }
-.pass .test-icon {
-  color: var(--amber);
-}
-.fail .test-icon {
-  color: var(--red);
-}
 
 .test-name {
   color: var(--text);
-}
-.fail .test-name {
-  color: var(--red);
 }
 
 .test-detail {
@@ -1674,9 +1647,6 @@ footer {
   color: var(--dim);
   text-align: right;
   white-space: nowrap;
-}
-.fail .test-detail {
-  color: var(--red);
 }
 
 .test-extra {
@@ -1705,6 +1675,28 @@ footer {
 }
 .summary-total {
   color: var(--muted);
+}
+
+/* ── STATUS COLOUR ──
+   The pass/fail pair, previously nine rules that each declared one property.
+   .is-error / .is-pass are the names new code should use; the old spellings
+   stay as members because .err and .is-fail are load-bearing across three
+   pages, and renaming them would buy nothing rendered.
+
+   Placement is load-bearing: .err and .is-fail were compound selectors at
+   0,2,0 and are now bare classes at 0,1,0, tying with the .input-hint and
+   .suite-title rules that set the resting colour. A tie goes to source order,
+   so this group must stay below both — hoisting it silently drops the colour. */
+.is-error,
+.load-error,
+.err,
+.is-fail,
+.fail :is(.test-icon, .test-name, .test-detail) {
+  color: var(--red);
+}
+.is-pass,
+.pass .test-icon {
+  color: var(--amber);
 }
 
 /* ── RESPONSIVE ── */
