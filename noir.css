@@ -1017,9 +1017,11 @@ main {
                     with room on the right for the suffix hint
      .field--cal    a date field's calendar affordance, sized to sit beside a
                     plain .field rather than to differ from it */
+/* The identity-code field. No size of its own — it is a plain .field at the
+   site's standard 16px, like every other field. What it still needs is room on
+   the right for .code-suffix, the faint run of underscores showing how many
+   digits are outstanding; that is the whole reason this modifier exists. */
 .field--code {
-  font-size: var(--fs-2xl);
-  letter-spacing: var(--track-caps);
   padding: var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-3);
   position: relative;
   z-index: var(--z-overlay);
@@ -1455,12 +1457,16 @@ footer {
   display: flex;
   align-items: center;
 }
-/* Dim suffix hint — shows remaining digits after the cursor */
+/* Dim suffix hint — shows remaining digits after the cursor. Drawn over the
+   input, not beside it, so its type has to be the input's type exactly: same
+   font-size and same letter-spacing, or the underscores stop lining up with the
+   digits above them. The offset is measured from the input's computed font by
+   updateCodeDisplay() in the page, so it follows this rule rather than a
+   hardcoded width. */
 .code-suffix {
   position: absolute;
   pointer-events: none;
-  font-size: var(--fs-2xl);
-  letter-spacing: var(--track-caps);
+  font-size: var(--fs-lg);
   color: var(--dim);
   opacity: 0.35;
   white-space: pre;
