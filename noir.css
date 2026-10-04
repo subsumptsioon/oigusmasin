@@ -960,6 +960,13 @@ main {
   caret-color: var(--amber);
   font-size: var(--fs-lg);
   line-height: 1.4;
+  /* An explicit block-size, so that every field is the same height whatever its
+     type. Left to itself, a type="date" input is 2px taller than a text one:
+     Chrome gives the date editor a 24px intrinsic content box that ignores the
+     line-height, so the two fields in one row did not line up. 1.4em is this
+     element's own line-height, so the total still scales with font-size — the
+     code variant at 24px comes out at the same 59.6px it did before. */
+  block-size: calc(1.4em + 2 * var(--sp-3) + 2px);
   transition:
     border-color var(--dur),
     box-shadow var(--dur);
@@ -996,9 +1003,20 @@ main {
 
 /* Size modifiers — the only thing a page should need. Values mirror what
    each page used to declare, so this is a pure de-duplication. */
-.field--raised {
-  background: var(--lift);
-}
+/* Every field on the site is a plain .field: one background, one size, one
+   padding. Two modifiers existed so that one page's four fields could each be a
+   slightly different shape — a raised ground, a step smaller, tighter padding
+   than the base. Nothing recorded why, and the result was that the isikukood
+   page read as a different site: 14px type on a lighter ground at 37.6px tall,
+   against 16px on the standard ground at 48.4px everywhere else.
+
+   Two modifiers remain, and both are a different kind of thing rather than a
+   different size of the same thing:
+
+     .field--code   the eleven-digit identity number, set large on purpose,
+                    with room on the right for the suffix hint
+     .field--cal    a date field's calendar affordance, sized to sit beside a
+                    plain .field rather than to differ from it */
 .field--code {
   font-size: var(--fs-2xl);
   letter-spacing: var(--track-caps);
@@ -1006,19 +1024,7 @@ main {
   position: relative;
   z-index: var(--z-overlay);
 }
-/* The inline field: label-sized text, tracking, tighter padding than .field's
-   roomier default. There were two of these differing only by a font-size step
-   and a flex, which made the reference-date and date-of-birth inputs look
-   like different kinds of field. They are the same kind of field. */
-.field--sm {
-  font-size: var(--fs-md);
-  letter-spacing: var(--track-wide);
-  padding: var(--pad);
-  flex: 1;
-}
 .field--cal {
-  font-size: var(--fs-md);
-  padding: var(--pad);
   width: auto;
   flex-shrink: 0;
   cursor: pointer;
