@@ -156,7 +156,6 @@ const SELECTORS = [
   ".code-input-wrap",
   // Modifiers — these replaced page-level overrides that used to be scoped by
   // stylesheet order. Track them, or a leak back to every page goes unseen.
-  ".tool-wrap--tight",
   ".field-label--spaced",
   ".panel-body--stack",
   ".result-header--stack",
@@ -289,6 +288,7 @@ const COLLECT = `(async () => {
     out[key("background")] = cs.backgroundColor;
     out[key("border-color")] = cs.borderTopColor;
     out[key("padding")] = cs.padding;
+    out[key("gap")] = cs.gap;
     if (pseudo) return; // no box of its own: w/h/textWidth would be noise
     const r = el.getBoundingClientRect();
     out[key("w")] = round(r.width) + "px";
