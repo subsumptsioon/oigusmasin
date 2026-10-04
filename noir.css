@@ -280,7 +280,10 @@ body {
   text-decoration: none;
   flex-shrink: 0;
 }
-.sidebar-brand:hover .brand-name {
+/* Hover on a control with no fill of its own just brightens its label. */
+.sidebar-brand:hover .brand-name,
+.search-clear:hover,
+.input-clear:hover {
   color: var(--text);
 }
 
@@ -332,7 +335,9 @@ body {
   white-space: normal;
   line-height: 1.4;
 }
-.nav-item:hover {
+/* Nav item and drawer toggle: both chrome on --deep, same hover lift. */
+.nav-item:hover,
+.sidebar-toggle:hover {
   background: var(--surface);
   color: var(--text);
 }
@@ -445,10 +450,6 @@ body {
     background 0.12s,
     color 0.12s;
 }
-.sidebar-toggle:hover {
-  background: var(--surface);
-  color: var(--text);
-}
 
 .title-block h1 {
   font-size: var(--fs-3xl);
@@ -499,10 +500,14 @@ body {
   text-decoration: none;
   color: inherit;
 }
-.stat-pill:hover {
+/* Pill and the table row above it: list affordances on one surface. */
+.stat-pill:hover,
+.substances-table tbody tr:hover {
   background: var(--surface);
 }
-.stat-pill:last-child {
+/* Last item in a run drops its trailing divider. */
+.stat-pill:last-child,
+.unit-btn:last-child {
   border-right: none;
 }
 
@@ -544,9 +549,11 @@ body {
     border-color 0.18s,
     box-shadow 0.18s;
 }
-/* The search input itself sets outline:none, so the wrapper owns the ring —
-   same treatment as .input-wrap on the Rehkendaja page. */
-.search-inner:focus-within {
+/* The search input sets outline:none, so its wrapper owns the ring. Same
+   declaration pair as .field:focus, which carries it for pointer users too.
+   (.input-wrap looks similar but rings with outline — different treatment.) */
+.search-inner:focus-within,
+.field:focus {
   border-color: var(--amber);
   box-shadow: var(--ring), var(--glow);
 }
@@ -581,7 +588,9 @@ body {
   caret-color: var(--amber);
   min-width: 0;
 }
-#search::placeholder {
+/* Dim placeholder, on both text entry surfaces. */
+#search::placeholder,
+#input-text::placeholder {
   color: var(--dim);
 }
 
@@ -598,9 +607,6 @@ body {
   align-items: center;
   justify-content: center;
   transition: color 0.15s;
-}
-.search-clear:hover {
-  color: var(--text);
 }
 .search-clear.visible {
   display: flex;
@@ -641,7 +647,10 @@ main {
 .list-section:hover {
   border-color: var(--amber);
 }
-.list-section.hidden {
+/* Kept together because the .hidden utility's comment above explains why these
+   exist at all: they outrank .hidden, which is what makes them win. */
+.list-section.hidden,
+.substances-table tbody tr.hidden {
   display: none;
 }
 
@@ -880,13 +889,6 @@ main {
   opacity: 0.6;
 }
 
-/* Focus. The 2px outline is left to the universal :focus-visible rule above
-   so keyboard users get it layered on top of the border + glow; :focus (not
-   :focus-visible) carries the border and glow so pointer users see them too. */
-.field:focus {
-  border-color: var(--amber);
-  box-shadow: var(--ring), var(--glow);
-}
 .field:hover:not(:focus) {
   border-color: var(--line);
 }
@@ -1074,14 +1076,11 @@ main {
   border-bottom: 1px solid var(--border);
   transition: background 0.08s;
 }
-.substances-table tbody tr:last-child {
+/* A last row has nothing below it to divide from, so it drops the rule. */
+.substances-table tbody tr:last-child,
+.elements-list li:last-child,
+.test:last-child {
   border-bottom: none;
-}
-.substances-table tbody tr:hover {
-  background: var(--surface);
-}
-.substances-table tbody tr.hidden {
-  display: none;
 }
 
 .substances-table td {
@@ -1124,7 +1123,11 @@ mark {
 .no-results:not(.visible) {
   display: none;
 }
-.no-results.visible {
+/* The reveal state: `display: none` until the script finds something to show.
+   (.search-clear reveals as flex, .reset-btn as inline.) */
+.no-results.visible,
+.sidebar-overlay.visible,
+.input-clear.visible {
   display: block;
 }
 
@@ -1181,9 +1184,6 @@ footer {
   background: var(--scrim);
   z-index: var(--z-scrim);
   cursor: pointer;
-}
-.sidebar-overlay.visible {
-  display: block;
 }
 
 /* ── PAGE COMPONENTS ─────────────────────────────────────────────────────────
@@ -1286,9 +1286,6 @@ footer {
   overflow: hidden;
   pointer-events: auto;
 }
-#input-text::placeholder {
-  color: var(--dim);
-}
 
 /* Results panel — .results-panel / .result-header / .result-label are
    components above. (.result-value used to live here but nothing referenced it
@@ -1330,9 +1327,6 @@ footer {
   color: var(--text);
   padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--border);
-}
-.elements-list li:last-child {
-  border-bottom: none;
 }
 
 /* A detected amount. Clickable, so it owns the pointer — the placeholder rows
@@ -1381,10 +1375,9 @@ footer {
     color 0.12s;
   border-right: 1px solid var(--border);
 }
-.unit-btn:last-child {
-  border-right: none;
-}
-.unit-btn:hover {
+/* Hover on a small control raises it off the surface. */
+.unit-btn:hover,
+.ref-today-btn:hover {
   background: var(--lift);
   color: var(--text);
 }
@@ -1484,12 +1477,6 @@ footer {
   display: none;
   transition: color 0.12s;
 }
-.input-clear:hover {
-  color: var(--text);
-}
-.input-clear.visible {
-  display: block;
-}
 
 .input-hint {
   margin-top: var(--sp-2);
@@ -1540,10 +1527,6 @@ footer {
     background 0.12s,
     color 0.12s;
   flex-shrink: 0;
-}
-.ref-today-btn:hover {
-  background: var(--lift);
-  color: var(--text);
 }
 .ref-today-btn.active {
   color: var(--amber);
@@ -1616,9 +1599,6 @@ footer {
   border-bottom: 1px solid var(--border);
   font-size: var(--fs-sm);
   line-height: 1.5;
-}
-.test:last-child {
-  border-bottom: none;
 }
 
 .test-icon {
@@ -1718,12 +1698,9 @@ footer {
   main {
     padding: var(--sp-5) var(--sp-4);
   }
-  #result-count {
-    display: none;
-  }
-  .stats-band {
-    display: none;
-  }
+  /* Chrome that carries no information on a narrow screen. */
+  #result-count,
+  .stats-band,
   .row-num {
     display: none;
   }
@@ -1841,11 +1818,8 @@ footer {
   .substances-table thead {
     display: table-header-group;
   }
-  .substances-table tr {
-    page-break-inside: avoid;
-  }
-
-  /* Keep a result card and its heading together. */
+  /* Keep a row, a result card and its heading off a page boundary. */
+  .substances-table tr,
   .result-block,
   .result-header,
   .panel-header {
