@@ -119,7 +119,7 @@
      The scale above is what exists; these are what a situation wants. Pick
      the role that matches the relationship rather than reaching for a
      number, so two controls of the same kind end up the same size. */
-  --gap: var(--gap); /* label↔control, sibling controls, list items */
+  --gap: var(--sp-3); /* label↔control, sibling controls, list items */
   --gap-tight: var(--sp-2); /* inside one control, or one short group */
   --gap-wide: var(--sp-6); /* between blocks: cards, sections, grids */
 
