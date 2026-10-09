@@ -370,12 +370,13 @@
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
       }
-      function highlight(t, q) {
+      /* Takes an already-compiled query (see compileQuery). `q` is kept as the
+         original text only for the empty-case short circuit. */
+      function highlight(t, q, re) {
         if (!q) return esc(t);
-        const re = new RegExp(
-          "(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
-          "gi",
-        );
+        /* re is optional so the function is still usable on its own (the DOM
+           tests call it that way); the search loop passes a precompiled one. */
+        re = re || compileQuery(q);
         // Match on the RAW text and escape each slice. Running the regex over
         // already-escaped HTML corrupts entities whenever a match lands inside
         // one (e.g. query "amp" turning "&amp;" into "&<mark>amp</mark>;").
@@ -387,6 +388,14 @@
           last = m.index + m[0].length;
         }
         return out + esc(t.slice(last));
+      }
+
+      /* One RegExp per query, not one per cell. highlight() runs twice for every
+         matching row, so compiling inside it meant ~400 compiles per keystroke
+         over a 456-row list. */
+      function compileQuery(q) {
+        if (!q) return null;
+        return new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
       }
 
       function toggleSection(n) {
@@ -445,10 +454,17 @@
         const rc = document.getElementById("result-count");
         const clearBtn = document.getElementById("search-clear");
 
+        /* The query each row is currently rendered for. A keystroke that does not
+           change a row's match status must not rewrite its cells: the highlight
+           markup is identical for the same query, so re-setting innerHTML on 456
+           rows was pure layout thrash. */
+        const renderedFor = new Map();
+
         function runSearch() {
           const q = inp.value.trim().toLowerCase();
           clearBtn.classList.toggle("visible", q.length > 0);
           let total = 0;
+          const qre = compileQuery(q);
 
           for (let list = 1; list <= 6; list++) {
             const subs = DATA[list] || [];
@@ -465,8 +481,13 @@
               if (match) {
                 vis++;
                 total++;
-                tr.cells[1].innerHTML = highlight(subs[idx].et, q);
-                tr.cells[2].innerHTML = highlight(subs[idx].en || "", q);
+                /* Only re-highlight when this row's query actually changed —
+                   identical input would produce identical markup. */
+                if (renderedFor.get(tr) !== q) {
+                  renderedFor.set(tr, q);
+                  tr.cells[1].innerHTML = highlight(subs[idx].et, q, qre);
+                  tr.cells[2].innerHTML = highlight(subs[idx].en || "", q, qre);
+                }
               }
             });
 
@@ -491,7 +512,13 @@
           rc.textContent = q ? `${total} tulemust` : "";
         }
 
-        inp.addEventListener("input", runSearch);
+        /* Debounced like the Rehkendaja input: a 456-row sweep per keystroke is
+           work the user never asked for at that rate. */
+        let searchTimer = null;
+        inp.addEventListener("input", () => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(runSearch, 80);
+        });
         clearBtn.addEventListener("click", () => {
           inp.value = "";
           inp.focus();
