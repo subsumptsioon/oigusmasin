@@ -4,8 +4,9 @@
    Breakpoints are a documented convention rather than a token: plain CSS
    cannot read a custom property inside a media query without a build
    step. tools/check-css.mjs enforces both.
-     900px  two-column tool layout -> one column
      800px  sidebar collapses into a drawer
+     860px  container width at which the tool layout drops to one column
+            (@container, keyed to content width because the sidebar eats 260px)
    ============================================================ */
 
 /* ── WEBFONT ──
@@ -671,12 +672,6 @@ main {
 }
 .list-section:hover {
   border-color: var(--amber);
-}
-/* Kept because the .hidden utility above explains why they exist at all: they
-   outrank .hidden, which is what makes them win. */
-.list-section.hidden,
-.substances-table tbody tr.hidden {
-  display: none;
 }
 
 @keyframes appear {
@@ -1407,6 +1402,9 @@ footer {
   z-index: var(--z-overlay-top);
   display: none;
 }
+.input-clear.visible {
+  display: inline-flex;
+}
 
 .input-hint {
   margin-top: var(--sp-2);
@@ -1576,9 +1574,7 @@ footer {
 @media (max-width: 800px) {
   .sidebar {
     position: fixed;
-    top: 0;
     left: 0;
-    height: 100dvh;
     z-index: var(--z-drawer);
     transform: translateX(-100%);
     transition: transform var(--dur-move) ease;
@@ -1593,13 +1589,9 @@ footer {
 
   .header-main {
     padding: var(--sp-4) var(--sp-5);
-    gap: var(--gap);
   }
   .search-zone {
     padding: var(--sp-3) var(--sp-4);
-  }
-  body {
-    font-size: var(--fs-md);
   }
   main {
     padding: var(--sp-5) var(--sp-4);
