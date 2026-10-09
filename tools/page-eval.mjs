@@ -15,16 +15,7 @@
  * Example:
  *   node tools/page-eval.mjs isikukood.html "parseIdCode('37605030000')"
  */
-import { spawn } from "node:child_process";
-import fs from "node:fs";
-import http from "node:http";
-import net from "node:net";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
+import { launch } from "./cdp.mjs";
 
 const page = process.argv[2];
 const expr = process.argv[3];
@@ -40,85 +31,31 @@ if (mi !== -1 && !media) {
   process.exit(2);
 }
 
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-};
-
-function startServer() {
-  const server = http.createServer((req, res) => {
-    const rel = decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
-    const file = path.join(ROOT, rel || "index.html");
-    if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-      res.writeHead(404); res.end("nf"); return;
-    }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
-    fs.createReadStream(file).pipe(res);
-  });
-  return new Promise((r) => server.listen(0, "127.0.0.1", () => r(server)));
-}
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
 async function main() {
-  const server = await startServer();
-  const base = `http://127.0.0.1:${server.address().port}`;
-  const port = await new Promise((r) => {
-    const s = net.createServer();
-    s.listen(0, "127.0.0.1", () => { const p = s.address().port; s.close(() => r(p)); });
-  });
-  const udd = fs.mkdtempSync(path.join(os.tmpdir(), "peval-"));
-  const chrome = spawn("chromium", [
-    "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
-    `--remote-debugging-port=${port}`, `--user-data-dir=${udd}`, "about:blank",
-  ], { stdio: ["ignore", "ignore", "ignore"] });
+  const env = await launch();
+  let exitCode = 0;
+  try {
+    const { targetId, sessionId } = await env.open(page, { settle: 1500 });
+    /* Set after load so the emulation applies to the query being asked about. */
+    if (media) await env.cdp.send("Emulation.setEmulatedMedia", { media }, sessionId);
 
-  let wsUrl;
-  for (let i = 0; i < 100 && !wsUrl; i++) {
-    try { wsUrl = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).webSocketDebuggerUrl; }
-    catch { await sleep(150); }
+    /* A debug probe wants the exception text, not a harness stack trace. */
+    const out = await env.evalRaw(expr, sessionId);
+    if (out.exceptionDetails) {
+      console.error("expression threw:", out.exceptionDetails.text, out.exceptionDetails.exception?.description || "");
+      exitCode = 1;
+    } else {
+      const v = out.result.value;
+      console.log(asJson ? JSON.stringify(v, null, 2) : (typeof v === "string" ? v : JSON.stringify(v)));
+    }
+    await env.close_(targetId);
+  } catch (err) {
+    console.error("harness error:", err?.message || err);
+    exitCode = 2;
+  } finally {
+    await env.close();
   }
-  if (!wsUrl) { console.error("no devtools"); process.exit(2); }
-
-  const ws = new WebSocket(wsUrl);
-  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-  let id = 0;
-  const pending = new Map();
-  ws.onmessage = (ev) => {
-    const m = JSON.parse(ev.data);
-    if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
-  };
-  const send = (method, params = {}, sessionId) =>
-    new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params, sessionId })); });
-
-  const { result: { targetId } } = await send("Target.createTarget", { url: "about:blank" });
-  const { result: { sessionId } } = await send("Target.attachToTarget", { targetId, flatten: true });
-  await send("Page.enable", {}, sessionId);
-  await send("Runtime.enable", {}, sessionId);
-  await send("Page.navigate", { url: `${base}/${page}` }, sessionId);
-  await sleep(1500);
-  /* Set after load so the emulation applies to the query being asked about. */
-  if (media) await send("Emulation.setEmulatedMedia", { media }, sessionId);
-
-  const out = await send("Runtime.evaluate", {
-    expression: expr, returnByValue: true, awaitPromise: true,
-  }, sessionId);
-
-  const r = out.result;
-  if (r?.exceptionDetails) {
-    console.error("expression threw:", r.exceptionDetails.text, r.exceptionDetails.exception?.description || "");
-    process.exitCode = 1;
-  } else {
-    const v = r.result.value;
-    console.log(asJson ? JSON.stringify(v, null, 2) : (typeof v === "string" ? v : JSON.stringify(v)));
-  }
-
-  ws.close();
-  chrome.kill("SIGKILL");
-  server.close();
-  fs.rmSync(udd, { recursive: true, force: true });
-  process.exit(process.exitCode || 0);
+  process.exit(exitCode);
 }
+
 main();

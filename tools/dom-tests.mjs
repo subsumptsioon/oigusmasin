@@ -13,24 +13,9 @@
  * Usage:  node tools/dom-tests.mjs [--verbose]
  * Exit:   0 all pass, 1 any fail, 2 harness error.
  */
-import { spawn } from "node:child_process";
-import fs from "node:fs";
-import http from "node:http";
-import net from "node:net";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { launch } from "./cdp.mjs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
 const VERBOSE = process.argv.includes("--verbose") || process.argv.includes("-v");
-
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-};
 
 // ── Checks: {page, label, expr, expect} — expect compared by JSON equality ──
 const J = JSON.stringify;
@@ -71,7 +56,12 @@ const CHECKS = [
   { page: "index.html", label: "buildHighlightHtml marks each amount", expr: "(()=>{mode='eur';excluded.clear();const t='kokku 100 € ja 200 €';return buildHighlightHtml(t, extractAmounts(t));})()", expect: "kokku <mark data-idx=\"0\">100 €</mark> ja <mark data-idx=\"1\">200 €</mark><span></span>" },
   { page: "index.html", label: "buildHighlightHtml escapes inside a mark", expr: "(()=>{mode='eur';excluded.clear();const t='a<b 100 €';return buildHighlightHtml(t, extractAmounts(t));})()", expect: "a&lt;b <mark data-idx=\"0\">100 €</mark><span></span>" },
   { page: "index.html", label: "buildHighlightHtml trailing newline hack", expr: "(()=>{mode='eur';excluded.clear();const t='100 €\\n';return buildHighlightHtml(t, extractAmounts(t));})()", expect: "<mark data-idx=\"0\">100 €</mark>\n <span></span>" },
-  { page: "index.html", label: "excluded mark carries the class", expr: "(()=>{mode='eur';excluded.clear();inputEl.value='10 € ja 20 €';update();toggleExclude(0);return highlightEl.innerHTML;})()", expect: "<mark class=\"excluded\" data-idx=\"0\">10 €</mark> ja <mark data-idx=\"1\">20 €</mark><span></span>" },
+  /* Asserted on the parsed marks rather than on innerHTML: toggling a class
+     appends `class` after `data-idx`, so the attribute order differs from the
+     freshly-rendered markup. That is serialisation, not behaviour — this check
+     is about which mark carries the class. buildHighlightHtml's own output
+     format is pinned by the three checks above. */
+  { page: "index.html", label: "excluded mark carries the class", expr: "(()=>{mode='eur';excluded.clear();inputEl.value='10 € ja 20 €'.replace(/€/g,'€');update();toggleExclude(0);return [...highlightEl.querySelectorAll('mark')].map(m=>[m.dataset.idx,m.className,m.textContent]);})()", expect: [["0","excluded","10 €"],["1","","20 €"]] },
 
   // index — exclusion re-indexing. lastFound is rebuilt on every keystroke, so
   // exclusions are re-matched by raw text with a +/-10 character position
@@ -105,102 +95,53 @@ const CHECKS = [
   { page: "ennetahtaegne-vabastamine.html", label: "legal label has no literal &nbsp", expr: "document.querySelector('.result-legal-label').textContent.includes('&nbsp')", expect: false },
 ];
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const eq = (a, b) => J(a) === J(b);
 
-function startServer() {
-  const server = http.createServer((req, res) => {
-    const rel = decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
-    const file = path.join(ROOT, rel || "index.html");
-    if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-      res.writeHead(404); res.end("nf"); return;
-    }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
-    fs.createReadStream(file).pipe(res);
-  });
-  return new Promise((r) => server.listen(0, "127.0.0.1", () => r(server)));
-}
-
 async function main() {
-  const server = await startServer();
-  const base = `http://127.0.0.1:${server.address().port}`;
-  const port = await new Promise((r) => {
-    const s = net.createServer();
-    s.listen(0, "127.0.0.1", () => { const p = s.address().port; s.close(() => r(p)); });
-  });
-  const udd = fs.mkdtempSync(path.join(os.tmpdir(), "domtests-"));
-  const chrome = spawn("chromium", [
-    "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
-    `--remote-debugging-port=${port}`, `--user-data-dir=${udd}`, "about:blank",
-  ], { stdio: ["ignore", "ignore", "ignore"] });
-
-  let cdp;
+  const env = await launch();
   let exit = 0;
   try {
-    let wsUrl;
-    for (let i = 0; i < 100 && !wsUrl; i++) {
-      try { wsUrl = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).webSocketDebuggerUrl; }
-      catch { await sleep(150); }
-    }
-    if (!wsUrl) throw new Error("DevTools endpoint did not come up");
-
-    const ws = new WebSocket(wsUrl);
-    await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-    let id = 0;
-    const pending = new Map();
-    ws.onmessage = (ev) => {
-      const m = JSON.parse(ev.data);
-      if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
-    };
-    const send = (method, params = {}, sessionId) =>
-      new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params, sessionId })); });
-
-    const pages = [...new Set(CHECKS.map((c) => c.page))];
+    const pageList = [...new Set(CHECKS.map((c) => c.page))];
     let pass = 0, fail = 0;
     const failures = [];
 
-    for (const page of pages) {
-      const { result: { targetId } } = await send("Target.createTarget", { url: "about:blank" });
-      const { result: { sessionId } } = await send("Target.attachToTarget", { targetId, flatten: true });
-      await send("Page.enable", {}, sessionId);
-      await send("Runtime.enable", {}, sessionId);
-      await send("Page.navigate", { url: `${base}/${page}` }, sessionId);
-      await sleep(1200);
+    for (const page of pageList) {
+      const { targetId, sessionId } = await env.open(page, { settle: 1200 });
 
       for (const c of CHECKS.filter((c) => c.page === page)) {
-        const out = await send("Runtime.evaluate", { expression: c.expr, returnByValue: true, awaitPromise: true }, sessionId);
-        const r = out.result;
-        if (r?.exceptionDetails) {
-          fail++; failures.push({ ...c, threw: r.exceptionDetails.exception?.description || r.exceptionDetails.text });
-          continue;
+        let got, threw = null;
+        try {
+          got = await env.eval(c.expr, sessionId);
+        } catch (err) {
+          threw = err.message;
         }
-        const got = r.result.value;
-        if (eq(got, c.expect)) { pass++; if (VERBOSE) console.log(`  \x1b[32m✓\x1b[0m ${page} :: ${c.label}`); }
-        else { fail++; failures.push({ ...c, got }); }
+        if (threw) {
+          fail++; failures.push({ ...c, threw });
+        } else if (eq(got, c.expect)) {
+          pass++;
+          if (VERBOSE) console.log(`  \x1b[32m\u2713\x1b[0m ${page} :: ${c.label}`);
+        } else {
+          fail++; failures.push({ ...c, got });
+        }
       }
-      await send("Target.closeTarget", { targetId });
+      await env.close_(targetId);
     }
 
-    console.log(`DOM regression tests  (${pass + fail} checks across ${pages.length} pages)`);
-    console.log("─".repeat(64));
+    console.log(`DOM regression tests  (${pass + fail} checks across ${pageList.length} pages)`);
+    console.log("\u2500".repeat(64));
     for (const f of failures) {
-      console.error(`\x1b[31m✗\x1b[0m ${f.page} :: ${f.label}`);
+      console.error(`\x1b[31m\u2717\x1b[0m ${f.page} :: ${f.label}`);
       if (f.threw) console.error(`    threw: ${f.threw}`);
       else { console.error(`    got      ${J(f.got)}`); console.error(`    expected ${J(f.expect)}`); }
     }
-    console.log("─".repeat(64));
+    console.log("\u2500".repeat(64));
     if (fail) { console.log(`\x1b[31mFAIL\x1b[0m  ${pass} passed, ${fail} failed`); exit = 1; }
     else console.log(`\x1b[32mPASS\x1b[0m  ${pass} passed, 0 failed`);
-
-    cdp = ws;
   } catch (err) {
     console.error("harness error:", err?.message || err);
     exit = 2;
   } finally {
-    try { cdp?.close(); } catch {}
-    chrome.kill("SIGKILL");
-    server.close();
-    fs.rmSync(udd, { recursive: true, force: true });
+    await env.close();
   }
   process.exit(exit);
 }
