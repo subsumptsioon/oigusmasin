@@ -26,7 +26,7 @@ const HTML = fs
 
 /* Breakpoints are a documented convention rather than tokens: plain CSS cannot
  * read a custom property inside a media query without a build step. */
-const ALLOWED_BREAKPOINTS = new Set(["800px", "900px"]);
+const ALLOWED_BREAKPOINTS = new Set(["800px"]);
 
 /* Container-query thresholds are keyed to available content width instead of
  * the viewport, because the sidebar consumes 260px. */
@@ -42,6 +42,12 @@ const SPACING_EXEMPT = new Set(["1px"]);
 
 /* Tokens defined per-selector rather than in :root (component-scoped accents). */
 const LOCAL_TOKENS = new Set(["--list-accent"]);
+
+/* `.hidden` hides by being added, so its "reveal" is removal — it is the one
+ * class with no reveal counterpart by design. Every other bare-class
+ * `display: none` is a JS-toggled affordance waiting for a `.visible` rule;
+ * see rule 12. */
+const NO_REVEAL_NEEDED = new Set([".hidden"]);
 
 const violations = [];
 const report = (file, line, rule, msg) => {
@@ -273,6 +279,66 @@ function checkCss(file, raw) {
     if (r.selector === UNIVERSAL_RESET) continue;
     if (/box-sizing:\s*border-box/.test(r.body)) {
       report(file, r.line, "reset", `box-sizing: border-box in "${r.selector}" — the universal reset already sets it`);
+    }
+  }
+
+  // ── 12. A hidden-by-default affordance must have a reveal ────────────────
+  // A bare-class rule that sets `display: none` is an element JS shows later by
+  // adding a state class. If the matching reveal rule is missing, the toggle
+  // still runs, the class still lands on the element, and nothing happens —
+  // which is how `.input-clear` sat at `display: none` with a `.visible` toggle
+  // in isikukood.html and no way for it ever to be seen.
+  //
+  // The reveal must name the SAME class (`.search-clear.visible`, not a bare
+  // `.visible`), because a bare one would reveal every hidden affordance at
+  // once. Print rules are exempt: they are terminal, and `:not(.visible)` there
+  // means "print it open", not "JS may toggle this back".
+  const rules = [...styleRules(css)];
+  for (const r of rules) {
+    if (!/^\.[A-Za-z][\w-]*$/.test(r.selector)) continue;
+    if (!/^\s*display\s*:\s*none\s*;?\s*$/m.test(r.body)) continue;
+    if (r.context.includes("print")) continue;
+    if (NO_REVEAL_NEEDED.has(r.selector)) continue;
+    const revealed = rules.some(
+      (o) =>
+        o.selector !== r.selector &&
+        new RegExp(`\\${r.selector}\\.visible\\b`).test(o.selector),
+    );
+    if (!revealed) {
+      report(
+        file, r.line, "dead-toggle",
+        `"${r.selector}" is display:none with no "${r.selector}.visible" reveal — the JS toggle on it can never show the element`
+      );
+    }
+  }
+
+  // ── 13. No restatement inside a media query ──────────────────────────────
+  // A rule in @media that re-declares a property to the value the top-level rule
+  // already sets cannot change anything: equal specificity, so source order
+  // decides, and the values agree. Three had accumulated in the 800px block —
+  // `.sidebar{top,height}` and `.header-main{gap}` — each reading as though the
+  // narrow layout depended on it. A fourth, `body{font-size}`, was found by hand
+  // first and deleted; this rule is what keeps the next one from being too.
+  //
+  // Only top-level rules are compared. Two rules in *different* media queries are
+  // never both active, so an identical value between them is not a restatement.
+  const declMap = (body) => {
+    const out = new Map();
+    for (const m of body.matchAll(/([-a-z]+)\s*:\s*([^;{}]+);/g)) out.set(m[1], m[2].trim());
+    return out;
+  };
+  for (const r of rules) {
+    if (!r.context.includes("media")) continue;
+    const base = rules.find((b) => b.context === "" && b.selector === r.selector);
+    if (!base) continue;
+    const baseDecls = declMap(base.body);
+    for (const [prop, val] of declMap(r.body)) {
+      if (baseDecls.get(prop) === val) {
+        report(
+          file, r.line, "restated-media",
+          `${r.selector} { ${prop}: ${val} } in ${r.context} restates the top-level rule at line ${base.line}`
+        );
+      }
     }
   }
 }
