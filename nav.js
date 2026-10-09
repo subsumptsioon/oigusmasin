@@ -1,6 +1,7 @@
 // ── nav.js ────────────────────────────────────────────────────────────────────
-// Single source of truth for sidebar navigation.
-// Writes the sidebar and wires the mobile toggle.
+// Single source of truth for sidebar navigation, plus the site-wide UI helpers
+// every page needs. Loaded by every page (npm run check enforces it).
+// Writes the sidebar, wires the mobile toggle, and defines copyButton().
 // Usage: <script src="nav.js"></script> anywhere after the sidebar/overlay divs.
 //
 // To add a page:    add an entry to NAV_ITEMS below.
@@ -21,6 +22,42 @@ const NAV_ITEMS = [
 
 const NAV_BRAND = "Tööriistad";
 const NAV_AUTHOR = "© Andraš Tšitškan";
+
+// ── copyButton ────────────────────────────────────────────────────────────────
+// The one copy-to-clipboard button on the site: writes `text`, swaps the label
+// for a confirmation, then puts the original back. The `is-on` class doubles as
+// the in-flight guard, so a double click cannot queue a second timer and leave
+// the label stuck on the confirmation.
+//
+// Three pages had this inline and each had drifted on the details (one used
+// "Kopeeritud ✓", the other two "✓"; one put the text on a DOM expando rather
+// than passing it in). Pass the text — this is a copy button, not a formatter.
+//
+// Clipboard writes are async and can reject (denied permission, no secure
+// context). The old `is-on` guard then stranded the button in its busy state
+// forever, so the failure path clears it too.
+function copyButton(btn, text, confirmLabel) {
+  if (btn.classList.contains("is-on")) return;
+
+  const orig = btn.textContent;
+  const restore = () => {
+    btn.textContent = orig;
+    btn.classList.remove("is-on");
+  };
+
+  btn.classList.add("is-on");
+  navigator.clipboard.writeText(text).then(
+    () => {
+      btn.textContent = confirmLabel || "Kopeeritud ✓";
+      setTimeout(restore, 1800);
+    },
+    /* The guard is held for the whole 1800ms so a second click cannot queue a
+     * second timer and strand the label on the confirmation. On failure there
+     * is nothing to confirm, so release it at once rather than leaving a button
+     * that looks busy and no longer is. */
+    restore,
+  );
+}
 
 (function () {
   const sidebar = document.getElementById("sidebar");

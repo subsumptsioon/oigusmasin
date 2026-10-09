@@ -183,13 +183,21 @@ function main() {
   // against every surface it can land on. This is the check whose absence
   // let a page set `outline: none` and dim the focus border to --line
   // (1.17:1) without anything going red.
+  //
+  // Two tokens, because the ring is drawn two ways and they are not the same
+  // colour: `--focus-outline` is the universal :focus-visible outline and is
+  // full-strength --amber; `--ring` is the translucent box-shadow on the search
+  // well. Checking only one would leave the other unaudited — which is how a
+  // token can be introduced, used, and never looked at.
   for (const bg of BG) {
-    const ring = resolve(tokens, "--ring");
-    if (!ring) continue;
-    const ratio = contrast(ring.rgb, hexToRgb(tokens[bg]));
-    const ok = ratio + 1e-9 >= 3.0;
-    if (!ok) failed++;
-    rows.push({ bg, fg: "--amber (focus ring)", role: "nontext", ratio: Math.round(ratio * 100) / 100, min: 3.0, ok });
+    for (const [token, label] of [["--focus-outline", "focus outline"], ["--ring", "focus ring (shadow)"]]) {
+      const ring = resolve(tokens, token);
+      if (!ring) continue;
+      const ratio = contrast(ring.rgb, hexToRgb(tokens[bg]));
+      const ok = ratio + 1e-9 >= 3.0;
+      if (!ok) failed++;
+      rows.push({ bg, fg: label, role: "nontext", ratio: Math.round(ratio * 100) / 100, min: 3.0, ok });
+    }
   }
 
   if (asJson) {

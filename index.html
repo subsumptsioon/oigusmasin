@@ -186,7 +186,13 @@
       function toggleExclude(idx) {
         if (excluded.has(idx)) excluded.delete(idx);
         else excluded.add(idx);
-        renderResults();
+        /* A toggle changes the sum, the count, ONE row and ONE mark. Rebuilding
+         * the whole list to do that cost ~120ms on a 2000-match document, and a
+         * single click is not a rare event — it is how you drop a term from a
+         * total. renderResults() stays for the full rebuild that a text edit
+         * needs; this is the cheap path, and it falls back to that render if the
+         * cached nodes are not there to patch. */
+        if (!patchExclusion(idx)) renderResults();
       }
 
       // ── Render ──────────────────────────────────────────────────────────────────
@@ -227,6 +233,48 @@
         renderResults();
       }
 
+      /* Rows and marks are kept between renders so a toggle can mutate them in
+         place instead of re-creating the list. Rebuilt only when the text or the
+         match set changes, never when only the exclusion set does. */
+      let rowEls = [];
+      let markEls = [];
+      let renderedFor = null;
+
+      /* Patch everything a single exclusion toggle affects. Returns false if the
+         cached DOM is stale (text edited since), in which case the caller does a
+         full render. */
+      function patchExclusion(idx) {
+        if (renderedFor === null || !rowEls[idx] || !markEls[idx]) return false;
+
+        const isExcluded = excluded.has(idx);
+
+        const mark = markEls[idx];
+        mark.classList.toggle("excluded", isExcluded);
+
+        const li = rowEls[idx];
+        li.classList.toggle("el-excluded", isExcluded);
+        li.title = isExcluded ? "Kliki, et lisada tagasi" : "Kliki, et eemaldada";
+
+        const active = [];
+        let total = 0;
+        let maxDec = 0;
+        for (let i = 0; i < lastFound.length; i++) {
+          if (excluded.has(i)) continue;
+          const m = lastFound[i];
+          active.push(m);
+          total += m.amount;
+          if (m.decimals > maxDec) maxDec = m.decimals;
+        }
+
+        valSum.textContent = active.length
+          ? formatValue(total, maxDec)
+          : formatValue(0, 0);
+        valCount.textContent =
+          active.length + (excluded.size > 0 ? " / " + lastFound.length : "");
+        resetBtn.classList.toggle("visible", excluded.size > 0);
+        return true;
+      }
+
       function renderResults() {
         const text = inputEl.value;
         const active = lastFound.filter((_, i) => !excluded.has(i));
@@ -234,6 +282,11 @@
 
         highlightEl.innerHTML = buildHighlightHtml(text, lastFound);
         highlightEl.scrollTop = inputEl.scrollTop;
+
+        /* Cache the nodes the cheap path mutates. Marks are fetched after the
+           innerHTML write, so they exist by now. */
+        renderedFor = text;
+        markEls = [...highlightEl.querySelectorAll("mark[data-idx]")];
 
         resetBtn.classList.toggle("visible", excluded.size > 0);
 
@@ -255,6 +308,7 @@
           active.length + (excluded.size > 0 ? " / " + lastFound.length : "");
 
         valList.innerHTML = "";
+        rowEls = [];
         if (lastFound.length === 0) {
           const li = document.createElement("li");
           li.className = "is-blank";
@@ -273,6 +327,7 @@
               `<span class="el-num">${String(i + 1).padStart(2, "0")}</span>` +
               formatValue(item.amount, item.decimals);
             valList.appendChild(li);
+            rowEls.push(li);
           });
         }
       }
@@ -285,24 +340,9 @@
       });
 
       // ── Copy buttons ────────────────────────────────────────────────────────────
-      function copyText(btn, text) {
-        // Improvement #5 — prevent spam
-        if (btn.classList.contains("is-on")) return;
-
-        navigator.clipboard.writeText(text).then(() => {
-          btn.classList.add("is-on");
-          const orig = btn.textContent;
-          btn.textContent = "Kopeeritud ✓";
-          setTimeout(() => {
-            btn.textContent = orig;
-            btn.classList.remove("is-on");
-          }, 1800);
-        });
-      }
-
       copySumBtn.addEventListener("click", () => {
         // Keep the amount glued to the unit (€ / g) with a non-breaking space (Word-safe paste)
-        copyText(
+        copyButton(
           copySumBtn,
           valSum.textContent.replace(/ (?=[\u20acg])/g, "\u00A0"),
         );
@@ -313,10 +353,11 @@
           .filter((_, i) => !excluded.has(i))
           .map((x) => formatNumeric(x.amount, x.decimals))
           .join("\n");
-        copyText(copyListBtn, text);
+        copyButton(copyListBtn, text);
       });
 
       // ── Reset exclusions ────────────────────────────────────────────────────────
+      // Clears every row at once, so this is a full render, not the cheap path.
       document.getElementById("reset-btn").addEventListener("click", () => {
         excluded.clear();
         renderResults();

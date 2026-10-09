@@ -148,20 +148,9 @@
         }
       }
 
-      document
-        .getElementById("copy-btn")
-        .addEventListener("click", function () {
-          if (this.classList.contains("is-on")) return;
-          navigator.clipboard.writeText(this._clipText).then(() => {
-            this.classList.add("is-on");
-            const orig = this.textContent;
-            this.textContent = "✓";
-            setTimeout(() => {
-              this.textContent = orig;
-              this.classList.remove("is-on");
-            }, 1800);
-          });
-        });
+      document.getElementById("copy-btn").addEventListener("click", function () {
+        copyButton(this, this._clipText, "✓");
+      });
 
       const inputs = [
         "a-years",

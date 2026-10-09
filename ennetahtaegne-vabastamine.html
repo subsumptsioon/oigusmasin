@@ -226,16 +226,7 @@
         // Wire copy buttons
         panel.querySelectorAll(".btn").forEach((btn) => {
           btn.addEventListener("click", () => {
-            if (btn.classList.contains("is-on")) return;
-            navigator.clipboard.writeText(btn.dataset.date).then(() => {
-              btn.classList.add("is-on");
-              const orig = btn.textContent;
-              btn.textContent = "✓";
-              setTimeout(() => {
-                btn.textContent = orig;
-                btn.classList.remove("is-on");
-              }, 1800);
-            });
+            copyButton(btn, btn.dataset.date, "✓");
           });
         });
       }

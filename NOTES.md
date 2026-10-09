@@ -67,6 +67,18 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
 `.github/workflows/update-data.yml` refreshes `data.json` daily at 04:00 UTC.
 
 ## Tools in `tools/`
+- `cdp.mjs` — **shared headless-browser harness.** `smoke-test`, `css-snapshot`,
+  `dom-tests` and `page-eval` all need the same three things — serve the repo
+  over http (pages `fetch("data.json")`, which `file://` blocks), launch
+  Chromium, speak CDP — and each used to carry its own copy. Four copies had
+  drifted: two had a `CDP` class, two had a sloppier inline client that treated
+  a protocol error as a resolved `undefined`. One module now owns it:
+  `launch()` returns `{base, cdp, attach, goto, open, eval, evalRaw, close_}`,
+  and `close()` is mandatory — it kills the browser's whole **process group**.
+  That last part is a fix, not a refactor: `chromium` forks zygote/renderer
+  children, and killing only the parent left one headless Chromium per tool run
+  alive for the life of the machine. If you add a tool that opens a browser,
+  `await env.close()` in a `finally` or it will leak.
 - `run-rehkendaja-tests.mjs` — headless test runner. It **slices the harness +
   `suite(...)` block straight out of `rehkendaja-test.html`** and runs it in a
   Node VM together with `rehkendaja-core.js`, so the browser page stays the single
@@ -92,6 +104,19 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `outline: none` and `100vh` rules each exist because they caught a real
   regression. Run `npm run css`; wired into `verify`/CI.
   Deleted with `css_audit.py`: there is no second stylesheet left to compare.
+  Two more rules, both added after the corresponding bug was found by hand:
+  - **`dead-toggle`** — a bare-class `display: none` with no `.X.visible`
+    counterpart. This is the `isikukood` clear button: JS toggled `visible` on
+    it, nothing in CSS reacted, and it could never appear. Plant the defect and
+    this rule fails, so it is not a check that only passes on clean input.
+  - **`restated-media`** — a property inside `@media` set to the value the
+    top-level rule already has. Equal specificity, equal value, so it cannot
+    change anything; four had accumulated (`.sidebar{top,height}`,
+    `.header-main{gap}`, `body{font-size}`). Only top-level rules are compared:
+    two rules in *different* media queries are never both active.
+- **Linters are validated by planting the defect, not by passing.** Every new
+  rule here was checked by reintroducing the bug it is meant to catch and
+  confirming a non-zero exit. A lint that has never failed may not work at all.
 - `css-snapshot.mjs` — measures computed style + geometry (incl. a canvas
   text-width probe, which is what catches a real font-fallback change) for
   every shared component on all 6 pages, and diffs two runs. Use it before and
@@ -127,8 +152,10 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   values in those four categories are a lint error.
 - Breakpoints are a **documented convention, not tokens** — plain CSS cannot
   read a custom property inside a media query without a build step. Viewport:
-  `900px`, `800px`. Container: `860px`, keyed to available content width
-  (`.page-content` is the container) because the sidebar eats 260px.
+  `800px` (the only one). Container: `860px`, keyed to available content width
+  (`.page-content` is the container) because the sidebar eats 260px. `900px`
+  used to be listed here and allowlisted in `check-css.mjs` while no rule used
+  it — the two-column flip has always been the container query.
 - Palette = **Omarchy Retro 82** (deep navy / amber / teal, cream text).
   Mono = **JetBrainsMono Nerd Font**, self-hosted from `fonts/`. Sharp corners
   (`--radius: 0`), amber glow on focus/hero, accent-chip active nav.
@@ -179,10 +206,18 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   `:where(a, button, input, …):focus-visible` rule in `noir.css`, so new
   controls get it for free. `outline: none` is allowlisted only for `#search`
   and `#input-text`, whose wrappers (`.search-inner`, `.input-wrap`) own the
-  ring instead.
+  ring instead. The ring is drawn two ways and `npm run contrast` checks **both**:
+  `--focus-outline` (the universal outline, full-strength `--amber`) and
+  `--ring` (the translucent box-shadow on the search well). They are not the
+  same colour and they are not interchangeable — the audit originally covered
+  only the shadow form, so dimming the *outline* would have passed CI.
 - The uppercase mono micro-label is one `:where(...)` base in `noir.css`
   (`.panel-header`, `.field-label`, `.result-label`, …). Add new labels to that
-  list rather than re-declaring the four declarations.
+  list rather than re-declaring the four declarations. There is a **second**
+  family for small tracked notes that are *not* uppercased — `--track-wide`
+  rather than `--track-caps` — sharing its own `:where(...)` base
+  (`.panel-note`, `.input-hint`, `footer`, `.result-unit`, …). Same move, same
+  reason: name the family so a new note inherits it.
 - Adding a Rehkendaja test: add a `suite(...)` block in `rehkendaja-test.html`;
   the headless runner picks it up automatically. Beyond `toEqual`/`toBeCloseTo`
   the harness also has `toBeTruthy`, `toBeFalse`, `toBeLessThan`, `toHaveLength`,
@@ -208,6 +243,31 @@ CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `mai
   is therefore one value, `100,20 €`, which is intended and tested.
 - Rehkendaja copy-to-clipboard glues amount to unit with a **non-breaking space**
   (`\u00A0`) so Word never line-breaks between the number and € / g.
+- **Copy buttons: use `copyButton(btn, text, confirmLabel?)` from `nav.js`.**
+  Three pages each had their own inline version and they had drifted — two said
+  `"✓"`, one said `"Kopeeritud ✓"`; one stored the text on a DOM expando
+  (`btn._clipText`) instead of passing it in. All three pass `confirmLabel` now,
+  so the wording differences are explicit. The helper also handles a *rejected*
+  clipboard write: the old code only cleared the busy state in `.then()`, so a
+  denied permission left the button stuck showing "✓" forever.
+- **Do not rebuild a whole list to change one row.** Both hot lists are sized
+  for documents far past what they are usually used with, and the naive version
+  was quadratic in practice:
+  - Rehkendaja: excluding one amount used to call `renderResults()`, rebuilding
+    the whole highlight mirror and all N `<li>`. On a 2000-match document that
+    measured **118ms per click** — and clicking a row is how you drop a term from
+    a total, so it is a normal action, not a rare one. `toggleExclude()` now
+    patches the one row, the one `<mark>`, the sum and the count
+    (`patchExclusion`), falling back to the full render if the cached nodes are
+    not there. Same click: **~1ms**.
+  - Narkonimekirjad: `highlight()` compiled a fresh `RegExp` on every call, and
+    the search loop calls it twice per matching row — **412 compiles per
+    keystroke** over 456 rows. The query is now compiled once (`compileQuery`)
+    and a row is only re-highlighted when its query actually changed, since
+    identical input yields identical markup. **1 compile per query.** The input
+    is debounced at 80ms like Rehkendaja's.
+  - `highlight(t, q)` still works with two arguments (it compiles its own regex);
+    the third parameter is only the optimisation.
 - `lausepank` work lives on the `lausepank` branch and uses encrypted data
   (plaintext `lausepank-andmed.json` is gitignored; see `.vscode/tasks.json`).
 

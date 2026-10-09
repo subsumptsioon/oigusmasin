@@ -26,16 +26,9 @@
  *
  * Exit: 0 clean (or diff with no differences), 1 diff found changes, 2 harness error.
  */
-import { spawn } from "node:child_process";
 import fs from "node:fs";
-import http from "node:http";
-import net from "node:net";
-import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
+import { launch, pages as allPages } from "./cdp.mjs";
 
 const argv = process.argv.slice(2);
 const flag = (n) => {
@@ -46,11 +39,7 @@ const saveTo = flag("--save");
 const diffFrom = flag("--diff");
 const only = flag("--page");
 
-const PAGES = fs
-  .readdirSync(ROOT)
-  .filter((f) => f.endsWith(".html"))
-  .filter((f) => (only ? f === only : true))
-  .sort();
+const PAGES = allPages(only);
 
 /* Components whose type/spacing/colour we care about. Kept flat and selector-
  * only so a missing component shows up as a MISSING line rather than silently
@@ -182,90 +171,6 @@ const PSEUDOS = [
   [".header-chrome", "::after"],
 ];
 
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-};
-
-function startServer() {
-  return new Promise((resolve) => {
-    const server = http.createServer((req, res) => {
-      const rel = decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
-      const file = path.join(ROOT, rel || "index.html");
-      if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-        res.writeHead(404);
-        res.end("not found");
-        return;
-      }
-      res.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
-      fs.createReadStream(file).pipe(res);
-    });
-    server.listen(0, "127.0.0.1", () => resolve(server));
-  });
-}
-
-function findFreePort() {
-  return new Promise((resolve) => {
-    const s = net.createServer();
-    s.listen(0, "127.0.0.1", () => {
-      const p = s.address().port;
-      s.close(() => resolve(p));
-    });
-  });
-}
-
-class CDP {
-  constructor(ws) {
-    this.ws = ws;
-    this.id = 0;
-    this.pending = new Map();
-    this.listeners = new Set();
-    ws.addEventListener("message", (ev) => {
-      const msg = JSON.parse(ev.data);
-      if (msg.id !== undefined && this.pending.has(msg.id)) {
-        const { resolve, reject } = this.pending.get(msg.id);
-        this.pending.delete(msg.id);
-        msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result);
-      } else if (msg.method) {
-        for (const fn of this.listeners) fn(msg);
-      }
-    });
-  }
-  static async connect(url) {
-    const ws = new WebSocket(url);
-    await new Promise((res, rej) => {
-      ws.addEventListener("open", res, { once: true });
-      ws.addEventListener("error", rej, { once: true });
-    });
-    return new CDP(ws);
-  }
-  send(method, params = {}, sessionId) {
-    const id = ++this.id;
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      this.ws.send(JSON.stringify({ id, method, params, sessionId }));
-    });
-  }
-  on(fn) {
-    this.listeners.add(fn);
-    return () => this.listeners.delete(fn);
-  }
-}
-
-async function waitForDevTools(port, timeoutMs = 15000) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const r = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (r.ok) return (await r.json()).webSocketDebuggerUrl;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 150));
-  }
-  throw new Error("DevTools endpoint did not come up");
-}
-
 /* Runs in the page. Returns { key: value } flat pairs. */
 const COLLECT = `(async () => {
   await document.fonts.ready;
@@ -309,50 +214,25 @@ const COLLECT = `(async () => {
 })()`;
 
 async function main() {
-  const server = await startServer();
-  const base = `http://127.0.0.1:${server.address().port}`;
-  const port = await findFreePort();
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "csssnap-"));
-  const chromium = spawn("chromium", [
-    "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
-    "--force-device-scale-factor=1", "--hide-scrollbars",
-    `--remote-debugging-port=${port}`, `--user-data-dir=${userDataDir}`, "about:blank",
-  ], { stdio: ["ignore", "ignore", "ignore"] });
+  /* Pin the device scale factor and hide scrollbars so geometry is comparable
+   * run to run — a scrollbar appearing changes every width on the page. */
+  const env = await launch({
+    extraArgs: ["--force-device-scale-factor=1", "--hide-scrollbars"],
+  });
 
   const flat = {};
-  let cdp;
+  let exitCode = 0;
   try {
-    const cdpUrl = await waitForDevTools(port);
-    cdp = await CDP.connect(cdpUrl);
-
     for (const page of PAGES) {
-      const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
-      const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
-      await cdp.send("Page.enable", {}, sessionId);
-      await cdp.send("Runtime.enable", {}, sessionId);
-
-      const loaded = new Promise((resolve) => {
-        const off = cdp.on((msg) => {
-          if (msg.sessionId === sessionId && msg.method === "Page.loadEventFired") {
-            off();
-            resolve();
-          }
-        });
-      });
-      await cdp.send("Page.navigate", { url: `${base}/${page}` }, sessionId);
-      await Promise.race([loaded, new Promise((r) => setTimeout(r, 8000))]);
-      await new Promise((r) => setTimeout(r, 400));
-
-      const res = await cdp.send("Runtime.evaluate", {
-        expression: COLLECT, returnByValue: true, awaitPromise: true,
-      }, sessionId);
-      if (res.exceptionDetails) {
-        console.error(`${page}: ${res.exceptionDetails.text} ${res.exceptionDetails.exception?.description || ""}`);
-        process.exitCode = 2;
-      } else {
-        Object.assign(flat, res.result.value);
+      const { targetId, sessionId } = await env.open(page, { settle: 400 });
+      try {
+        const res = await env.eval(COLLECT, sessionId);
+        Object.assign(flat, res);
+      } catch (err) {
+        console.error(`${page}: ${err.message}`);
+        exitCode = 2;
       }
-      await cdp.send("Target.closeTarget", { targetId });
+      await env.close_(targetId);
     }
 
     const lines = Object.keys(flat).sort().map((k) => `${k} = ${flat[k]}`);
@@ -364,45 +244,43 @@ async function main() {
       const basePath = path.resolve(diffFrom);
       if (!fs.existsSync(basePath)) {
         console.error(`no baseline at ${diffFrom}`);
-        process.exit(2);
+        exitCode = 2;
+      } else {
+        const parse = (ls) =>
+          new Map(ls.map((l) => {
+            const i = l.lastIndexOf(" = ");
+            return [l.slice(0, i), l.slice(i + 3)];
+          }));
+        const before = parse(fs.readFileSync(basePath, "utf8").split("\n").filter(Boolean));
+        const after = parse(lines);
+        const keys = [...new Set([...before.keys(), ...after.keys()])].sort();
+        let changed = 0;
+        for (const k of keys) {
+          const a = before.get(k);
+          const b = after.get(k);
+          if (a === b) continue;
+          changed++;
+          if (a === undefined) console.log(`  \x1b[32m+ ${k}\x1b[0m = ${b}`);
+          else if (b === undefined) console.log(`  \x1b[31m- ${k}\x1b[0m = ${a}`);
+          else console.log(`  \x1b[33m~ ${k}\x1b[0m: ${a} -> ${b}`);
+        }
+        console.log(changed
+          ? `\n\x1b[33m${changed} change(s)\x1b[0m across ${after.size} tracked values.`
+          : `\x1b[32mno changes\x1b[0m across ${after.size} tracked values.`);
+        if (changed) exitCode = 1;
       }
-      const before = new Map(
-        fs.readFileSync(basePath, "utf8").split("\n").filter(Boolean).map((l) => {
-          const i = l.lastIndexOf(" = ");
-          return [l.slice(0, i), l.slice(i + 3)];
-        })
-      );
-      const after = new Map(lines.map((l) => {
-        const i = l.lastIndexOf(" = ");
-        return [l.slice(0, i), l.slice(i + 3)];
-      }));
-      const keys = [...new Set([...before.keys(), ...after.keys()])].sort();
-      let changed = 0;
-      for (const k of keys) {
-        const a = before.get(k);
-        const b = after.get(k);
-        if (a === b) continue;
-        changed++;
-        if (a === undefined) console.log(`  \x1b[32m+ ${k}\x1b[0m = ${b}`);
-        else if (b === undefined) console.log(`  \x1b[31m- ${k}\x1b[0m = ${a}`);
-        else console.log(`  \x1b[33m~ ${k}\x1b[0m: ${a} -> ${b}`);
-      }
-      console.log(changed
-        ? `\n\x1b[33m${changed} change(s)\x1b[0m across ${after.size} tracked values.`
-        : `\x1b[32mno changes\x1b[0m across ${after.size} tracked values.`);
-      process.exit(changed ? 1 : 0);
     } else {
       console.log(lines.join("\n"));
     }
   } catch (err) {
     console.error("harness error:", err?.message || err);
-    process.exit(2);
+    exitCode = 2;
   } finally {
-    try { cdp?.ws.close(); } catch {}
-    chromium.kill("SIGKILL");
-    server.close();
-    try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch {}
+    await env.close();
   }
+  /* Exiting inside the try would skip the finally, leaving Chromium and its
+   * temp profile running. */
+  process.exit(exitCode);
 }
 
 main();

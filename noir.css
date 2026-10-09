@@ -4,8 +4,9 @@
    Breakpoints are a documented convention rather than a token: plain CSS
    cannot read a custom property inside a media query without a build
    step. tools/check-css.mjs enforces both.
-     900px  two-column tool layout -> one column
      800px  sidebar collapses into a drawer
+     860px  container width at which the tool layout drops to one column
+            (@container, keyed to content width because the sidebar eats 260px)
    ============================================================ */
 
 /* ── WEBFONT ──
@@ -86,6 +87,29 @@
   --ring: 0 0 0 2px var(--amber-15);
   --glow: 0 0 24px var(--amber-22);
   --glow-hero: 0 0 18px var(--amber-35);
+
+  /* The 1px divider, which every panel, row and chrome bar is split by. Named
+     so "how thick is a divider" is one decision rather than 29 literals, and so
+     the print palette can change it in one place: `@media print` re-points
+     `--border`, and `--hairline` follows it automatically. A rule that spelled
+     the thickness out would still follow `--border`, so this is about the
+     intent being nameable, not about the override working. */
+  --hairline: 1px solid var(--border);
+
+  /* The control line-height, which is NOT free: .field's block-size below is a
+     calc that hardcodes it as `1.4em`. The two must agree or the padding maths
+     is wrong by a fraction of the font size — a change that looks like nothing
+     at all. One token makes the coupling a single edit instead of two that have
+     to be found by hand. */
+  --lh-control: 1.4;
+
+  /* The focus ring, in outline terms. `--ring` below is the same intent as a
+     box-shadow; these two are the outline form, used by the universal
+     :focus-visible rule and by .input-wrap, whose inner control sets
+     `outline: none`. Three sites, one ring — and the print palette zeroes the
+     glows, so naming it is also how print could drop the ring in one place. */
+  --focus-outline: 2px solid var(--amber);
+  --focus-offset: 2px;
 
   /* ── Type scale ── */
   --fs-xs: 12px;
@@ -203,7 +227,7 @@
   letter-spacing: var(--track-wide);
   color: var(--text);
   background: var(--deep);
-  border: 1px solid var(--border);
+  border: var(--hairline);
   border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
@@ -294,6 +318,21 @@ body {
   color: var(--dim);
 }
 
+/* The second label family: small, tracked `wide` rather than `caps`, and NOT
+   uppercased — a running note, a count, a unit. Twelve selectors repeated this
+   triple; only the colour and (for two of them) the size ever differed. Grouping
+   them is what makes the family a decision rather than a coincidence: a
+   thirteenth small-tracked note inherits it by being named here.
+
+   `.result-unit` is in the list but overrides the size to --fs-md — it sits
+   beside a large figure and has to match it. */
+:where(.title-block .subtitle, .pill-label, .panel-note, .result-legal-label,
+  .result-min-note, .count-badge, footer, .elements-list .is-blank,
+  .result-unit, .input-hint) {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+}
+
 .app-shell {
   display: flex;
   flex: 1;
@@ -305,7 +344,7 @@ body {
   width: var(--sidebar-w);
   flex-shrink: 0;
   background: var(--deep);
-  border-right: 1px solid var(--border);
+  border-right: var(--hairline);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -332,7 +371,7 @@ body {
   align-items: center;
   gap: var(--gap);
   padding: var(--sp-6) var(--sp-5) var(--sp-5);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   text-decoration: none;
   flex-shrink: 0;
 }
@@ -366,8 +405,8 @@ body {
    It deliberately does not fire for tabindex="-1" affordances (the inline
    clear buttons), which are intentionally not keyboard-reachable. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
 }
 
 /* Nav item */
@@ -414,7 +453,7 @@ body {
 .sidebar-foot {
   margin-top: auto;
   padding: var(--sp-4) var(--sp-4);
-  border-top: 1px solid var(--border);
+  border-top: var(--hairline);
   font-size: var(--fs-xs);
   color: var(--dim);
   letter-spacing: var(--track-wide);
@@ -438,7 +477,7 @@ body {
 /* ── TOPBAR (sticky, inside .page-content) ── */
 .topbar {
   background: var(--deep);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
@@ -453,7 +492,7 @@ body {
 .header-chrome {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   overflow-x: auto;
   scrollbar-width: none;
   position: relative;
@@ -478,7 +517,7 @@ body {
   align-items: center;
   gap: var(--gap);
   padding: var(--pad-page);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
 }
 
 /* The drawer toggle only exists on a narrow screen; its button styling comes
@@ -495,9 +534,7 @@ body {
   line-height: 1.2;
 }
 .title-block .subtitle {
-  font-size: var(--fs-xs);
   color: var(--dim);
-  letter-spacing: var(--track-wide);
   margin-top: var(--sp-2);
   display: flex;
   align-items: baseline;
@@ -516,7 +553,7 @@ body {
 .stats-band {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -529,7 +566,7 @@ body {
   align-items: center;
   gap: var(--gap-tight);
   padding: var(--pad-row);
-  border-right: 1px solid var(--border);
+  border-right: var(--hairline);
   flex-shrink: 0;
   cursor: pointer;
   transition: background var(--dur);
@@ -554,8 +591,6 @@ body {
   flex-shrink: 0;
 }
 .pill-label {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--track-wide);
   color: var(--muted);
 }
 .pill-n {
@@ -579,7 +614,7 @@ body {
   width: 100%;
   max-width: var(--measure);
   background: var(--deep);
-  border: 1px solid var(--border);
+  border: var(--hairline);
   transition:
     border-color var(--dur),
     box-shadow var(--dur);
@@ -663,7 +698,7 @@ main {
 /* ── LIST SECTIONS ── */
 .list-section {
   margin-bottom: var(--sp-7);
-  border: 1px solid var(--border);
+  border: var(--hairline);
   overflow: hidden;
   transition: border-color var(--dur);
   animation: appear 0.25s ease both;
@@ -671,12 +706,6 @@ main {
 }
 .list-section:hover {
   border-color: var(--amber);
-}
-/* Kept because the .hidden utility above explains why they exist at all: they
-   outrank .hidden, which is what makes them win. */
-.list-section.hidden,
-.substances-table tbody tr.hidden {
-  display: none;
 }
 
 @keyframes appear {
@@ -723,7 +752,7 @@ main {
 
 /* Card panel (input pane, results pane) */
 .panel {
-  border: 1px solid var(--border);
+  border: var(--hairline);
   background: var(--surface);
   display: flex;
   flex-direction: column;
@@ -732,7 +761,7 @@ main {
 /* Panel title bar — shared 7-property label rule */
 .panel-header {
   padding: var(--sp-3) var(--sp-5);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   background: var(--deep);
 }
 
@@ -755,10 +784,8 @@ main {
 
 .panel-note {
   padding: var(--sp-3) var(--sp-5);
-  border-top: 1px solid var(--border);
-  font-size: var(--fs-xs);
+  border-top: var(--hairline);
   color: var(--dim);
-  letter-spacing: var(--track-wide);
   line-height: 1.65;
   background: var(--deep);
 }
@@ -776,7 +803,7 @@ main {
 
 /* Result card — base chrome; add .animate for the entrance fade */
 .result-block {
-  border: 1px solid var(--border);
+  border: var(--hairline);
   background: var(--surface);
   overflow: hidden;
 }
@@ -797,7 +824,7 @@ main {
   gap: var(--gap);
   padding: var(--pad);
   background: var(--deep);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
 }
 /* Stacked variant (label above value) — use with a .header-row row. */
 .result-header--stack {
@@ -872,16 +899,12 @@ main {
   letter-spacing: var(--track-wide);
 }
 .result-legal-label {
-  font-size: var(--fs-xs);
   color: var(--muted);
-  letter-spacing: var(--track-wide);
   line-height: 1.55;
 }
 
 .result-min-note {
-  font-size: var(--fs-xs);
   color: var(--amber);
-  letter-spacing: var(--track-wide);
   margin-top: 1px;
 }
 
@@ -898,17 +921,17 @@ main {
   width: 100%;
   padding: var(--sp-3);
   background: var(--deep);
-  border: 1px solid var(--border);
+  border: var(--hairline);
   color: var(--text);
   caret-color: var(--amber);
   font-size: var(--fs-lg);
-  line-height: 1.4;
+  line-height: var(--lh-control);
   /* An explicit block-size, so every field is the same height whatever its
      type. Left to itself a type="date" input is 2px taller than a text one:
      Chrome gives the date editor a 24px intrinsic content box that ignores the
-     line-height. 1.4em is this element's own line-height, so the total still
-     scales with font-size. */
-  block-size: calc(1.4em + 2 * var(--sp-3) + 2px);
+     line-height. The em term is this element's own line-height, so the total
+     still scales with font-size — hence the token rather than a literal. */
+  block-size: calc(var(--lh-control) * 1em + 2 * var(--sp-3) + 2px);
   transition:
     border-color var(--dur),
     box-shadow var(--dur);
@@ -1041,12 +1064,10 @@ main {
 }
 
 .count-badge {
-  font-size: var(--fs-xs);
   color: var(--muted);
   background: var(--deep);
-  border: 1px solid var(--border);
+  border: var(--hairline);
   padding: var(--pad);
-  letter-spacing: var(--track-wide);
   white-space: nowrap;
 }
 
@@ -1075,8 +1096,8 @@ main {
 
 .substances-table thead {
   background: var(--deep);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
 }
 
 .substances-table thead th {
@@ -1085,11 +1106,11 @@ main {
   font-weight: 400;
 }
 .substances-table thead th:nth-child(3) {
-  border-left: 1px solid var(--border);
+  border-left: var(--hairline);
 }
 
 .substances-table tbody tr {
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   transition: background var(--dur);
 }
 /* A last row has nothing below it to divide from, so it drops the rule. */
@@ -1104,7 +1125,7 @@ main {
   line-height: 1.45;
 }
 .substances-table td:nth-child(3) {
-  border-left: 1px solid var(--border);
+  border-left: var(--hairline);
   color: var(--muted);
   font-size: var(--fs-md);
 }
@@ -1169,10 +1190,8 @@ mark {
 /* ── FOOTER ── */
 footer {
   padding: 0 var(--sp-7);
-  border-top: 1px solid var(--border);
-  font-size: var(--fs-xs);
+  border-top: var(--hairline);
   color: var(--muted);
-  letter-spacing: var(--track-wide);
   background: var(--deep);
   display: flex;
   justify-content: space-between;
@@ -1234,8 +1253,8 @@ footer {
    outline:none, so the wrapper owns the focus ring. 2px to match the
    universal ring. */
 .input-wrap:focus-within {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
   border-radius: var(--radius);
 }
 
@@ -1334,7 +1353,7 @@ footer {
   font-size: var(--fs-md);
   color: var(--text);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
 }
 
 /* A detected amount. Clickable, so it owns the pointer — the placeholder rows
@@ -1349,8 +1368,6 @@ footer {
 /* The "nothing found" note, which sits where rows would be but is not one. */
 .elements-list .is-blank {
   color: var(--dim);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--track-wide);
 }
 
 .el-num {
@@ -1366,7 +1383,6 @@ footer {
 .result-unit {
   font-size: var(--fs-md);
   color: var(--muted);
-  letter-spacing: var(--track-wide);
   margin-right: var(--sp-3);
 }
 
@@ -1407,12 +1423,13 @@ footer {
   z-index: var(--z-overlay-top);
   display: none;
 }
+.input-clear.visible {
+  display: inline-flex;
+}
 
 .input-hint {
   margin-top: var(--sp-2);
-  font-size: var(--fs-xs);
   color: var(--dim);
-  letter-spacing: var(--track-wide);
   min-height: 18px;
 }
 
@@ -1438,7 +1455,7 @@ footer {
 
 .ref-section {
   padding: var(--sp-5) var(--sp-6);
-  border-top: 1px solid var(--border);
+  border-top: var(--hairline);
   margin-top: var(--sp-5);
 }
 
@@ -1493,7 +1510,7 @@ footer {
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--dim);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-3);
 }
@@ -1504,7 +1521,7 @@ footer {
   align-items: baseline;
   gap: var(--gap-tight);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--hairline);
   font-size: var(--fs-sm);
   line-height: 1.5;
 }
@@ -1537,7 +1554,7 @@ footer {
   gap: var(--gap-wide);
   padding: var(--sp-4) 0 var(--sp-2) 0;
   font-size: var(--fs-sm);
-  border-top: 1px solid var(--border);
+  border-top: var(--hairline);
   margin-top: var(--sp-2);
 }
 .summary-pass {
@@ -1576,9 +1593,7 @@ footer {
 @media (max-width: 800px) {
   .sidebar {
     position: fixed;
-    top: 0;
     left: 0;
-    height: 100dvh;
     z-index: var(--z-drawer);
     transform: translateX(-100%);
     transition: transform var(--dur-move) ease;
@@ -1593,13 +1608,9 @@ footer {
 
   .header-main {
     padding: var(--sp-4) var(--sp-5);
-    gap: var(--gap);
   }
   .search-zone {
     padding: var(--sp-3) var(--sp-4);
-  }
-  body {
-    font-size: var(--fs-md);
   }
   main {
     padding: var(--sp-5) var(--sp-4);
