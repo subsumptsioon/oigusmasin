@@ -27,14 +27,44 @@ jobs:
           # regex (valid in V8 >= Node 23 / modern browsers).
           node-version: "24"
 
+      # First, because it is the only check that reads our code *as code*.
+      # Everything below it reads text, and a module with a syntax error passes
+      # all of them — this one caught that during phase 8.
+      - name: Module syntax check (parse, do not execute)
+        run: node tools/check-syntax.mjs
+
       - name: Run Rehkendaja headless test suites
         run: node tools/run-rehkendaja-tests.mjs
 
+      # Carries the no-exit check and the CSP audit with it: this one script is
+      # what makes "the file never leaves the machine" a build failure rather
+      # than a claim in a README.
       - name: Static asset / nav integrity check
         run: node tools/check-assets.mjs
+
+      # Regenerates every fixture and exits non-zero if any byte moved. A corpus
+      # that has drifted from its generator no longer tests what its tests claim
+      # to test, and that is a silent failure unless a build step looks.
+      - name: Corpus reproducibility (regenerate and compare)
+        run: node tools/make-corpus.mjs
+
+      # Watches a real browser rather than reading the source. Needs no display:
+      # tools/cdp.mjs launches Chromium headless over the DevTools protocol.
+      - name: Privacy behaviour test (no request carries a body, none leaves the origin)
+        run: node tools/privacy-tests.mjs
+
+      # Follows README.md's own "Adding a format" instructions for a format that
+      # does not exist, then removes it. This is §13's "proven rather than
+      # asserted" item, and it is the check that would catch a new format needing
+      # an edit to the page, the tab strip or the privacy test.
+      - name: Extensibility proof (a new format needs three files and nothing else)
+        run: node tools/extensibility-proof.mjs
 
       - name: Design-token WCAG contrast audit
         run: node tools/contrast-audit.mjs
 
       - name: CSS convention lint
         run: node tools/check-css.mjs
+
+      - name: Language split check (English code, Estonian content)
+        run: node tools/check-language.mjs

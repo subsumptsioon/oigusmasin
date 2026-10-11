@@ -10,10 +10,15 @@
     "test": "node tools/run-rehkendaja-tests.mjs",
     "check": "node tools/check-assets.mjs",
     "contrast": "node tools/contrast-audit.mjs",
-    "verify": "npm test && npm run check && npm run contrast && npm run css",
+    "verify": "npm run syntax && npm test && npm run check && npm run corpus && npm run privacy && npm run extensible && npm run contrast && npm run css && npm run lang",
     "dom": "node tools/dom-tests.mjs",
     "smoke": "node tools/smoke-test.mjs",
     "css": "node tools/check-css.mjs",
+    "lang": "node tools/check-language.mjs",
+    "syntax": "node tools/check-syntax.mjs",
+    "privacy": "node tools/privacy-tests.mjs",
+    "corpus": "node tools/make-corpus.mjs",
+    "extensible": "node tools/extensibility-proof.mjs",
     "snapshot": "node tools/css-snapshot.mjs"
   }
 }
