@@ -46,6 +46,11 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".woff2": "font/woff2",
+  /* pdf.min.mjs / pdf.worker.mjs and any future ES module. Without this the
+   * octet-stream fallback below applies, and Chromium refuses to execute a
+   * module served with a non-JavaScript MIME type — so the failure looks like
+   * a missing file rather than a MIME problem. */
+  ".mjs": "text/javascript; charset=utf-8",
 };
 
 /* file:// would be blocked by CORS, so pages that `fetch("data.json")` need a
@@ -62,6 +67,12 @@ function startServer() {
       }
       res.writeHead(200, {
         "Content-Type": MIME[path.extname(file)] || "application/octet-stream",
+        /* No caching. This server exists to serve source that changes between
+           runs, and Chromium caches ES modules heuristically when there is no
+           cache header at all — so an edited module kept serving its previous
+           contents and a fixed bug appeared unfixed. Cost: nothing, since every
+           response is from the local disk anyway. */
+        "Cache-Control": "no-store, must-revalidate",
       });
       fs.createReadStream(file).pipe(res);
     });
