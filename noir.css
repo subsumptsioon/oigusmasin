@@ -1569,6 +1569,285 @@ footer {
   color: var(--muted);
 }
 
+/* ── METAANDMED ──
+   The metadata analyser page. A drop zone around a real <input type="file">:
+   the input is the control, and the zone only layers drag-and-drop on top, so
+   the keyboard path and the pointer path land in the same place.
+
+   These cannot live in a <style> block: the page's CSP has no 'unsafe-inline',
+   and check-css bans the block anyway. Single-page rules belong here. */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  padding: var(--sp-5);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--deep);
+  transition: border-color var(--dur);
+}
+
+/* A drag is in progress. The border is the whole signal, so it has to clear
+   3:1 against the surface it sits on — --border does, and it is the token the
+   rest of the site uses for exactly this (WCAG 1.4.11). */
+.dropzone.is-drop {
+  border-color: var(--amber);
+}
+
+.dropzone-label {
+  color: var(--dim);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.dropzone-hint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+/* What was detected, beside whatever the extension claimed. Always the real
+   format id from the registry, never the file name. */
+.format-badge {
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--amber);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+}
+
+/* A key and its value, stacked. The key is the Estonian label with the PDF key
+   or English term after it in parentheses, so a visitor who knows the spec can
+   find the field they are looking for. */
+.kv-key {
+  color: var(--dim);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.kv-val {
+  color: var(--text);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-control);
+  overflow-wrap: anywhere;
+}
+
+/* The English term or PDF key after the Estonian label, so a visitor who knows
+   the specification can find the field they are looking for. Dimmed, because it
+   is a second name for the one above it, not additional information. */
+.kv-gloss {
+  color: var(--dim);
+}
+
+/* A value that was repaired, or that is behind a password, says so. The word is
+   on screen rather than in a tooltip: `confidence` exists so a repaired number
+   is not read as a declared one, and a table read without hovering still has to
+   make that difference visible. */
+.kv-flag {
+  margin-left: var(--gap-tight);
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  color: var(--amber);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* ── Tabs ──
+   ARIA tabs pattern: one tablist, one roving tabindex, arrow keys to move.
+   The buttons are square and unbordered so the amber bar under the selected one
+   is the only state indicator, matching .unit-switcher's treatment. */
+.meta-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-tight);
+  margin-top: var(--sp-4);
+  border-bottom: var(--hairline);
+  padding-bottom: var(--sp-2);
+}
+
+.tab {
+  appearance: none;
+  padding: var(--sp-2) var(--sp-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--track-wide);
+  cursor: pointer;
+  transition:
+    color var(--dur),
+    border-color var(--dur);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
+}
+
+.meta-panels {
+  margin-top: var(--sp-4);
+}
+
+/* One key/value row. A two-column grid rather than a flex row, so a long value
+   wraps under its own key and the keys stay in a column the eye can scan. */
+.meta-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 2fr;
+  gap: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-bottom: var(--hairline);
+  align-items: baseline;
+}
+
+/* A field inside a row rather than a row of its own. Indented, and without a
+   rule of its own, so the nesting is visible in the type and not in the rules. */
+.meta-row--child {
+  grid-column: 2;
+  padding: var(--sp-1) 0;
+  border-bottom: none;
+}
+
+.meta-empty {
+  color: var(--dim);
+  font-size: var(--fs-sm);
+}
+
+/* The raw-data toggle and its hint sit above the search box, because both act on
+   the tables rather than on the page. The hint is not a label: the button's own
+   text is the control, and the hint explains what changes when it is pressed. */
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+.tool-btn {
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--dim);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.tool-btn:hover,
+.tool-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--dim);
+}
+
+/* aria-pressed is the state; the class only makes it visible. A button that
+   relies on colour alone tells a sighted user something it does not tell
+   anyone else, and this one decides whether every table shows raw text. */
+.tool-btn[aria-pressed="true"] {
+  color: var(--text);
+  border-color: var(--dim);
+  background: var(--lift);
+}
+
+.tool-hint {
+  color: var(--dim);
+  font-size: var(--fs-xs);
+}
+
+/* Raw text under a value. The body is already monospaced (noir.css:272), so
+   the distinction here is size and colour rather than family: it is the file's
+   own bytes, not an emphasis of the value above it, and the two must not read
+   as one column. */
+.kv-raw {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+/* §5.7's sensitive values. The mark is a word as well as a colour, so the
+   distinction survives being read aloud or printed in greyscale. */
+.kv-val.is-sensitive {
+  border-left: 2px solid var(--amber);
+  padding-left: var(--sp-2);
+}
+
+.kv-sensitive-flag {
+  margin-left: var(--sp-2);
+  color: var(--amber);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+}
+
+/* The per-value copy button. Hidden until the row is hovered or focused, so a
+   table of forty rows is not forty buttons — but never `display: none`, which
+   would take it out of the tab order for a keyboard user who cannot hover. */
+.kv-copy {
+  margin-left: var(--sp-2);
+  padding: 0 var(--sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--dim);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.meta-row:hover .kv-copy,
+.kv-copy:focus-visible {
+  opacity: 1;
+}
+
+.kv-copy:hover,
+.kv-copy:focus-visible {
+  color: var(--text);
+  border-color: var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kv-copy,
+  .tool-btn {
+    transition: none;
+  }
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+.search-label {
+  color: var(--dim);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-wide);
+  white-space: nowrap;
+}
+
+.status-line {
+  margin: var(--sp-3) 0 0;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+
 /* ── STATUS COLOUR ──
    .is-error / .is-pass are the names new code should use; the old spellings
    stay as members because .err and .is-fail are load-bearing across three
