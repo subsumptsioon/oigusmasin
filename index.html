@@ -147,12 +147,10 @@
       });
 
       const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
-      // Single-pass escape (one regex scan instead of three sequential replaces)
       function escHtml(s) {
         return s.replace(/[&<>]/g, (c) => ESC_MAP[c]);
       }
 
-      // Improvement #1 — clean highlight builder (array push + join)
       function buildHighlightHtml(text, matches) {
         if (!matches.length) return escHtml(text);
 
@@ -186,12 +184,6 @@
       function toggleExclude(idx) {
         if (excluded.has(idx)) excluded.delete(idx);
         else excluded.add(idx);
-        /* A toggle changes the sum, the count, ONE row and ONE mark. Rebuilding
-         * the whole list to do that cost ~120ms on a 2000-match document, and a
-         * single click is not a rare event — it is how you drop a term from a
-         * total. renderResults() stays for the full rebuild that a text edit
-         * needs; this is the cheap path, and it falls back to that render if the
-         * cached nodes are not there to patch. */
         if (!patchExclusion(idx)) renderResults();
       }
 
@@ -202,7 +194,6 @@
       const resetBtn = document.getElementById("reset-btn");
       const copySumBtn = document.getElementById("copy-sum");
       const copyListBtn = document.getElementById("copy-list");
-      // Delegated click — one listener for all <li data-idx> (not one per <li>)
       valList.addEventListener("click", (e) => {
         const li = e.target.closest("li[data-idx]");
         if (li) toggleExclude(Number(li.dataset.idx));
@@ -213,7 +204,6 @@
 
       function update() {
         const text = inputEl.value;
-        // Index previous exclusions by raw text -> [original index, ...]
         const prevByRaw = new Map();
         for (const i of excluded) {
           const p = lastFound[i];
@@ -227,22 +217,15 @@
         lastFound.forEach((m, i) => {
           const idxs = prevByRaw.get(m.raw);
           if (!idxs) return;
-          // a previously-excluded match at a small position shift re-excludes this one
           if (idxs.some((pIdx) => Math.abs(pIdx - m.index) <= 10)) excluded.add(i);
         });
         renderResults();
       }
 
-      /* Rows and marks are kept between renders so a toggle can mutate them in
-         place instead of re-creating the list. Rebuilt only when the text or the
-         match set changes, never when only the exclusion set does. */
       let rowEls = [];
       let markEls = [];
       let renderedFor = null;
 
-      /* Patch everything a single exclusion toggle affects. Returns false if the
-         cached DOM is stale (text edited since), in which case the caller does a
-         full render. */
       function patchExclusion(idx) {
         if (renderedFor === null || !rowEls[idx] || !markEls[idx]) return false;
 
@@ -283,8 +266,6 @@
         highlightEl.innerHTML = buildHighlightHtml(text, lastFound);
         highlightEl.scrollTop = inputEl.scrollTop;
 
-        /* Cache the nodes the cheap path mutates. Marks are fetched after the
-           innerHTML write, so they exist by now. */
         renderedFor = text;
         markEls = [...highlightEl.querySelectorAll("mark[data-idx]")];
 
@@ -332,7 +313,6 @@
         }
       }
 
-      // Improvement #2 — debounced input
       let updateTimer = null;
       inputEl.addEventListener("input", () => {
         clearTimeout(updateTimer);
@@ -356,8 +336,6 @@
         copyButton(copyListBtn, text);
       });
 
-      // ── Reset exclusions ────────────────────────────────────────────────────────
-      // Clears every row at once, so this is a full render, not the cheap path.
       document.getElementById("reset-btn").addEventListener("click", () => {
         excluded.clear();
         renderResults();
