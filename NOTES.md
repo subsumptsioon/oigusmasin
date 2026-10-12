@@ -17,6 +17,25 @@ Hosted from the repo root. Estonian-language legal calculators.
   `release` holds no `.github/`, so a push to it fires no workflow. The
   no-comment gate therefore runs from `dev` CI against a checkout of `release`.
 
+### Parked: PR #291, the metadata analyser
+`feat/metadata-analyser` → `dev`, open since 2026-10-11, 6 commits, +12.4k.
+A browser-only PDF and JPEG metadata analyser: `formats/pdf/*`, `formats/images/`,
+`lib/` (vendored pdf.js and exifr), `metaandmed.html` + `metaandmed.js`, a test
+corpus in `test-pdfs/`, and four new tools (`check-language`, `check-syntax`,
+`extensibility-proof`, `make-corpus`). Kept open deliberately, not forgotten.
+
+Two things to know before reviving it, both consequences of the branch split:
+- It was written against `main` and touches `nav.js`, `noir.css`, `index.html`,
+  `tools/cdp.mjs`, `tools/check-assets.mjs`, `package.json` and
+  `.github/workflows/test.yml` — all of which have moved since. Expect a rebase,
+  and note that its `test.yml` will be the pre-`dev` version.
+- **The shipping manifest has to learn about it.** `PAGES` in
+  `tools/strip-comments.mjs` lists the five public pages; without
+  `metaandmed.html` there, `release` will not carry it and Pages will 404 while
+  the sidebar link in `nav.js` still points at it. Decide then whether `lib/`
+  and `test-pdfs/` ship — `test-pdfs/` is a test corpus and almost certainly
+  should not.
+
 ## Layout
 - `index.html` — **Rehkendaja**: finds & sums amounts in pasted text (modes: € / g / all numbers).
 - `karistuste-liitmine.html` — combining sentences (karistuste liitmine).
