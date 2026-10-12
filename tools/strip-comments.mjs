@@ -65,6 +65,17 @@ function dropComment(out, src, start, end) {
   const nl = src.indexOf("\n", end);
   const afterBlank = src.slice(end, nl === -1 ? src.length : nl).trim() === "";
 
+  if (!beforeBlank && afterBlank) {
+    // Code, then a comment running to the end of the line. A newline cannot
+    // merge two tokens, so no space is needed — and the space that separated
+    // the code from the comment goes too, which keeps the release diff free of
+    // whitespace-only edits.
+    return {
+      out: out.replace(/[ \t]+$/, "") + (nl === -1 ? "" : "\n"),
+      next: nl === -1 ? src.length : nl + 1,
+    };
+  }
+
   if (!beforeBlank || !afterBlank) {
     return { out: out + " ", next: end };
   }
