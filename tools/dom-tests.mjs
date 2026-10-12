@@ -13,7 +13,8 @@
  * Usage:  node tools/dom-tests.mjs [--verbose]
  * Exit:   0 all pass, 1 any fail, 2 harness error.
  */
-import { launch } from "./cdp.mjs";
+import { launch, setRoot } from "./cdp.mjs";
+import { resolveRoot } from "./root.mjs";
 
 const VERBOSE = process.argv.includes("--verbose") || process.argv.includes("-v");
 
@@ -98,6 +99,7 @@ const CHECKS = [
 const eq = (a, b) => J(a) === J(b);
 
 async function main() {
+  setRoot(resolveRoot());
   const env = await launch();
   let exit = 0;
   try {

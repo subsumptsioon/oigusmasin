@@ -38,3 +38,27 @@ jobs:
 
       - name: CSS convention lint
         run: node tools/check-css.mjs
+
+  release-comments:
+    runs-on: ubuntu-latest
+    steps:
+      # `release` carries site files only, so it has no workflow file of its own
+      # and a push to it would fire nothing. The gate therefore runs from `dev`
+      # against a checkout of the release branch.
+      - name: Checkout dev
+        uses: actions/checkout@v4
+
+      - name: Checkout release
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: release
+          path: release
+
+      - name: Release branch carries no comments
+        run: |
+          if [ ! -d release ]; then
+            echo "release branch does not exist yet — nothing to check."
+            exit 0
+          fi
+          node tools/strip-comments.mjs --check --root release

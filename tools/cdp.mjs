@@ -27,7 +27,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const ROOT = path.resolve(__dirname, "..");
+export let ROOT = path.resolve(__dirname, "..");
+
+/** Repoint every page scan and the static server at a generated tree. Call it
+ *  before launch() — the server closes over ROOT when it starts. */
+export function setRoot(dir) {
+  ROOT = path.resolve(dir);
+}
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

@@ -8,12 +8,15 @@
   },
   "scripts": {
     "test": "node tools/run-rehkendaja-tests.mjs",
+    "test:strip": "node tools/js-strip.test.mjs",
     "check": "node tools/check-assets.mjs",
+    "check:comments": "node tools/strip-comments.mjs --check",
     "contrast": "node tools/contrast-audit.mjs",
-    "verify": "npm test && npm run check && npm run contrast && npm run css",
+    "verify": "npm test && npm run check && npm run contrast && npm run css && npm run test:strip",
     "dom": "node tools/dom-tests.mjs",
     "smoke": "node tools/smoke-test.mjs",
     "css": "node tools/check-css.mjs",
-    "snapshot": "node tools/css-snapshot.mjs"
+    "snapshot": "node tools/css-snapshot.mjs",
+    "release": "node tools/release.mjs"
   }
 }
