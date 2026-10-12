@@ -175,10 +175,6 @@ export function stripFile(rel, content) {
   return content;
 }
 
-function read(root, rel) {
-  return fs.readFileSync(path.join(root, rel), "utf8");
-}
-
 /** Only these get read as text and rewritten. Everything else — fonts, JSON,
  *  licence files — is copied as bytes, because decoding a .woff2 through UTF-8
  *  replaces every invalid sequence and silently destroys it. */
@@ -188,9 +184,13 @@ export function isStrippable(rel) {
 
 export function check(root) {
   const violations = [];
-  for (const rel of verifyFiles(root)) {
+  // Shipped files must be there. Verify-only files — the test page — are
+  // checked when present but never required: they are stripped and gated during
+  // the build, and the release branch deliberately does not carry them.
+  for (const rel of [...shippedFiles(root), ...VERIFY_ONLY]) {
     const full = path.join(root, rel);
     if (!fs.existsSync(full)) {
+      if (VERIFY_ONLY.includes(rel)) continue;
       violations.push({ rel, reason: "missing from the release tree" });
       continue;
     }
