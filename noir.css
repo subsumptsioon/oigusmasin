@@ -1,25 +1,3 @@
-/* ============================================================
-   noir.css — design system
-
-   Breakpoints are a documented convention rather than a token: plain CSS
-   cannot read a custom property inside a media query without a build
-   step. tools/check-css.mjs enforces both.
-     800px  sidebar collapses into a drawer
-     860px  container width at which the tool layout drops to one column
-            (@container, keyed to content width because the sidebar eats 260px)
-   ============================================================ */
-
-/* ── WEBFONT ──
-   "JetBrainsMono Nerd Font" is a patched build (nerd-fonts) and is on no
-   font CDN, so the two weights used are self-hosted in fonts/. The family
-   name here matches the first entry of --mono, so the stack resolves the
-   same whether or not the visitor has it installed.
-
-   local() is listed first on purpose: a visitor who already has the font
-   downloads nothing, and everyone else falls through to the woff2 below.
-
-   unicode-range mirrors the subset (fonts/README.md). It also makes
-   per-character fallback correct — U+2011 has no glyph upstream. */
 @font-face {
   font-family: "JetBrainsMono Nerd Font";
   font-style: normal;
@@ -47,33 +25,27 @@
     U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+2700-27BF, U+F000-F0FF;
 }
 
-/* ── TOKENS ── */
 :root {
-  /* Native controls and scrollbars render dark everywhere. */
   color-scheme: dark;
 
-  /* ── Palette ── */
-  --void: #000c17; /* page backdrop */
-  --deep: #001123; /* sidebar / topbar */
-  --surface: #00172e; /* cards / panels */
-  --lift: #021f37; /* derived raised surface (hover) */
-  --border: #57898a; /* WCAG 1.4.11 non-text: >=3:1 on all bgs */
-  --line: #0e2c47; /* derived hairline */
-  --amber: #faa968; /* accent */
-  --red: #f85525; /* error */
-  --text: #f6dcac; /* body text */
-  --muted: #8cbfb8; /* secondary text */
-  --dim: #65a5a1; /* labels, de-emphasised text */
+  --void: #000c17;  
+  --deep: #001123;  
+  --surface: #00172e;  
+  --lift: #021f37;  
+  --border: #57898a;  
+  --line: #0e2c47;  
+  --amber: #faa968;  
+  --red: #f85525;  
+  --text: #f6dcac;  
+  --muted: #8cbfb8;  
+  --dim: #65a5a1;  
 
-  /* Narkonimekirjad list I–VI accents */
   --l2: #ed9563;
   --l3: #faa968;
   --l4: #e97b3c;
   --l5: #8cbfb8;
   --l6: #a3ccc6;
 
-  /* Literal rgba() rather than color-mix(): tools/contrast-audit.mjs cannot
-     follow a nested var(), so these must stay statically resolvable. */
   --amber-15: rgba(250, 169, 104, 0.15);
   --amber-22: rgba(250, 169, 104, 0.22);
   --amber-28: rgba(250, 169, 104, 0.28);
@@ -83,52 +55,30 @@
   --muted-25: rgba(140, 191, 184, 0.25);
   --scrim: rgba(0, 0, 0, 0.65);
 
-  /* Amber bloom — focused inputs and the hero value. */
   --ring: 0 0 0 2px var(--amber-15);
   --glow: 0 0 24px var(--amber-22);
   --glow-hero: 0 0 18px var(--amber-35);
 
-  /* The 1px divider, which every panel, row and chrome bar is split by. Named
-     so "how thick is a divider" is one decision rather than 29 literals, and so
-     the print palette can change it in one place: `@media print` re-points
-     `--border`, and `--hairline` follows it automatically. A rule that spelled
-     the thickness out would still follow `--border`, so this is about the
-     intent being nameable, not about the override working. */
   --hairline: 1px solid var(--border);
 
-  /* The control line-height, which is NOT free: .field's block-size below is a
-     calc that hardcodes it as `1.4em`. The two must agree or the padding maths
-     is wrong by a fraction of the font size — a change that looks like nothing
-     at all. One token makes the coupling a single edit instead of two that have
-     to be found by hand. */
   --lh-control: 1.4;
 
-  /* The focus ring, in outline terms. `--ring` below is the same intent as a
-     box-shadow; these two are the outline form, used by the universal
-     :focus-visible rule and by .input-wrap, whose inner control sets
-     `outline: none`. Three sites, one ring — and the print palette zeroes the
-     glows, so naming it is also how print could drop the ring in one place. */
   --focus-outline: 2px solid var(--amber);
   --focus-offset: 2px;
 
-  /* ── Type scale ── */
   --fs-xs: 12px;
   --fs-sm: 13px;
-  --fs-md: 14px; /* body default */
+  --fs-md: 14px;  
   --fs-lg: 16px;
   --fs-xl: 20px;
   --fs-2xl: 24px;
   --fs-3xl: 28px;
   --fs-hero: 32px;
 
-  /* ── Tracking scale ──
-     The uppercase mono label is --track-caps everywhere; it used to be one
-     of five values depending on the page. */
   --track-tight: -0.02em;
   --track-wide: 0.04em;
   --track-caps: 0.18em;
 
-  /* ── Spacing scale ── */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -139,55 +89,33 @@
   --sp-8: 40px;
   --sp-9: 48px;
 
-  /* ── Spacing roles ──
-     The scale above is what exists; these are what a situation wants. Pick
-     the role that matches the relationship rather than reaching for a
-     number, so two controls of the same kind end up the same size. */
-  --gap: var(--sp-3); /* label↔control, sibling controls, list items */
-  --gap-tight: var(--sp-2); /* inside one control, or one short group */
-  --gap-wide: var(--sp-6); /* between blocks: cards, sections, grids */
+  --gap: var(--sp-3);  
+  --gap-tight: var(--sp-2);  
+  --gap-wide: var(--sp-6);  
 
-/* Padding roles, the same way gaps are. Four interiors, chosen by what the
-     box is. A control that holds something, a full-width row, a card body,
-     the page. */
---pad: var(--sp-2) var(--sp-3); /* control interior */
---pad-row: var(--sp-2) var(--sp-5); /* full-width row: nav item, stat pill */
---pad-block: var(--sp-4) var(--sp-5); /* card, panel or list body */
---pad-page: var(--sp-8) var(--sp-9); /* main */
+--pad: var(--sp-2) var(--sp-3);  
+--pad-row: var(--sp-2) var(--sp-5);  
+--pad-block: var(--sp-4) var(--sp-5);  
+--pad-page: var(--sp-8) var(--sp-9);  
 
-  /* ── Timing ──
-     Feedback — a colour or border answering a hover — is quick; movement
-     is slower, because it covers distance rather than acknowledging. */
   --dur: 0.12s;
   --dur-move: 0.2s;
 
-  /* ── Shape ──
-     Sharp corners throughout. A token only so no rule hardcodes a radius. */
   --radius: 0;
 
-  /* ── Stacking order ──
-     App chrome lives in the hundreds; in-control overlays stay low so they
-     can never punch through the drawer. */
-  --z-overlay: 2; /* overlay inside a control (the input itself) */
-  --z-overlay-top: 3; /* overlay above another overlay (suffix, clear btn) */
-  --z-sticky: 100; /* topbar */
-  --z-scrim: 190; /* mobile sidebar backdrop */
-  --z-drawer: 200; /* mobile sidebar */
+  --z-overlay: 2;  
+  --z-overlay-top: 3;  
+  --z-sticky: 100;  
+  --z-scrim: 190;  
+  --z-drawer: 200;  
 
-  /* ── Typeface ──
-     The @font-face block at the top serves it to anyone who lacks it. Ships
-     Regular/Bold only, so 500 and 800 snap to a real weight rather than
-     being synthesised. The only family in the system: body sets it and no
-     rule opts out. */
   --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", ui-monospace,
     monospace;
 
-  /* ── Layout ── */
   --sidebar-w: 260px;
-  --measure: 600px; /* search field max-width */
+  --measure: 600px;  
 }
 
-/* ── RESET ── */
 *,
 *::before,
 *::after {
@@ -196,27 +124,10 @@
   padding: 0;
 }
 
-/* ── UTILITIES ──
-   The one state class JS toggles for show/hide.
-
-   `display` is not overridable by a utility class, so anything that must
-   stay visible while hidden needs a plain `visibility`/`.hidden` pairing.
-   Nothing here does, which is why the two component rules below are kept:
-   they document intent at the point of use and are more specific. */
 .hidden {
   display: none;
 }
 
-/* ── BUTTON ──
-   The button. Every action on the site is this one class: same size, same
-   fill, same padding, same voice. A variant exists only where something
-   genuinely differs.
-
-   Variants:
-     .btn--icon   square, glyph only, no label
-     .is-on       a toggle's current state — amber, inverse text
-
-   State classes JS toggles: `is-on` and `.hidden`. Nothing else. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -241,13 +152,11 @@
   background: var(--lift);
   border-color: var(--amber);
 }
-/* A toggle showing which option is selected. */
 .btn.is-on {
   background: var(--amber);
   border-color: var(--amber);
   color: var(--void);
 }
-/* Square, for a glyph with no label beside it. */
 .btn--icon {
   width: 34px;
   height: 34px;
@@ -255,17 +164,12 @@
   font-size: var(--fs-lg);
 }
 
-/* Unit switcher — the buttons carry their own borders, so this is just a row
-   of them rather than a bordered well with dividers inside. */
 .unit-switcher {
   display: flex;
   gap: var(--gap-tight);
   flex-shrink: 0;
 }
 
-/* ── BASE ── */
-/* The mono stack is the body default and no rule opts out to a proportional
-   face — there is no second stack to opt into. */
 body {
   background: var(--void);
   color: var(--text);
@@ -275,40 +179,19 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* Subpixel antialiasing smears on dark navy; greyscale stays crisp. */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Form controls are the one thing that does NOT pick the family up from body:
-   the UA stylesheet hard-resets font-family on button/input/select/textarea,
-   so every control fell back to the platform UI font while the text around it
-   rendered in the Nerd Font.
-
-   Only the family is restored. `font: inherit` would also drag each control's
-   font-size back to body's, clobbering the per-component type scale that
-   .field--* and the button rules set on purpose.
-
-   :where() keeps specificity at 0 so a component rule can still opt a control
-   into something else later. */
 :where(button, input, select, textarea) {
   font-family: inherit;
 }
 
-/* Text selection — amber background, navy text. */
 ::selection {
   background: var(--amber);
   color: var(--void);
 }
 
-/* ══════════════════════════════════════════════
-   LAYOUT
-   ══════════════════════════════════════════════ */
-
-/* ── LABEL ──
-   The uppercase mono micro-label, defined once. :where() keeps specificity
-   at 0 so each component below can still override, and each now carries only
-   its own chrome. */
 :where(.panel-header, .result-label, .field-label, .duration-sublabel,
   .no-results, .or-separator, .idle-state,
   .substances-table thead th) {
@@ -318,14 +201,6 @@ body {
   color: var(--dim);
 }
 
-/* The second label family: small, tracked `wide` rather than `caps`, and NOT
-   uppercased — a running note, a count, a unit. Twelve selectors repeated this
-   triple; only the colour and (for two of them) the size ever differed. Grouping
-   them is what makes the family a decision rather than a coincidence: a
-   thirteenth small-tracked note inherits it by being named here.
-
-   `.result-unit` is in the list but overrides the size to --fs-md — it sits
-   beside a large figure and has to match it. */
 :where(.title-block .subtitle, .pill-label, .panel-note, .result-legal-label,
   .result-min-note, .count-badge, footer, .elements-list .is-blank,
   .result-unit, .input-hint) {
@@ -339,7 +214,6 @@ body {
   min-height: 0;
 }
 
-/* ── SIDEBAR ── */
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
@@ -365,7 +239,6 @@ body {
   border-radius: var(--radius);
 }
 
-/* Sidebar logo / brand block */
 .sidebar-brand {
   display: flex;
   align-items: center;
@@ -375,7 +248,6 @@ body {
   text-decoration: none;
   flex-shrink: 0;
 }
-/* Hover on a control with no fill of its own just brightens its label. */
 .sidebar-brand:hover .brand-name {
   color: var(--text);
 }
@@ -397,19 +269,11 @@ body {
   transition: color var(--dur);
 }
 
-/* ── FOCUS (WCAG 2.4.7 / 2.4.11) ────────────────────────────────────────────
-   One base ring for every focusable element, so a newly added button cannot
-   silently lose its focus ring. :where() keeps specificity at 0 so components
-   can still override.
-
-   It deliberately does not fire for tabindex="-1" affordances (the inline
-   clear buttons), which are intentionally not keyboard-reachable. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: var(--focus-outline);
   outline-offset: var(--focus-offset);
 }
 
-/* Nav item */
 .nav-item {
   display: flex;
   align-items: baseline;
@@ -429,7 +293,6 @@ body {
   color: var(--text);
 }
 .nav-item.active {
-  /* Status chip: accent background, inverse text. */
   color: var(--void);
   background: var(--amber);
 }
@@ -449,7 +312,6 @@ body {
   color: var(--amber);
 }
 
-/* Sidebar footer */
 .sidebar-foot {
   margin-top: auto;
   padding: var(--sp-4) var(--sp-4);
@@ -463,8 +325,6 @@ body {
   align-items: center;
 }
 
-/* ── PAGE CONTENT ── */
-/* Establishes the query container for .tool-wrap below. */
 .page-content {
   flex: 1;
   min-width: 0;
@@ -474,7 +334,6 @@ body {
   container-name: page;
 }
 
-/* ── TOPBAR (sticky, inside .page-content) ── */
 .topbar {
   background: var(--deep);
   border-bottom: var(--hairline);
@@ -483,12 +342,6 @@ body {
   z-index: var(--z-sticky);
 }
 
-/* Chrome bar — a horizontally scrollable strip on narrow screens. The
-   scrollbar is hidden (it would break the sharp-corner look), so a
-   right-edge fade stands in as the "there is more" cue. The gradient is on a
-   pseudo-element pinned to the strip rather than as a background on
-   .header-chrome, because a background on a scroll container scrolls with the
-   content instead of staying put. */
 .header-chrome {
   display: flex;
   align-items: center;
@@ -511,7 +364,6 @@ body {
   pointer-events: none;
 }
 
-/* Header main row */
 .header-main {
   display: flex;
   align-items: center;
@@ -520,8 +372,6 @@ body {
   border-bottom: var(--hairline);
 }
 
-/* The drawer toggle only exists on a narrow screen; its button styling comes
-   from .btn .btn--icon in the markup. All this adds is when it is shown. */
 #sidebar-toggle {
   display: none;
 }
@@ -549,7 +399,6 @@ body {
   font-weight: 400;
 }
 
-/* ── STATS BAND ── */
 .stats-band {
   display: flex;
   align-items: stretch;
@@ -573,12 +422,10 @@ body {
   text-decoration: none;
   color: inherit;
 }
-/* Pill and the table row above it: list affordances on one surface. */
 .stat-pill:hover,
 .substances-table tbody tr:hover {
   background: var(--surface);
 }
-/* Last item in a run drops its trailing divider. */
 .stat-pill:last-child {
   border-right: none;
 }
@@ -599,7 +446,6 @@ body {
   color: var(--text);
 }
 
-/* ── SEARCH ── */
 .search-zone {
   padding: var(--sp-4) var(--sp-9);
   display: flex;
@@ -619,9 +465,6 @@ body {
     border-color var(--dur),
     box-shadow var(--dur);
 }
-/* The search input sets outline:none, so its wrapper owns the ring — the same
-   declaration pair as .field:focus, which carries it for pointer users too.
-   (.input-wrap looks similar but rings with outline — different treatment.) */
 .search-inner:focus-within,
 .field:focus {
   border-color: var(--amber);
@@ -658,13 +501,11 @@ body {
   caret-color: var(--amber);
   min-width: 0;
 }
-/* Dim placeholder, on both text entry surfaces. */
 #search::placeholder,
 #input-text::placeholder {
   color: var(--dim);
 }
 
-/* Only shown when there is a query to clear. */
 .search-clear {
   display: none;
 }
@@ -682,20 +523,15 @@ body {
   flex-shrink: 0;
 }
 
-/* ── MAIN ── */
 main {
   flex: 1;
   padding: var(--sp-8) var(--sp-9);
   width: 100%;
 }
-/* The test harness reads as one long column rather than a full-width page. It
-   cannot be a modifier — `main` is the page shell, with no component to hang a
-   `--` variant off — so the page marks itself on <body> instead. */
 .test-harness main {
   max-width: 860px;
 }
 
-/* ── LIST SECTIONS ── */
 .list-section {
   margin-bottom: var(--sp-7);
   border: var(--hairline);
@@ -719,7 +555,6 @@ main {
   }
 }
 
-/* Small entrance for page-tool result cards (distinct from .list-section's appear above) */
 @keyframes appear-sm {
   from {
     opacity: 0;
@@ -731,13 +566,6 @@ main {
   }
 }
 
-/* ── SHARED PAGE-TOOL COMPONENTS ── */
-
-/* Two-column tool layout.
-   This is a *container* query, not a viewport one: the sidebar eats 260px, so
-   a 900px viewport only leaves ~640px of content — two cramped columns. The
-   flip is keyed to the space the tool actually has, which also means it
-   behaves correctly if the sidebar is ever collapsible. */
 .tool-wrap {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -750,7 +578,6 @@ main {
   }
 }
 
-/* Card panel (input pane, results pane) */
 .panel {
   border: var(--hairline);
   background: var(--surface);
@@ -758,14 +585,12 @@ main {
   flex-direction: column;
 }
 
-/* Panel title bar — shared 7-property label rule */
 .panel-header {
   padding: var(--sp-3) var(--sp-5);
   border-bottom: var(--hairline);
   background: var(--deep);
 }
 
-/* A header bar with content on one side and a control on the other. */
 .header-row {
   display: flex;
   align-items: center;
@@ -773,14 +598,11 @@ main {
   gap: var(--gap);
 }
 
-/* A row of controls sitting at one end of a bar. */
 .control-row {
   display: flex;
   align-items: center;
   gap: var(--gap);
 }
-
-/* ── Panel note ── */
 
 .panel-note {
   padding: var(--sp-3) var(--sp-5);
@@ -790,18 +612,15 @@ main {
   background: var(--deep);
 }
 
-/* Panel body base padding (page may layer flex/gap on top) */
 .panel-body {
   padding: var(--sp-5);
 }
-/* Panel body that stacks its children as a column instead of flowing them. */
 .panel-body--stack {
   display: flex;
   flex-direction: column;
   gap: var(--gap-wide);
 }
 
-/* Result card — base chrome; add .animate for the entrance fade */
 .result-block {
   border: var(--hairline);
   background: var(--surface);
@@ -810,13 +629,11 @@ main {
 .result-block.animate {
   animation: appear-sm 0.2s ease both;
 }
-/* Spans both columns of a .tool-wrap, for a result that is not one of a pair. */
 .result-block--full {
   grid-column: 1 / -1;
 }
 
 
-/* Result card header row (default). Enneht overrides to a stacked column. */
 .result-header {
   display: flex;
   align-items: center;
@@ -826,14 +643,12 @@ main {
   background: var(--deep);
   border-bottom: var(--hairline);
 }
-/* Stacked variant (label above value) — use with a .header-row row. */
 .result-header--stack {
   flex-direction: column;
   align-items: stretch;
   gap: var(--gap-tight);
 }
 
-/* Vertical stack of result cards */
 .results-panel {
   display: flex;
   flex-direction: column;
@@ -844,26 +659,20 @@ main {
   margin-bottom: var(--sp-2);
 }
 
-/* Result body base; direction/alignment live on the page */
 .result-body {
   display: flex;
   padding: var(--pad-block);
 }
-/* Stacked variant (label above value) */
 .result-body--stack {
   flex-direction: column;
   gap: var(--gap-tight);
 }
-/* Inline variant (value and unit side by side) */
 .result-body--inline {
   align-items: baseline;
   gap: var(--gap-tight);
   flex-wrap: wrap;
 }
 
-/* ── RESULT FIGURE ──
-   The prominent value inside a result card, as one component with a size
-   modifier. */
 .result-figure {
   font-size: var(--fs-hero);
   font-weight: 700;
@@ -878,14 +687,12 @@ main {
   color: var(--border);
 }
 
-/* Duration inputs: 3-column row grid + stacked field columns */
 .duration-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--gap);
 }
 
-/* A column stacking a label above its control. */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -908,13 +715,6 @@ main {
   margin-top: 1px;
 }
 
-/* ── FIELD ──
-   The canonical text input.
-
-   Pages must not re-declare `border` or `outline` on a field. A page <style>
-   block is parsed after noir.css, so any shorthand there silently outranks
-   noir.css's own focus rule — which is how every input on the site ended up
-   with no focus border. Pages style through the .field--* modifiers below. */
 .field {
   appearance: none;
   -moz-appearance: textfield;
@@ -926,11 +726,6 @@ main {
   caret-color: var(--amber);
   font-size: var(--fs-lg);
   line-height: var(--lh-control);
-  /* An explicit block-size, so every field is the same height whatever its
-     type. Left to itself a type="date" input is 2px taller than a text one:
-     Chrome gives the date editor a 24px intrinsic content box that ignores the
-     line-height. The em term is this element's own line-height, so the total
-     still scales with font-size — hence the token rather than a literal. */
   block-size: calc(var(--lh-control) * 1em + 2 * var(--sp-3) + 2px);
   transition:
     border-color var(--dur),
@@ -951,7 +746,6 @@ main {
   border-color: var(--red);
 }
 
-/* Date picker icon needs inverting against the dark surface. */
 .field[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.5);
   cursor: pointer;
@@ -959,22 +753,12 @@ main {
   margin: 0;
 }
 
-/* Hide browser number-input spinners */
 .field[type="number"]::-webkit-inner-spin-button,
 .field[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Every field on the site is a plain .field: one background, one size, one
-   padding. Two modifiers remain, and both are layout rather than a different
-   size of the same thing:
-
-     .field--code   room on the right for .code-suffix
-     .field--cal    a date field's calendar affordance, sized to sit beside
-                    a plain .field rather than to differ from it */
-/* No size of its own — a plain .field. The padding above is the whole reason
-   this modifier exists. */
 .field--code {
   padding: var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-3);
   position: relative;
@@ -989,7 +773,6 @@ main {
   filter: invert(0.55) sepia(1) saturate(3) hue-rotate(5deg) brightness(1.1);
 }
 
-/* Collapse toggle. A real <button>, hence the UA reset below. */
 .list-header {
   display: flex;
   align-items: center;
@@ -1019,8 +802,6 @@ main {
   min-width: 0;
 }
 
-/* Narkonimekirjad list I–VI accents, kept in the stylesheet (via a data
-   attribute) so a re-theme can reach them. */
 [data-list="1"] { --list-accent: var(--red); }
 [data-list="2"] { --list-accent: var(--l2); }
 [data-list="3"] { --list-accent: var(--l3); }
@@ -1083,12 +864,10 @@ main {
 .list-section.collapsed .list-body {
   display: none;
 }
-/* The last list has no following sibling, so it drops its bottom margin. */
 .list-section--last {
   margin-bottom: 0;
 }
 
-/* ── TABLE ── */
 .substances-table {
   width: 100%;
   border-collapse: collapse;
@@ -1113,7 +892,6 @@ main {
   border-bottom: var(--hairline);
   transition: background var(--dur);
 }
-/* A last row has nothing below it to divide from, so it drops the rule. */
 .substances-table tbody tr:last-child,
 .elements-list li:last-child,
 .test:last-child {
@@ -1160,24 +938,20 @@ mark {
 .no-results:not(.visible) {
   display: none;
 }
-/* The reveal state: `display: none` until the script finds something to show. */
 .no-results.visible,
 .sidebar-overlay.visible {
   display: block;
 }
 
-/* ── VI WRAPPER ── */
 .list-vi-wrap {
   margin-bottom: var(--sp-6);
 }
 
-/* Shown in place of the lists when data.json is missing or unparseable. */
 .load-error-hint {
   margin-top: var(--sp-2);
   font-size: var(--fs-xs);
   color: var(--muted);
 }
-/* The riigiteataja source link in the footer. */
 .source-link {
   color: var(--amber);
   text-decoration: none;
@@ -1187,7 +961,6 @@ mark {
 }
 
 
-/* ── FOOTER ── */
 footer {
   padding: 0 var(--sp-7);
   border-top: var(--hairline);
@@ -1200,7 +973,6 @@ footer {
   min-height: 52px;
 }
 
-/* ── LOADING ── */
 #loading {
   padding: var(--sp-9);
   text-align: center;
@@ -1209,7 +981,6 @@ footer {
   font-size: var(--fs-md);
 }
 
-/* Mobile overlay */
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -1219,46 +990,16 @@ footer {
   cursor: pointer;
 }
 
-/* ── SINGLE-PAGE COMPONENTS ───────────────────────────────────────────────
-   Rules only one page uses. They used to live in a <style> block in that
-   page, which worked only because the block is parsed after this file — the
-   override won on order, with nothing in the rule saying so.
-
-   They live here now, grouped by what the rule *is*, not by which page owns
-   it. Page grouping answers "which file do I open" and nothing else; two
-   pages each had a near-identical .result-* and .field layout rule, and
-   sitting under different headings is what let them drift.
-
-   So: if a rule describes a kind of thing, it goes with the other rules of
-   that kind. If it would be useful on a second page, promote it above into a
-   named component, and vary a shared component with a `--modifier` — never
-   by re-declaring its selector from down here.
-
-   A modifier earns its place by differing from its base. One that sets the
-   same value is a dead knob: it reads as an option nobody took. Either give
-   it a distinct value or delete it and its uses. */
-
-
-/* ── Highlight overlay ──
-   The Rehkendaja textarea is a transparent <textarea> laid exactly over a
-   <div> holding the same text with the <mark> spans in it, so the browser
-   draws the highlighting and the caret stays real. The two must agree on
-   every box metric, which is why padding and line-height are repeated on
-   both. */
 .input-wrap {
   position: relative;
   pointer-events: auto;
 }
-/* A11y (WCAG 2.4.7 / 2.4.11): the textarea inside is borderless and sets
-   outline:none, so the wrapper owns the focus ring. 2px to match the
-   universal ring. */
 .input-wrap:focus-within {
   outline: var(--focus-outline);
   outline-offset: var(--focus-offset);
   border-radius: var(--radius);
 }
 
-/* The mirror div — drives height; textarea overlaid on top */
 .input-highlight {
   display: block;
   width: 100%;
@@ -1287,7 +1028,6 @@ footer {
   outline: 1px solid var(--muted-25);
   text-decoration: line-through;
 }
-/* Only shown once there is an exclusion to undo. */
 .reset-btn {
   display: none;
 }
@@ -1318,18 +1058,15 @@ footer {
 }
 
 
-/* Sum value — larger */
 .sum-value {
   font-size: var(--fs-hero);
   font-weight: 700;
   color: var(--amber);
   letter-spacing: var(--track-tight);
   padding: var(--sp-5) var(--sp-5);
-  /* Amber bloom on the hero number. */
   text-shadow: var(--glow-hero);
 }
 
-/* Count */
 .count-value {
   font-size: var(--fs-2xl);
   font-weight: 700;
@@ -1337,7 +1074,6 @@ footer {
   padding: var(--pad-block);
 }
 
-/* Ordered list of elements */
 .elements-list {
   padding: var(--sp-3) var(--sp-5);
   list-style: none;
@@ -1356,16 +1092,12 @@ footer {
   border-bottom: var(--hairline);
 }
 
-/* A detected amount. Clickable, so it owns the pointer — the placeholder rows
-   below are not, and must not inherit the affordance. */
 .elements-list .el-row {
   cursor: pointer;
 }
-/* The "–" shown before anything has been pasted. */
 .elements-list .is-empty {
   color: var(--dim);
 }
-/* The "nothing found" note, which sits where rows would be but is not one. */
 .elements-list .is-blank {
   color: var(--dim);
 }
@@ -1378,15 +1110,11 @@ footer {
   flex-shrink: 0;
 }
 
-/* ── Result unit ── */
-
 .result-unit {
   font-size: var(--fs-md);
   color: var(--muted);
   margin-right: var(--sp-3);
 }
-
-/* ── Code entry ── */
 
 .input-section {
   padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
@@ -1396,12 +1124,6 @@ footer {
   display: flex;
   align-items: center;
 }
-/* Dim suffix hint — shows remaining digits after the cursor. Drawn over the
-   input, not beside it, so its type has to be the input's type exactly: same
-   font-size and same letter-spacing, or the underscores stop lining up with
-   the digits above them. The offset is measured from the input's computed
-   font by updateCodeDisplay() in the page, so it follows this rule rather
-   than a hardcoded width. */
 .code-suffix {
   position: absolute;
   pointer-events: none;
@@ -1414,7 +1136,6 @@ footer {
   z-index: var(--z-overlay-top);
 }
 
-/* Pinned inside the field it clears, so only its position is bespoke. */
 .input-clear {
   position: absolute;
   right: 10px;
@@ -1433,7 +1154,6 @@ footer {
   min-height: 18px;
 }
 
-/* ── Date separator ── */
 .or-separator {
   display: flex;
   align-items: center;
@@ -1460,7 +1180,6 @@ footer {
 }
 
 
-/* ── Age result ── */
 .age-main {
   padding: var(--sp-5) var(--sp-5) var(--sp-4) var(--sp-5);
   font-size: var(--fs-2xl);
@@ -1475,28 +1194,22 @@ footer {
   color: var(--muted);
   letter-spacing: var(--track-wide);
 }
-/* Today's date, when the reference date *is* the user's birthday. */
 .age-detail--amber {
   color: var(--amber);
 }
 .age-detail--muted {
   color: var(--dim);
 }
-/* The "(next birthday is in N days)" parenthetical, inline after the age. */
 .age-inline {
   color: var(--dim);
   font-size: var(--fs-md);
   font-weight: 400;
 }
 
-/* Idle placeholder */
 .idle-state {
   padding: var(--sp-6) var(--sp-4);
 }
 
-/* ── Test report ── */
-
-/* Placeholder in <main> before the suites have run. */
 .test-idle {
   color: var(--muted);
   font-size: var(--fs-sm);
@@ -1569,14 +1282,6 @@ footer {
   color: var(--muted);
 }
 
-/* ── STATUS COLOUR ──
-   .is-error / .is-pass are the names new code should use; the old spellings
-   stay as members because .err and .is-fail are load-bearing across three
-   pages.
-
-   Placement is load-bearing: these tie at 0,1,0 with the .input-hint and
-   .suite-title rules that set the resting colour, and a tie goes to source
-   order — so this group must stay below both. Hoisting it drops the colour. */
 .is-error,
 .load-error,
 .err,
@@ -1589,7 +1294,6 @@ footer {
   color: var(--amber);
 }
 
-/* ── RESPONSIVE ── */
 @media (max-width: 800px) {
   .sidebar {
     position: fixed;
@@ -1615,7 +1319,6 @@ footer {
   main {
     padding: var(--sp-5) var(--sp-4);
   }
-  /* Chrome that carries no information on a narrow screen. */
   #result-count,
   .stats-band,
   .row-num {
@@ -1629,7 +1332,6 @@ footer {
   }
 }
 
-/* ── REDUCED MOTION (WCAG 2.3.3) ── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1641,14 +1343,6 @@ footer {
   }
 }
 
-/* ══════════════════════════════════════════════
-   PRINT
-   ══════════════════════════════════════════════
-   These tools exist to produce a number someone then writes into a file, so
-   printing is a first-class path, not an afterthought.
-
-   The palette is re-pointed at print-safe values rather than restyled rule by
-   rule, so every component follows automatically. */
 @media print {
   :root {
     color-scheme: light;
@@ -1663,12 +1357,9 @@ footer {
     --text: #000000;
     --muted: #333333;
     --dim: #4a4a4a;
-    /* Bloom is a screen effect. */
     --ring: none;
     --glow: none;
     --glow-hero: none;
-    /* Print-only extras: rules that need to stay visible in greyscale, the
-       link-annotation colour, and the search-highlight ground. */
     --print-rule: #767676;
     --print-link: #555555;
     --print-mark-bg: #f0e0d0;
@@ -1683,8 +1374,6 @@ footer {
     font-size: 11pt;
   }
 
-  /* Chrome that carries no information. Every button goes: there is nothing on
-     paper to copy, reset, toggle or close. */
   .sidebar,
   .sidebar-overlay,
   .topbar,
@@ -1706,7 +1395,6 @@ footer {
     padding: 0;
   }
 
-  /* Flatten every panel: no shadows, no glow, no rounded chrome. */
   .panel,
   .result-block,
   .list-section,
@@ -1716,7 +1404,6 @@ footer {
     box-shadow: none;
   }
 
-  /* A collapsed list would print as an empty box — force every one open. */
   .list-section.collapsed .list-body {
     display: block !important;
   }
@@ -1724,14 +1411,12 @@ footer {
     display: none;
   }
 
-  /* Repeat table headers on every printed page. */
   .substances-table {
     page-break-inside: auto;
   }
   .substances-table thead {
     display: table-header-group;
   }
-  /* Keep a row, a result card and its heading off a page boundary. */
   .substances-table tr,
   .result-block,
   .result-header,
@@ -1739,7 +1424,6 @@ footer {
     page-break-inside: avoid;
   }
 
-  /* Entrance animations would freeze mid-fade on paper. */
   .list-section,
   .result-block.animate,
   .prompt {
@@ -1754,9 +1438,6 @@ footer {
     color: var(--print-link);
   }
 
-  /* The alpha ramps are literal screen ambers, so they do not follow the
-     re-pointed --amber. Override the highlight explicitly, otherwise a matched
-     search term prints as brown text on a pale orange wash. */
   mark {
     background: var(--print-mark-bg);
     color: var(--ink);

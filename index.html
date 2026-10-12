@@ -10,10 +10,8 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-shell">
-      <!-- ── SIDEBAR ── -->
       <nav class="sidebar" id="sidebar"></nav>
 
-      <!-- ── PAGE CONTENT ── -->
       <div class="page-content">
         <div class="topbar">
           <div class="header-main">
@@ -38,7 +36,6 @@
 
         <main>
           <div class="tool-wrap">
-            <!-- Input -->
             <div class="panel">
               <div class="panel-header header-row">
                 <span>// Sisesta tekst</span>
@@ -63,9 +60,7 @@
               </div>
             </div>
 
-            <!-- Results -->
             <div class="results-panel" id="results-panel">
-              <!-- Sum -->
               <div class="result-block animate" id="block-sum">
                 <div class="result-header">
                   <span class="result-label">// Hulga summa</span>
@@ -79,7 +74,6 @@
                 <div class="sum-value" id="val-sum">0</div>
               </div>
 
-              <!-- Count -->
               <div class="result-block animate" id="block-count">
                 <div class="result-header">
                   <span class="result-label">// Hulga elementide arv</span>
@@ -87,7 +81,6 @@
                 <div class="count-value" id="val-count">0</div>
               </div>
 
-              <!-- List -->
               <div class="result-block animate" id="block-list">
                 <div class="result-header">
                   <span class="result-label">// Hulga elemendid</span>
@@ -108,7 +101,6 @@
     <script src="rehkendaja-core.js"></script>
     <script src="nav.js"></script>
     <script>
-      // ── Unit mode ───────────────────────────────────────────────────────────────
       const btnEur = document.getElementById("btn-eur");
       const btnG = document.getElementById("btn-g");
       const btnN = document.getElementById("btn-n");
@@ -128,7 +120,6 @@
         update();
       }
 
-      // ── Highlight mirror ────────────────────────────────────────────────────────
       inputEl.addEventListener("scroll", () => {
         highlightEl.scrollTop = inputEl.scrollTop;
         highlightEl.scrollLeft = inputEl.scrollLeft;
@@ -178,7 +169,7 @@
           parts.join("") +
           (text.endsWith("\n") ? " " : "") +
           "<span></span>"
-        ); // prevents trailing-mark collapse
+        );  
       }
 
       function toggleExclude(idx) {
@@ -187,7 +178,6 @@
         if (!patchExclusion(idx)) renderResults();
       }
 
-      // ── Render ──────────────────────────────────────────────────────────────────
       const valSum = document.getElementById("val-sum");
       const valCount = document.getElementById("val-count");
       const valList = document.getElementById("val-list");
@@ -319,9 +309,7 @@
         updateTimer = setTimeout(update, 80);
       });
 
-      // ── Copy buttons ────────────────────────────────────────────────────────────
       copySumBtn.addEventListener("click", () => {
-        // Keep the amount glued to the unit (€ / g) with a non-breaking space (Word-safe paste)
         copyButton(
           copySumBtn,
           valSum.textContent.replace(/ (?=[\u20acg])/g, "\u00A0"),

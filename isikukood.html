@@ -10,10 +10,8 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-shell">
-      <!-- ── SIDEBAR ── -->
       <nav class="sidebar" id="sidebar"></nav>
 
-      <!-- ── PAGE CONTENT ── -->
       <div class="page-content">
         <div class="topbar">
           <div class="header-main">
@@ -37,13 +35,11 @@
 
         <main>
           <div class="tool-wrap">
-            <!-- ── INPUT PANEL ── -->
             <div class="panel">
               <div class="panel-header">
                 <span>// Sisend</span>
               </div>
 
-              <!-- ID code -->
               <div class="input-section">
                 <div class="field-label field-label--spaced">// Isikukood</div>
                 <div class="code-input-wrap">
@@ -76,10 +72,8 @@
                 </div>
               </div>
 
-              <!-- OR separator -->
               <div class="or-separator">või</div>
 
-              <!-- Date of birth -->
               <div class="dob-section">
                 <div class="field-label field-label--spaced">// Sünniaeg</div>
                 <input
@@ -97,7 +91,6 @@
                 </div>
               </div>
 
-              <!-- Reference date -->
               <div class="ref-section">
                 <div class="field-label field-label--spaced">
                   // Arvutuskuupäev
@@ -131,9 +124,7 @@
               </div>
             </div>
 
-            <!-- ── RESULTS PANEL ── -->
             <div class="results-panel" id="results-panel">
-              <!-- Age -->
               <div class="result-block" id="block-age">
                 <div class="result-header">
                   <span class="result-label">// Vanus</span>
@@ -150,12 +141,10 @@
 
     <script src="nav.js"></script>
     <script>
-      // ── Utilities ────────────────────────────────────────────────────────────────
       function pad2(n) {
         return String(n).padStart(2, "0");
       }
 
-      // Parse "DD.MM.YYYY" → { y, m, d } or null
       function parseDMY(s) {
         const m = s.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
         if (!m) return null;
@@ -182,22 +171,14 @@
         return pad2(d) + "." + pad2(m) + "." + y;
       }
 
-      // Date `n` months after `born`, clamping the day to the target month's
-      // length (e.g. 31 Jan + 1 month -> 28/29 Feb). Mirrors the rule used by
-      // addCalendarDuration in ennetähtaegne-vabastamine.html.
       function addMonthsClamped(born, n) {
-        const total = born.m - 1 + n; // 0-based month index
+        const total = born.m - 1 + n;  
         const y = born.y + Math.floor(total / 12);
         const m = ((total % 12) + 12) % 12;
         const d = Math.min(born.d, new Date(y, m + 1, 0).getDate());
         return new Date(y, m, d);
       }
 
-      // Calculate full age between two {y,m,d} objects.
-      // Anchors on the (day-clamped) anniversary and counts the remaining days,
-      // so the day component is always non-negative. The previous
-      // borrow-from-previous-month arithmetic returned -1 day for e.g.
-      // 31.01 -> 01.03 (Feb is shorter than the birthday's 31st).
       function calcAge(born, ref) {
         let months = (ref.y - born.y) * 12 + (ref.m - born.m);
         const refDate = new Date(ref.y, ref.m - 1, ref.d);
@@ -214,16 +195,12 @@
         };
       }
 
-      // Total days between two dates (ref - born).
-      // Math.round, not floor: the local-midnight difference is off by ±1h across
-      // a DST switch, and floor would drop a whole day there.
       function totalDays(born, ref) {
         const a = new Date(born.y, born.m - 1, born.d);
         const b = new Date(ref.y, ref.m - 1, ref.d);
         return Math.round((b - a) / 86400000);
       }
 
-      // ── ID code logic ─────────────────────────────────────────────────────────────
       const CENTURY_MAP = {
         1: 1800,
         2: 1800,
@@ -249,7 +226,6 @@
         const chk = digits[10];
         const year = century + yy;
 
-        // Validate date
         const dt = new Date(year, mo - 1, dd);
         if (
           mo < 1 ||
@@ -263,7 +239,6 @@
           return { valid: false, error: "Isikukoodi kuupäev on vigane" };
         }
 
-        // Checksum — only drives the "kontrollnumber korrektne/vale" hint.
         const w1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1];
         const w2 = [3, 4, 5, 6, 7, 8, 9, 1, 2, 3];
         const sum1 = digits.slice(0, 10).reduce((s, d, i) => s + d * w1[i], 0);
@@ -285,7 +260,6 @@
         };
       }
 
-      // ── DOM refs ──────────────────────────────────────────────────────────────────
       const codeInput = document.getElementById("code-input");
       const codeSuffix = document.getElementById("code-suffix");
       const codeClear = document.getElementById("code-clear");
@@ -296,15 +270,13 @@
       const refTodayBtn = document.getElementById("ref-today-btn");
       const ageContent = document.getElementById("age-content");
 
-      // ── State ─────────────────────────────────────────────────────────────────────
       let state = {
-        source: null, // 'code' | 'dob'
-        born: null, // {y,m,d}
+        source: null,  
+        born: null,  
         ref: todayDMY(),
         idParsed: null,
       };
 
-      // ── Reference date ────────────────────────────────────────────────────────────
       function setRefToday() {
         state.ref = todayDMY();
         refInput.value = "";
@@ -316,7 +288,6 @@
 
       refTodayBtn.addEventListener("click", setRefToday);
 
-      // Calendar picker — sync bidirectionally with text input
       const refCalendar = document.getElementById("ref-calendar");
       function setCalendarValue(p) {
         refCalendar.value = p.y + "-" + pad2(p.m) + "-" + pad2(p.d);
@@ -357,9 +328,7 @@
         render();
       });
 
-      // ── Code input ────────────────────────────────────────────────────────────────
       codeInput.addEventListener("input", () => {
-        // Strip non-digits
         const raw = codeInput.value.replace(/\D/g, "").slice(0, 11);
         codeInput.value = raw;
 
@@ -371,7 +340,6 @@
           return;
         }
 
-        // If typing into code, clear DOB
         dobInput.value = "";
         dobInput.classList.remove("is-valid", "is-error");
         dobHint.textContent = "kuupäev kujul PP.KK.AAAA";
@@ -390,7 +358,6 @@
           return;
         }
 
-        // Full 11 digits
         const parsed = parseIdCode(raw);
         if (!parsed.valid) {
           codeInput.classList.add("is-error");
@@ -434,23 +401,18 @@
         state.idParsed = null;
       }
 
-      // Coloured overlay: dim untyped positions
       function updateCodeDisplay(raw) {
         const remaining = 11 - raw.length;
         if (remaining <= 0) {
           codeSuffix.textContent = "";
           return;
         }
-        // Measure char width via canvas for accurate suffix positioning
         if (!updateCodeDisplay._ctx) {
           updateCodeDisplay._ctx = document
             .createElement("canvas")
             .getContext("2d");
         }
         const ctx = updateCodeDisplay._ctx;
-        // Measure with the font the input actually renders in (the site font is
-        // --mono; the old hardcoded "Hack" is no longer loaded, so measurement
-        // silently fell back to Courier New).
         const cs = getComputedStyle(codeInput);
         ctx.font =
           `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily || "monospace"}`.trim();
@@ -460,7 +422,6 @@
         codeSuffix.textContent = "_".repeat(remaining);
       }
 
-      // ── DOB input ─────────────────────────────────────────────────────────────────
       dobInput.addEventListener("input", () => {
         const v = dobInput.value.trim();
 
@@ -474,7 +435,6 @@
           return;
         }
 
-        // Clear code input if typing DOB
         codeInput.value = "";
         codeInput.classList.remove("is-valid", "is-error");
         codeHint.textContent = "11-kohaline isikukood";
@@ -503,13 +463,10 @@
         }
       });
 
-      // ── Utilities (continued) ────────────────────────────────────────────────────
-      // Estonian inflection: 1 aasta/kuu/päev, else aastat/kuud/päeva
       function infl(n, one, many) {
         return n + " " + (n === 1 ? one : many);
       }
 
-      // ── Render ────────────────────────────────────────────────────────────────────
       function clearResults() {
         ageContent.innerHTML =
           '<div class="idle-state">// ootab sisendit</div>';
@@ -523,10 +480,8 @@
         const born = state.born;
         const ref = state.ref;
 
-        // Validate ref is after born
         const td = totalDays(born, ref);
 
-        // ── Age block ──
         if (td < 0) {
           ageContent.innerHTML =
             '<div class="idle-state err">// arvutuskuupäev on enne sünnikuupäeva</div>';
@@ -537,7 +492,6 @@
             ref.y === today.y && ref.m === today.m && ref.d === today.d;
           const refLabel = isToday ? "täna" : fmtDMY(ref);
 
-          // Birthday check
           const isBirthday = ref.m === born.m && ref.d === born.d;
           const nextBirthday = (() => {
             let ny = ref.y;
@@ -582,8 +536,6 @@
         }
       }
 
-      // ── Bootstrap ─────────────────────────────────────────────────────────────────
-      // Pre-fill reference date display
       refInput.placeholder = fmtDMY(todayDMY());
     </script>
   </body>

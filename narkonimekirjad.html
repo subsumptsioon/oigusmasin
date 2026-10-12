@@ -10,20 +10,14 @@
     <link rel="stylesheet" href="noir.css" />
   </head>
   <body>
-    <!-- Mobile overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-shell">
-      <!-- ── SIDEBAR ── -->
       <nav class="sidebar" id="sidebar"></nav>
 
-      <!-- ── PAGE CONTENT ── -->
       <div class="page-content">
         <div class="topbar">
-          <!-- Chrome bar: kept for top spacing -->
-
           <div class="header-main">
-            <!-- Mobile sidebar toggle -->
             <button
               class="btn btn--icon"
               id="sidebar-toggle"
@@ -44,7 +38,6 @@
             </div>
           </div>
 
-          <!-- Stats band -->
           <div class="stats-band">
             <a class="stat-pill" href="#section1" onclick="expandSection(1)"
               ><div class="pill-bar" data-list="1"></div>
@@ -78,7 +71,6 @@
             >
           </div>
 
-          <!-- Search -->
           <div class="search-zone">
             <div class="search-inner">
               <span class="prompt">›_</span>
@@ -102,12 +94,9 @@
             <div id="result-count"></div>
           </div>
         </div>
-        <!-- /topbar -->
-
         <main>
           <div id="loading">// laen andmeid…</div>
           <div id="main-content" class="hidden">
-            <!-- I nimekiri -->
             <div class="list-section" id="section1">
               <button
                 type="button"
@@ -147,7 +136,6 @@
               </div>
             </div>
 
-            <!-- II nimekiri -->
             <div class="list-section" id="section2">
               <button
                 type="button"
@@ -184,7 +172,6 @@
               </div>
             </div>
 
-            <!-- III nimekiri -->
             <div class="list-section" id="section3">
               <button
                 type="button"
@@ -223,7 +210,6 @@
               </div>
             </div>
 
-            <!-- IV nimekiri -->
             <div class="list-section" id="section4">
               <button
                 type="button"
@@ -262,7 +248,6 @@
               </div>
             </div>
 
-            <!-- V nimekiri -->
             <div class="list-section" id="section5">
               <button
                 type="button"
@@ -299,7 +284,6 @@
               </div>
             </div>
 
-            <!-- VI nimekiri -->
             <div class="list-vi-wrap" id="list-vi-wrap">
               <div class="list-section list-section--last" id="section6">
                 <button
@@ -341,7 +325,6 @@
               </div>
             </div>
           </div>
-          <!-- /main-content -->
         </main>
 
         <footer>
@@ -357,29 +340,18 @@
           >
         </footer>
       </div>
-      <!-- /page-content -->
     </div>
-    <!-- /app-shell -->
-
-    <script src="nav.js"></script>
+<script src="nav.js"></script>
     <script>
-      // ── Utilities ────────────────────────────────────────────────────────────────
       function esc(s) {
         return s
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
       }
-      /* Takes an already-compiled query (see compileQuery). `q` is kept as the
-         original text only for the empty-case short circuit. */
       function highlight(t, q, re) {
         if (!q) return esc(t);
-        /* re is optional so the function is still usable on its own (the DOM
-           tests call it that way); the search loop passes a precompiled one. */
         re = re || compileQuery(q);
-        // Match on the RAW text and escape each slice. Running the regex over
-        // already-escaped HTML corrupts entities whenever a match lands inside
-        // one (e.g. query "amp" turning "&amp;" into "&<mark>amp</mark>;").
         let out = "";
         let last = 0;
         for (const m of t.matchAll(re)) {
@@ -390,9 +362,6 @@
         return out + esc(t.slice(last));
       }
 
-      /* One RegExp per query, not one per cell. highlight() runs twice for every
-         matching row, so compiling inside it meant ~400 compiles per keystroke
-         over a 456-row list. */
       function compileQuery(q) {
         if (!q) return null;
         return new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
@@ -401,7 +370,6 @@
       function toggleSection(n) {
         const section = document.getElementById("section" + n);
         const collapsed = section.classList.toggle("collapsed");
-        // Keep the button's state in sync for assistive tech.
         section
           .querySelector(".list-header")
           ?.setAttribute("aria-expanded", String(!collapsed));
@@ -414,7 +382,6 @@
           ?.setAttribute("aria-expanded", "true");
       }
 
-      // ── Render ───────────────────────────────────────────────────────────────────
       function renderData(d) {
         const meta = d.meta || {};
         if (meta.effective_date) {
@@ -448,16 +415,11 @@
         document.getElementById("main-content").classList.remove("hidden");
       }
 
-      // ── Search ───────────────────────────────────────────────────────────────────
       function initSearch(DATA) {
         const inp = document.getElementById("search");
         const rc = document.getElementById("result-count");
         const clearBtn = document.getElementById("search-clear");
 
-        /* The query each row is currently rendered for. A keystroke that does not
-           change a row's match status must not rewrite its cells: the highlight
-           markup is identical for the same query, so re-setting innerHTML on 456
-           rows was pure layout thrash. */
         const renderedFor = new Map();
 
         function runSearch() {
@@ -481,8 +443,6 @@
               if (match) {
                 vis++;
                 total++;
-                /* Only re-highlight when this row's query actually changed —
-                   identical input would produce identical markup. */
                 if (renderedFor.get(tr) !== q) {
                   renderedFor.set(tr, q);
                   tr.cells[1].innerHTML = highlight(subs[idx].et, q, qre);
@@ -512,8 +472,6 @@
           rc.textContent = q ? `${total} tulemust` : "";
         }
 
-        /* Debounced like the Rehkendaja input: a 456-row sweep per keystroke is
-           work the user never asked for at that rate. */
         let searchTimer = null;
         inp.addEventListener("input", () => {
           clearTimeout(searchTimer);
@@ -526,7 +484,6 @@
         });
       }
 
-      // ── Scroll margin ─────────────────────────────────────────────────────────────
       function updateScrollMargins() {
         const topbarH = document
           .querySelector(".topbar")
@@ -539,7 +496,6 @@
       updateScrollMargins();
       window.addEventListener("resize", updateScrollMargins);
 
-      // ── Keyboard shortcut: / focuses search ──────────────────────────────────────
       document.addEventListener("keydown", (e) => {
         const tag = document.activeElement.tagName;
         if (
@@ -556,7 +512,6 @@
         }
       });
 
-      // ── Bootstrap ─────────────────────────────────────────────────────────────────
       fetch("data.json")
         .then((r) => {
           if (!r.ok) throw new Error("HTTP " + r.status);
