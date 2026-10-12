@@ -104,7 +104,7 @@
       function addCalendarDuration(date, years, months, days) {
         const totalMonths = date.getMonth() + years * 12 + months;
         const y = date.getFullYear() + Math.floor(totalMonths / 12);
-        const m = ((totalMonths % 12) + 12) % 12;  
+        const m = ((totalMonths % 12) + 12) % 12;
         const d = Math.min(date.getDate(), lastDayOfMonth(y, m));
         const result = new Date(y, m, d);
         result.setDate(result.getDate() + days);

@@ -28,17 +28,17 @@
 :root {
   color-scheme: dark;
 
-  --void: #000c17;  
-  --deep: #001123;  
-  --surface: #00172e;  
-  --lift: #021f37;  
-  --border: #57898a;  
-  --line: #0e2c47;  
-  --amber: #faa968;  
-  --red: #f85525;  
-  --text: #f6dcac;  
-  --muted: #8cbfb8;  
-  --dim: #65a5a1;  
+  --void: #000c17;
+  --deep: #001123;
+  --surface: #00172e;
+  --lift: #021f37;
+  --border: #57898a;
+  --line: #0e2c47;
+  --amber: #faa968;
+  --red: #f85525;
+  --text: #f6dcac;
+  --muted: #8cbfb8;
+  --dim: #65a5a1;
 
   --l2: #ed9563;
   --l3: #faa968;
@@ -68,7 +68,7 @@
 
   --fs-xs: 12px;
   --fs-sm: 13px;
-  --fs-md: 14px;  
+  --fs-md: 14px;
   --fs-lg: 16px;
   --fs-xl: 20px;
   --fs-2xl: 24px;
@@ -89,31 +89,31 @@
   --sp-8: 40px;
   --sp-9: 48px;
 
-  --gap: var(--sp-3);  
-  --gap-tight: var(--sp-2);  
-  --gap-wide: var(--sp-6);  
+  --gap: var(--sp-3);
+  --gap-tight: var(--sp-2);
+  --gap-wide: var(--sp-6);
 
---pad: var(--sp-2) var(--sp-3);  
---pad-row: var(--sp-2) var(--sp-5);  
---pad-block: var(--sp-4) var(--sp-5);  
---pad-page: var(--sp-8) var(--sp-9);  
+--pad: var(--sp-2) var(--sp-3);
+--pad-row: var(--sp-2) var(--sp-5);
+--pad-block: var(--sp-4) var(--sp-5);
+--pad-page: var(--sp-8) var(--sp-9);
 
   --dur: 0.12s;
   --dur-move: 0.2s;
 
   --radius: 0;
 
-  --z-overlay: 2;  
-  --z-overlay-top: 3;  
-  --z-sticky: 100;  
-  --z-scrim: 190;  
-  --z-drawer: 200;  
+  --z-overlay: 2;
+  --z-overlay-top: 3;
+  --z-sticky: 100;
+  --z-scrim: 190;
+  --z-drawer: 200;
 
   --mono: "JetBrainsMono Nerd Font", "JetBrainsMono NF", ui-monospace,
     monospace;
 
   --sidebar-w: 260px;
-  --measure: 600px;  
+  --measure: 600px;
 }
 
 *,
