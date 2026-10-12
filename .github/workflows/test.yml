@@ -57,7 +57,9 @@ jobs:
 
       - name: Release branch carries no comments
         run: |
-          if [ ! -d release ]; then
+          # checkout creates the directory even when the ref is missing, so test
+          # for a file the release tree must contain.
+          if [ ! -f release/index.html ]; then
             echo "release branch does not exist yet — nothing to check."
             exit 0
           fi
