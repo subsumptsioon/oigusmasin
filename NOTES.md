@@ -78,6 +78,12 @@ npm run release -- --push    # also branch, commit, push, open the PR
 Every tool takes `--root <dir>`, which is how the gates run the same suites
 against the stripped tree. The gates are: stripped JS parses, stripping is a
 fixed point, no comments remain, then all five suites on the stripped output.
+`npm run release` needs a browser (Chromium or Chrome) for the DOM gate; it finds
+whichever is on `PATH`, or you can point `CHROMIUM` at one.
+
+The same run from CI is the **Cut release** workflow (Actions → Cut release →
+Run workflow). It needs no secrets — it pushes with the default token, which has
+`contents: write` and `pull-requests: write` for that workflow only.
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
 `.baseline/css-current.txt` holds a current snapshot baseline (2015 values,
 verified clean). Diff against it before and after any type, spacing or layout
@@ -85,8 +91,11 @@ change — `node tools/css-snapshot.mjs --diff .baseline/css-current.txt` — th
 refresh it with `--save` once the change is accepted. It is scratch, not a
 source of truth; delete and re-create freely. Prefer it to eyeballing: the
 figures are measured, not judged.
-CI: `.github/workflows/test.yml` runs the four `verify` steps on push/PR to `main`.
-`.github/workflows/update-data.yml` refreshes `data.json` daily at 04:00 UTC.
+CI: `.github/workflows/test.yml` runs the `verify` steps plus the stripper's own
+edge cases on push/PR to `dev`, and separately checks that `release` carries no
+comments. `.github/workflows/update-data.yml` refreshes `data.json` daily at 04:00
+UTC, on both branches. `.github/workflows/cut-release.yml` is the manual button
+that regenerates `release` from `dev` and opens the PR.
 
 ## Tools in `tools/`
 - `cdp.mjs` — **shared headless-browser harness.** `smoke-test`, `css-snapshot`,

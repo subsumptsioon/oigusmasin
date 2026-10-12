@@ -39,6 +39,9 @@ jobs:
       - name: CSS convention lint
         run: node tools/check-css.mjs
 
+      - name: JS comment-stripper edge cases
+        run: node tools/js-strip.test.mjs
+
   release-comments:
     runs-on: ubuntu-latest
     steps:
