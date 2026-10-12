@@ -172,7 +172,7 @@
       }
 
       function addMonthsClamped(born, n) {
-        const total = born.m - 1 + n;  
+        const total = born.m - 1 + n;
         const y = born.y + Math.floor(total / 12);
         const m = ((total % 12) + 12) % 12;
         const d = Math.min(born.d, new Date(y, m + 1, 0).getDate());
@@ -271,8 +271,8 @@
       const ageContent = document.getElementById("age-content");
 
       let state = {
-        source: null,  
-        born: null,  
+        source: null,
+        born: null,
         ref: todayDMY(),
         idParsed: null,
       };

@@ -69,7 +69,7 @@ function extractAmounts(text) {
     if (amount === null) continue;
 
     results.push({
-      raw: match[0],  
+      raw: match[0],
       amount,
       decimals: countDecimals(rawNum),
       index: match.index,
