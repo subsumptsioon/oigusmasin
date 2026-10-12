@@ -139,6 +139,30 @@ class CDP {
   }
 }
 
+/** Where the browser lives. `chromium` is the Arch name and is also what CI
+ *  installs via setup-chromium; the others are what the same browser is called
+ *  elsewhere. CHROMIUM overrides all of it. */
+const CHROMIUM_NAMES = ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"];
+
+export function chromiumBinary() {
+  const override = process.env.CHROMIUM;
+  if (override) return override;
+
+  for (const dir of (process.env.PATH || "").split(path.delimiter)) {
+    if (!dir) continue;
+    for (const name of CHROMIUM_NAMES) {
+      const full = path.join(dir, name);
+      try {
+        fs.accessSync(full, fs.constants.X_OK);
+        return full;
+      } catch {}
+    }
+  }
+  throw new Error(
+    `no Chromium found on PATH. Install one of ${CHROMIUM_NAMES.join(", ")}, or set CHROMIUM to its path.`,
+  );
+}
+
 /**
  * Start the server + browser. Always pair with `close()` — the Chromium process
  * and its temp profile otherwise outlive the process.
@@ -147,13 +171,14 @@ class CDP {
  * device scale factor so geometry is comparable run to run).
  */
 export async function launch({ extraArgs = [] } = {}) {
+  const binary = chromiumBinary();
   const server = await startServer();
   const base = `http://127.0.0.1:${server.address().port}`;
   const port = await findFreePort();
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "oigusmasin-chrome-"));
 
   const proc = spawn(
-    "chromium",
+    binary,
     [
       "--headless=new",
       "--no-sandbox",
