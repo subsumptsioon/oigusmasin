@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <!-- Must be the first element in <head>: a meta CSP applies only from the
+         point it is parsed. It also has to be a meta tag, because GitHub Pages
+         sends no custom response headers (see the README). script-src stays
+         'self' — no CDN, no analytics, no third party, ever. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' https:; font-src 'self' https:; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self'; base-uri 'none'; form-action 'none'"
+    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metaandmete analüüs | Õigusmasin</title>
+    <link rel="stylesheet" href="noir.css" />
+  </head>
+  <body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="app-shell">
+      <!-- ── SIDEBAR ── -->
+      <nav class="sidebar" id="sidebar"></nav>
+
+      <!-- ── PAGE CONTENT ── -->
+      <div class="page-content">
+        <div class="topbar">
+          <div class="header-main">
+            <button
+              class="btn btn--icon"
+              id="sidebar-toggle"
+              aria-label="Ava menüü"
+            >
+              ☰
+            </button>
+            <div class="title-block">
+              <h1>Metaandmed</h1>
+              <div class="subtitle">
+                <span class="subtitle-label"
+                  >Loeb faili metaandmed — analüüs toimub sinu arvutis</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main>
+          <div class="tool-wrap">
+            <div class="panel">
+              <div class="panel-header">// Fail</div>
+              <div class="panel-body">
+                <!-- The real <input type="file"> is the control: it is keyboard
+                     operable, screen-reader labelled and needs no script to
+                     work. The drop zone around it only adds drag-and-drop on
+                     top, so dropping a file and using the keyboard arrive at
+                     the same place. -->
+                <div class="dropzone" id="dropzone">
+                  <label class="dropzone-label" for="file-input"
+                    >Vali või loohtele fail</label
+                  >
+                  <input
+                    class="field"
+                    type="file"
+                    id="file-input"
+                    aria-describedby="dropzone-hint"
+                  />
+                  <p class="dropzone-hint" id="dropzone-hint">
+                    Fail jääb sinu arvutisse. Seda ei saadeta kuhagi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Populated by metaandmed.js. Empty until a file is chosen. -->
+            <div class="result-block result-block--full hidden" id="result-block">
+              <div class="result-header">
+                <span class="result-label" id="result-label">// Valitud fail</span>
+                <span class="format-badge hidden" id="format-badge">PDF</span>
+              </div>
+              <div class="result-body result-body--inline" id="result-body"></div>
+            </div>
+
+            <!-- Renders once the pipeline has something to say. Both containers
+                 start hidden, because an empty tab strip is a broken control. -->
+            <div class="meta-tabs hidden" id="tab-strip" role="tablist" hidden></div>
+            <div class="meta-panels hidden" id="tab-panels" hidden></div>
+
+            <div class="tool-row">
+              <button
+                class="tool-btn"
+                type="button"
+                id="raw-toggle"
+                aria-pressed="false"
+              >
+                Toorandmed
+              </button>
+              <span class="tool-hint" id="raw-hint">
+                Näitab iga väärtuse algset teksti
+              </span>
+            </div>
+
+            <div class="search-row">
+              <label class="search-label" for="search-box">Otsing</label>
+              <input
+                class="field"
+                type="search"
+                id="search-box"
+                placeholder="Otsi kõigist väljadest"
+                autocomplete="off"
+              />
+            </div>
+
+            <p class="status-line" id="status-line" role="status"></p>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <!-- External, not inline: script-src has no 'unsafe-inline'. -->
+    <script type="module" src="metaandmed.js"></script>
+  </body>
+</html>

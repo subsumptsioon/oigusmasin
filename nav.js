@@ -18,6 +18,7 @@ const NAV_ITEMS = [
     href: "ennetahtaegne-vabastamine.html",
   },
   { label: "Vanus", href: "isikukood.html" },
+  { label: "Metaandmed", href: "metaandmed.html" },
 ];
 
 const NAV_BRAND = "Tööriistad";

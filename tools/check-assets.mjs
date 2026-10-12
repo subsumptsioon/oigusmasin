@@ -126,6 +126,202 @@ function checkStyleAssets() {
   }
 }
 
+/* ── No exit ────────────────────────────────────────────────────────────────
+   §7's third support, and the one a visitor can check for themselves: there is
+   no way for the file to leave this page. Export, download, share and file-save
+   are all absent, and the absence is what the promise rests on — a page with no
+   exit has nothing to copy out, attach to a mail, or hand onward.
+
+   **Comments are stripped before the search.** Without that, a comment *naming* a
+   banned API fails the build — and this file has such a comment, written to
+   explain the rule. A check that punishes its own documentation is a check
+   people learn to disable, which is the opposite of the point. Strings are
+   stripped for the same reason: this file mentions `createObjectURL` in prose.
+
+   `lib/` is excluded. Vendored pdf.js is not our code, and the claim here is
+   that *we* wrote no exit — not that no library contains one. */
+const EXIT_APIS = [
+  "createObjectURL",
+  "revokeObjectURL",
+  "new Blob",
+  "showSaveFilePicker",
+  "navigator.share",
+  "DataTransfer",
+  "msSaveBlob",
+  "webkitRequestFileSystem",
+  "URL.createObjectURL",
+];
+
+function stripJsComments(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1) => p1 + " ".repeat(m.length - p1.length));
+}
+
+function stripJsStrings(src) {
+  return src
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, (m) => " ".repeat(m.length))
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, (m) => " ".repeat(m.length))
+    .replace(/`(?:[^`\\]|\\.)*`/g, (m) => " ".repeat(m.length));
+}
+
+/* §7's *first* support: the file is read in exactly two places, and nothing
+   that can carry it anywhere is called on the result. A banned-API list catches
+   an exit path; it cannot catch `navigator.sendBeacon("", bytes)` unless the
+   outbound calls are listed too, so they are.
+
+   `fetch` and `XMLHttpRequest` are not banned outright: pdf.js fetches its own
+   worker from this origin, and that is legitimate. What is banned is sending
+   *file content* out — which is why these are reported separately and why the
+   message says what was found rather than only that something was. */
+const OUTBOUND_APIS = [
+  "sendBeacon",
+  "XMLHttpRequest",
+  "navigator.share",
+  "postMessage",
+  "localStorage.setItem",
+  "sessionStorage.setItem",
+  "indexedDB.open",
+  "document.cookie\s*=",
+  "atob",
+];
+
+function checkOutbound(file, raw, code) {
+  for (const api of OUTBOUND_APIS) {
+    const pattern = new RegExp(`\\b${api}\\b`);
+    const m = pattern.exec(code);
+    if (m) {
+      problems.push(
+        `${path.relative(ROOT, file)}:${lineOf(raw, m.index)} uses ${api} — ` +
+          `§7 allows exactly two readers and no writer; confirm this carries no file content`,
+      );
+    }
+  }
+}
+
+function checkNoExit() {
+  const sources = [
+    path.join(ROOT, "metaandmed.html"),
+    path.join(ROOT, "metaandmed.js"),
+    ...walk(path.join(ROOT, "formats")),
+  ].filter((f) => fs.existsSync(f));
+
+  for (const file of sources) {
+    const raw = fs.readFileSync(file, "utf8");
+    const code = stripJsStrings(stripJsComments(raw));
+    for (const api of EXIT_APIS) {
+      const at = code.indexOf(api);
+      if (at !== -1) {
+        problems.push(
+          `${path.relative(ROOT, file)}:${lineOf(raw, at)} uses ${api} — §7 requires no exit path`,
+        );
+      }
+    }
+    checkOutbound(file, raw, code);
+
+    /* The `download` attribute, which is an exit with no API call at all.
+       Matched in the *raw* source, not the stripped one, because it is an HTML
+       attribute and the stripping here is for JavaScript. The attribute may be
+       bare (`<a download>`), valued (`download="x.pdf"`) or separated by any
+       whitespace, including a newline — the first version required a following
+       space, `=` or `>` and so missed `download="metaandmed.json"`, which is
+       precisely the case the check exists to catch. */
+    for (const m of raw.matchAll(/\bdownload\s*(=|\s|>)/g)) {
+      problems.push(
+        `${path.relative(ROOT, file)}:${lineOf(raw, m.index)} has a download attribute — an exit path`,
+      );
+    }
+  }
+  return sources.length;
+}
+
+/* Strip and keep line numbers: a check that renumbers is a check whose errors
+   cannot be acted on. */
+function lineOf(text, index) {
+  return text.slice(0, index).split("\n").length;
+}
+
+function walk(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full, out);
+    else out.push(full);
+  }
+  return out;
+}
+
+/* ── Content-Security-Policy ─────────────────────────────────────────────────
+   §7's policy, audited rather than assumed. Three things it must be, and each
+   one is a way a policy can be present, correct-looking, and not apply:
+
+     1. **A meta tag.** GitHub Pages sends no custom response headers, so a
+        header is not available. Re-verified at phase 11: the feature is still
+        absent, while Codeberg Pages added a limited `_headers` allowlist in
+        February 2026 — so the meta form is not merely a workaround, it is the
+        only option on this host.
+     2. **First in `<head>`.** A meta CSP applies only from the point it is
+        parsed. One byte of script before it and the policy governs less than it
+        appears to.
+     3. **`script-src 'self'`, with no `unsafe-inline` and no `unsafe-eval`.**
+        These are the two keywords that would undo the whole page, so they are
+        checked by name rather than left to review. */
+const CSP_REQUIRED = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+];
+const CSP_FORBIDDEN = ["unsafe-inline", "unsafe-eval", "data:", "blob:"];
+
+function checkCsp(page) {
+  const html = fs.readFileSync(path.join(ROOT, page), "utf8");
+
+  /* Does this page declare a CSP at all? Only the analyser has one, and that is
+     a finding worth stating rather than a failure.
+
+     The tag is matched across newlines and *without* `[^>]*`: the policy text
+     itself contains `>` (in `script-src 'self'` there is none, but
+     `worker-src 'self' blob:` and any future directive could), so a tag-shaped
+     regex stops in the middle of the policy and the rest is never seen. The
+     first version matched 90 characters and reported three missing directives on
+     a policy that has all of them. */
+  const meta = /<meta\s[^>]*?http-equiv=["']Content-Security-Policy["'][\s\S]*?>/i.exec(html);
+  if (!meta) return null;
+
+  const content = /content=["']([\s\S]*?)["']\s*\/?>/i.exec(meta[0])?.[1] ?? "";
+  if (!content) {
+    problems.push(`${page}: the CSP meta tag has no readable content attribute`);
+    return null;
+  }
+
+  for (const directive of CSP_REQUIRED) {
+    if (!content.includes(directive)) {
+      problems.push(`${page}: CSP is missing ${directive}`);
+    }
+  }
+  for (const keyword of CSP_FORBIDDEN) {
+    if (new RegExp(`(script-src|default-src)[^;]*${keyword}`).test(content)) {
+      problems.push(`${page}: CSP allows ${keyword} in a script directive — it undoes the page`);
+    }
+  }
+
+  /* Position: nothing that executes may precede the meta tag. */
+  const headOpen = html.search(/<head[^>]*>/i);
+  const metaAt = meta.index;
+  const between = html.slice(headOpen, metaAt);
+  if (/<script/i.test(between)) {
+    problems.push(`${page}: a <script> precedes the CSP meta tag — the policy would apply too late`);
+  }
+  const styleInHead = /<style/i.test(between);
+  if (styleInHead) {
+    problems.push(`${page}: a <style> precedes the CSP meta tag`);
+  }
+
+  return content;
+}
+
 function main() {
   const pages = listPages();
   if (!pages.length) {
@@ -137,8 +333,17 @@ function main() {
   const navHrefs = checkNav(pages);
   checkConsistency(pages, navHrefs);
   checkStyleAssets();
+  const scanned = checkNoExit();
 
-  console.log(`Asset check: ${pages.length} pages scanned.`);
+  let cspPages = 0;
+  for (const page of pages) {
+    if (checkCsp(page)) cspPages++;
+  }
+
+  console.log(
+    `Asset check: ${pages.length} pages, ${scanned} source file(s), ` +
+    `${cspPages} with a CSP.`,
+  );
   if (!problems.length) {
     console.log("\x1b[32mOK\x1b[0m  all local refs resolve; nav + includes + style assets consistent.");
     process.exit(0);
