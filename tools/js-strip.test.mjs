@@ -27,7 +27,7 @@ const CASES = [
   ["first line of file", "// gone\nkeep", "keep"],
 
   // Mixed content keeps the line, loses the comment.
-  ["trailing on code line", "const a = 1; // note\n", "const a = 1;  \n"],
+  ["trailing on code line", "const a = 1; // note\n", "const a = 1;\n"],
   ["inline between statements", "a; /* x */ b;", "a;   b;"],
 
   // Token boundaries must survive.

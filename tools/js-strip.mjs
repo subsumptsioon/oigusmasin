@@ -60,7 +60,7 @@ export function stripJs(src) {
 
   /* Drop `start..end` when it is the only thing on its line, otherwise leave a
    * space. Returns the new index to continue from. */
-  const consumeComment = (start, end) => {
+  const consumeComment = (out, src, start, end) => {
     const lineStart = out.lastIndexOf("\n") + 1;
     const beforeIsBlank = out.slice(lineStart).trim() === "";
     const afterIsBlank = src.slice(end, endOfLine(end)).trim() === "";
@@ -81,11 +81,22 @@ export function stripJs(src) {
         }
         j = nl + 1;
       }
-      return j;
+      return { next: j, out };
+    }
+
+    if (!beforeIsBlank && afterIsBlank) {
+      // Code, then a comment running to the end of the line. A newline cannot
+      // merge two tokens, so no space is needed — and the space that separated
+      // the code from the comment goes too, leaving the line as it was.
+      const nl = src.indexOf("\n", end);
+      return {
+        next: nl === -1 ? src.length : nl + 1,
+        out: out.replace(/[ \t]+$/, "") + (nl === -1 ? "" : "\n"),
+      };
     }
 
     out += " ";
-    return end;
+    return { next: end, out };
   };
 
   const readString = (from) => {
@@ -171,23 +182,26 @@ export function stripJs(src) {
     }
 
     if (c === "/" && src[i + 1] === "/") {
-      const nl = endOfLine(i);
-      i = consumeComment(i, nl);
+      const r = consumeComment(out, src, i, endOfLine(i));
+      out = r.out;
+      i = r.next;
       continue;
     }
 
     /* Annex B HTML-like comment. Only at the start of a line: anywhere else it
      * is ordinary punctuation and turning it into a comment could eat code. */
     if (src.startsWith("<!--", i) && out.slice(out.lastIndexOf("\n") + 1).trim() === "") {
-      const nl = endOfLine(i);
-      i = consumeComment(i, nl);
+      const r = consumeComment(out, src, i, endOfLine(i));
+      out = r.out;
+      i = r.next;
       continue;
     }
 
     if (c === "/" && src[i + 1] === "*") {
       const close = src.indexOf("*/", i + 2);
-      const end = close === -1 ? src.length : close + 2;
-      i = consumeComment(i, end);
+      const r = consumeComment(out, src, i, close === -1 ? src.length : close + 2);
+      out = r.out;
+      i = r.next;
       continue;
     }
 

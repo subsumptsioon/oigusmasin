@@ -150,12 +150,14 @@ if (!PUSH) {
 
 sh("git", ["fetch", "origin", "--prune"]);
 
+const exists = (ref) =>
+  spawnSync("git", ["rev-parse", "--verify", ref], { cwd: DEFAULT_ROOT, stdio: "pipe" }).status === 0;
+
 let base;
-try {
-  sh("git", ["rev-parse", "--verify", `origin/${TARGET}`]);
+if (exists(`origin/${TARGET}`)) {
   base = `origin/${TARGET}`;
   console.log(`\nBuilding on top of ${TARGET} (keeps the daily data.json commit).`);
-} catch {
+} else {
   base = `origin/${SOURCE}`;
   console.log(`\n${TARGET} does not exist yet — first release, building from ${SOURCE}.`);
 }
@@ -193,6 +195,20 @@ if (DRY) {
 }
 
 sh("git", ["commit", "-q", "-m", "chore: release — regenerated from dev, comments stripped"], { cwd: wt });
+const firstRelease = !exists(`origin/${TARGET}`);
+
+if (firstRelease) {
+  // There is no prior release to diff against, so there is nothing for a PR to
+  // show. Create the branch directly; every run after this one goes via PR.
+  sh("git", ["push", "-q", "origin", `HEAD:refs/heads/${TARGET}`], { cwd: wt });
+  sh("git", ["worktree", "remove", "--force", wt]);
+  console.log(`\nCreated ${TARGET} at ${sh("git", ["rev-parse", "--short", "HEAD"], { cwd: DEFAULT_ROOT })}.`);
+  console.log(`Review it with:  git diff origin/${SOURCE}..origin/${TARGET}`);
+  console.log(`Then set the GitHub Pages source to ${TARGET}.`);
+  fs.rmSync(tmp, { recursive: true, force: true });
+  process.exit(0);
+}
+
 sh("git", ["push", "-q", "-f", "origin", `HEAD:refs/heads/${PR_BRANCH}`], { cwd: wt });
 sh("git", ["worktree", "remove", "--force", wt]);
 
