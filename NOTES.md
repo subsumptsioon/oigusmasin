@@ -1,8 +1,21 @@
 # Õigusmasin — workspace notes (for future agents/sessions)
 
 Static, dependency-free site (plain HTML/CSS/JS, no build step, no bundler).
-Hosted from the repo root; `main` is the deploy branch. Estonian-language legal
-calculators.
+Hosted from the repo root. Estonian-language legal calculators.
+
+## Branches
+- `dev` — the source of truth. Comments, tooling, journals. Default branch; work
+  and PRs land here.
+- `release` — **generated, never hand-edited.** Carries the site files only,
+  stripped of every comment, and is what GitHub Pages serves. Cut it with
+  `npm run release -- --push`, which opens a PR against `release`.
+
+  Because `release` is built *on top of* `release` tip rather than `dev` tip,
+  the daily `data.json` commit survives a release run. That is also why
+  `update-data.yml` pushes its commit to both branches.
+
+  `release` holds no `.github/`, so a push to it fires no workflow. The
+  no-comment gate therefore runs from `dev` CI against a checkout of `release`.
 
 ## Layout
 - `index.html` — **Rehkendaja**: finds & sums amounts in pasted text (modes: € / g / all numbers).
@@ -56,6 +69,15 @@ npm run snapshot            # dump computed style + geometry for every component
 npm run snapshot -- --save f.json   # keep as a baseline
 npm run snapshot -- --diff f.json   # see what a refactor actually moved
 ```
+
+## Cut a release
+```bash
+npm run release              # build + 8 gates, no git state touched
+npm run release -- --push    # also branch, commit, push, open the PR
+```
+Every tool takes `--root <dir>`, which is how the gates run the same suites
+against the stripped tree. The gates are: stripped JS parses, stripping is a
+fixed point, no comments remain, then all five suites on the stripped output.
 `dom`/`smoke` are local-only (not in CI) because they need a Chromium binary.
 `.baseline/css-current.txt` holds a current snapshot baseline (2015 values,
 verified clean). Diff against it before and after any type, spacing or layout

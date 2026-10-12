@@ -146,6 +146,10 @@ jobs:
           git add data.json
           git commit -m "chore: update data.json (${SUMMARY}) [skip ci]"
           git push
+          # The release branch is regenerated from dev, so the same commit has to
+          # land on both. Pushing to release alone would be reverted by the next
+          # release run, and the live site would silently serve a stale list.
+          git push origin HEAD:release
 
       - name: Show alert in UI
         if: steps.diff.outputs.changed == 'true'

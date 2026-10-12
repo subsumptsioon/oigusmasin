@@ -17,9 +17,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveRoot } from "./root.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = resolveRoot();
 
 // token roles -> required minimum contrast against each background
 //   text   : normal-size body text            -> 4.5
@@ -129,7 +130,14 @@ function parseTokens(css) {
 
 function main() {
   const args = process.argv.slice(2);
-  const cssArg = args.find((a) => !a.startsWith("--")) || path.join(ROOT, "noir.css");
+  // Skip `--root <dir>` and its value: what is left over is the optional
+  // explicit path to a stylesheet.
+  const positional = args.filter((a, i) => {
+    if (a === "--root") return false;
+    if (args[i - 1] === "--root") return false;
+    return !a.startsWith("--");
+  });
+  const cssArg = positional[0] || path.join(ROOT, "noir.css");
   const showAll = args.includes("--all");
   const asJson = args.includes("--json");
   const css = fs.readFileSync(cssArg, "utf8");
