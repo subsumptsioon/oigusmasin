@@ -840,7 +840,10 @@ main {
   gap: var(--gap);
 }
 
+/* A <label> is inline by default and margin-bottom on an inline box does
+   nothing; the label has to own a block box for this gap to exist. */
 .field-label--spaced {
+  display: block;
   margin-bottom: var(--sp-2);
 }
 
