@@ -181,7 +181,10 @@ that regenerates `release` from `dev` and opens the PR.
   DevTools Protocol (no npm deps; Node built-in `WebSocket`) and asserts page
   globals. Add a check to `CHECKS`. Run `npm run dom`. The checks share one live
   page, so each one that touches `excluded`/`inputEl` must reset the state it
-  depends on (`excluded.clear()`) — otherwise it only passes in one order.
+  depends on (`excluded.clear()`) — otherwise it only passes in one order. A
+  check may carry `tz: "Europe/Tallinn"` to emulate a timezone for itself: a
+  daylight-saving case cannot fail in a UTC runner, so without it the check
+  passes everywhere except the one machine that has a DST.
 - `smoke-test.mjs` — loads every page in headless Chromium and fails on any
   uncaught exception / console error. `npm run smoke`.
 - `page-eval.mjs` — one-off probe: `node tools/page-eval.mjs <page> "<expr>"`
