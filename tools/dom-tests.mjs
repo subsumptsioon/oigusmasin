@@ -34,6 +34,12 @@ const CHECKS = [
   { page: "isikukood.html", label: "calcAge: normal case unchanged", expr: "calcAge({y:2000,m:5,d:10},{y:2026,m:9,d:26})", expect: { years: 26, months: 4, days: 16 } },
   { page: "isikukood.html", label: "calcAge: never negative", expr: "(()=>{for(let y=1990;y<=2001;y++)for(let m=1;m<=12;m++)for(let d=1;d<=31;d++){const bd=new Date(y,m-1,d);if(bd.getMonth()!==m-1||bd.getDate()!==d)continue;for(let rm=1;rm<=12;rm++)for(let rd=1;rd<=31;rd++){const r=new Date(y+30,rm-1,rd);if(r.getMonth()!==rm-1||r.getDate()!==rd)continue;const a=calcAge({y,m,d},{y:y+30,m:rm,d:rd});if(a.years<0||a.months<0||a.days<0)return false;}}return true;})()", expect: true },
   { page: "isikukood.html", label: "parseDMY: rejects impossible dates", expr: "[parseDMY('31.02.2020'), parseDMY('01.13.2020'), parseDMY('29.02.2020')]", expect: [null, null, { y: 2020, m: 2, d: 29 }] },
+  // Regression: the clock jumps forward on 29.03.2026, so 26.03 -> 30.03 is 95
+  // hours, not 96. Math.floor there called it 3 days. Asserted on the birthday
+  // line only, so the check does not depend on the day it is run; the space
+  // before "päeva" is a non-breaking one, hence \s. Keep it last on the page: it
+  // leaves the emulated timezone in place.
+  { page: "isikukood.html", tz: "Europe/Tallinn", label: "next birthday across the DST switch counts 4 days, not 3", expr: "(()=>{state.source='dob';state.born={y:1980,m:3,d:30};state.ref={y:2026,m:3,d:26};render();return /\\(4\\späeva pärast\\)/.test(ageContent.textContent);})()", expect: true },
 
   // narkonimekirjad — highlight must not corrupt escaped entities
   { page: "narkonimekirjad.html", label: "highlight: query 'amp' keeps entity intact", expr: "highlight('Amphetamine & co', 'amp')", expect: "<mark>Amp</mark>hetamine &amp; co" },
@@ -113,6 +119,8 @@ async function main() {
       for (const c of CHECKS.filter((c) => c.page === page)) {
         let got, threw = null;
         try {
+          // A DST case can only fail in a DST zone; CI runs in UTC.
+          if (c.tz) await env.cdp.send("Emulation.setTimezoneOverride", { timezoneId: c.tz }, sessionId);
           got = await env.eval(c.expr, sessionId);
         } catch (err) {
           threw = err.message;

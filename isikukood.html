@@ -45,7 +45,7 @@
 
               <!-- ID code -->
               <div class="input-section">
-                <div class="field-label field-label--spaced">// Isikukood</div>
+                <label class="field-label field-label--spaced" for="code-input">// Isikukood</label>
                 <div class="code-input-wrap">
                   <span
                     class="code-suffix"
@@ -81,7 +81,7 @@
 
               <!-- Date of birth -->
               <div class="dob-section">
-                <div class="field-label field-label--spaced">// Sünniaeg</div>
+                <label class="field-label field-label--spaced" for="dob-input">// Sünniaeg</label>
                 <input
                   type="text"
                   class="field"
@@ -99,9 +99,7 @@
 
               <!-- Reference date -->
               <div class="ref-section">
-                <div class="field-label field-label--spaced">
-                  // Arvutuskuupäev
-                </div>
+                <label class="field-label field-label--spaced" for="ref-input">// Arvutuskuupäev</label>
                 <div class="control-row">
                   <input
                     type="text"
@@ -546,7 +544,8 @@
             if (thisBD <= refDt && !isBirthday) ny++;
             else if (isBirthday) ny++;
             const bd = new Date(ny, born.m - 1, born.d);
-            const daysUntil = Math.floor((bd - refDt) / 86400000);
+            // round, like totalDays: a DST switch makes the gap an hour short.
+            const daysUntil = Math.round((bd - refDt) / 86400000);
             return { date: { y: ny, m: born.m, d: born.d }, daysUntil };
           })();
 
